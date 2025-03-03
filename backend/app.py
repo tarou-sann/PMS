@@ -4,12 +4,12 @@ import bcrypt
 
 app = Flask(__name__)
 
-# Database SQLite
+# SQLite Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///straw_innovations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# User Model
+# USER MODEL
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -17,18 +17,20 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
-
-# Create db and tables    
+    
+# CREATES DATABASE AND TABLES
 with app.app_context():
     db.create_all()
 
+# FUNCTION TO HASH PASSWORDS
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
+# FUNCTION TO CHECK PASSWORD
 def check_password(password, hashed):
     return bcrypt.checkpw(password.encode('utf-8'), hashed)
 
-# Routes
+# REGISTRATION ENDPOINT
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -46,9 +48,9 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({'message': 'User created successfully'}), 201
+    return jsonify({'message': 'User registered successfully'}), 201
 
-# Login endpoint
+# LOGIN ENDPOINT
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -59,11 +61,12 @@ def login():
         return jsonify({'message': 'Username and password are required'}), 400
     
     user = User.query.filter_by(username=username).first()
+    
     if not user or not check_password(password, user.password_hash):
         return jsonify({'message': 'Invalid username or password'}), 401
     
     return jsonify({'message': 'Login successful'}), 200
 
-# Run app
+# RUNS THE APP
 if __name__ == '__main__':
     app.run(debug=True)
