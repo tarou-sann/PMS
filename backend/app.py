@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(120), nullable=False)
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -59,7 +59,7 @@ def login():
         return jsonify({'message': 'Username and password are required'}), 400
     
     user = User.query.filter_by(username=username).first()
-    if not user or not check_password(password, user.password):
+    if not user or not check_password(password, user.password_hash):
         return jsonify({'message': 'Invalid username or password'}), 401
     
     return jsonify({'message': 'Login successful'}), 200
