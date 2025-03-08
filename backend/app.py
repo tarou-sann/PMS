@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import bcrypt
+import uuid
 from functools import wraps
 
 app = Flask(__name__)
@@ -9,6 +11,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///straw_innovations.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # USER MODEL
 class User(db.Model):
@@ -16,6 +19,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='employee')
+    token = db.Column(db.String(120), nullable=True)
 
     def __repr__(self):
         return f'<User {self.username}, Role: {self.role}>'
@@ -93,12 +97,46 @@ def login():
     if not username or not password:
         return jsonify({'message': 'Username and password are required'}), 400
     
+    if User.query.filter(User.token.isnot(None)).first():
+        return jsonify({'message': 'Already logged in'}), 403
+    
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password(password, user.password_hash):
         return jsonify({'message': 'Invalid username or password'}), 401
     
-    return jsonify({'message': 'Login successful'}), 200
+
+    user.token = str(uuid.uuid4())
+    db.session.commit()
+
+    if user.role == 'admin':
+        return jsonify({'message': 'Login successful', 'redirect_url': '/admin/dashboard'}), 200
+    elif user.role == 'employee':
+        return jsonify({'message': 'Login successful', 'redirect_url': '/employee/dashboard'}), 200
+    else:
+        return jsonify({'message': 'Invalid role'}), 403
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    data = request.get_json()
+    username = data.get('username')
+    token = request.headers.get('Authorization')
+
+    if not token():
+        return jsonify({'message': 'Token is required'}), 400
+    
+    # if not username:
+    #     return jsonify({'message': 'Username is required'}), 400
+
+    user = User.query.filter_by(token=token).first()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    user.token = None
+    db.session.commit()
+    
+    return jsonify({'message': 'User logged out successfully'}), 200
 
 # GET USERS ENDPOINT
 @app.route('/users', methods=['GET'])
@@ -126,4 +164,4 @@ def employee_dashboard():
 
 # RUNS THE APP
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
