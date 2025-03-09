@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask import make_response
 import bcrypt
 import uuid
 from functools import wraps
@@ -23,7 +24,7 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}, Role: {self.role}>'
-    
+
 # CREATES DATABASE AND TABLES
 with app.app_context():
     db.create_all()
@@ -36,31 +37,29 @@ def hash_password(password):
 def check_password(password, hashed):
     return bcrypt.checkpw(password.encode('utf-8'), hashed)
 
+# ROLE-BASED ACCESS CONTROL DECORATOR
 def role_required(required_role):
     def decorator(f):
         @wraps(f)
-        def wrappped(*args, **kwargs):
-            # Get username from the request
-            data = request.get_json()
-            username = data.get('username')
+        def wrapped(*args, **kwargs):
+            token = request.cookies.get('auth_token')
 
-            if not username:
-                return jsonify({'message': 'Username is required'}), 400
-            
-            # Fetches the user from the database
-            user = User.query.filter_by(username=username).first()
+            if not token:
+                return jsonify({'message': 'You are not logged in'}), 400
 
+            # Find the user with the given token
+            user = User.query.filter_by(token=token).first()
             if not user:
-                return jsonify({'message': 'User not found'}), 404
-            
-            # Checks if user has the required role
+                return jsonify({'message': 'User not found or invalid token'}), 404
+
+            # Check if the user has the required role
             if user.role != required_role:
-                return jsonify({'message': 'Access Denied'}), 403
-            
-            # Calls the function if the user has the required role
+                return jsonify({'message': 'Access denied'}), 403
+
+            # If the user has the required role, proceed
             return f(*args, **kwargs)
-        return wrappped
-    return decorator    
+        return wrapped
+    return decorator
 
 # REGISTRATION ENDPOINT
 @app.route('/register', methods=['POST'])
@@ -72,10 +71,10 @@ def register():
 
     if not username or not password:
         return jsonify({'message': 'Username and password are required'}), 400
-    
+
     if User.query.filter_by(username=username).first():
         return jsonify({'message': 'Username already exists'}), 400
-    
+
     try:
         hashed_password = hash_password(password)
         new_user = User(username=username, password_hash=hashed_password, role=role)
@@ -85,8 +84,7 @@ def register():
     except Exception as e:
         db.session.rollback()
         return jsonify({'message': 'An error occurred', 'error': str(e)}), 500
-    
-# ROUTES
+
 # LOGIN ENDPOINT
 @app.route('/login', methods=['POST'])
 def login():
@@ -96,47 +94,47 @@ def login():
 
     if not username or not password:
         return jsonify({'message': 'Username and password are required'}), 400
-    
+
+    # Check if any user is already logged in
     if User.query.filter(User.token.isnot(None)).first():
-        return jsonify({'message': 'Already logged in'}), 403
-    
+        return jsonify({'message': 'A user is already logged in'}), 403
+
     user = User.query.filter_by(username=username).first()
 
     if not user or not check_password(password, user.password_hash):
         return jsonify({'message': 'Invalid username or password'}), 401
-    
 
+    # Generate a new token
     user.token = str(uuid.uuid4())
     db.session.commit()
 
-    if user.role == 'admin':
-        return jsonify({'message': 'Login successful', 'redirect_url': '/admin/dashboard'}), 200
-    elif user.role == 'employee':
-        return jsonify({'message': 'Login successful', 'redirect_url': '/employee/dashboard'}), 200
-    else:
-        return jsonify({'message': 'Invalid role'}), 403
+    response = make_response(jsonify({
+        'message': f'User {user.username} logged in successfully',
+        'token': user.token,
+        'role': user.role
+    }), 200)
 
+    response.set_cookie('auth_token', user.token, httponly=True)
+    return response
+
+# LOGOUT ENDPOINT
 @app.route('/logout', methods=['POST'])
 def logout():
-    data = request.get_json()
-    username = data.get('username')
-    token = request.headers.get('Authorization')
+    token = request.cookies.get('auth_token')
 
-    if not token():
-        return jsonify({'message': 'Token is required'}), 400
+    if not token:
+        return jsonify({'message': 'You are not logged in'}), 400
     
-    # if not username:
-    #     return jsonify({'message': 'Username is required'}), 400
-
     user = User.query.filter_by(token=token).first()
-
     if not user:
-        return jsonify({'message': 'User not found'}), 404
-
+        return jsonify({'message': 'User not found or invalid token'}), 404
+    
     user.token = None
     db.session.commit()
-    
-    return jsonify({'message': 'User logged out successfully'}), 200
+
+    response = make_response(jsonify({'message': f'User {user.username} logged out, token removed'}), 200)
+    response.set_cookie('auth_token', '', expires=0)
+    return response
 
 # GET USERS ENDPOINT
 @app.route('/users', methods=['GET'])
@@ -147,18 +145,20 @@ def get_users():
         user_list.append({
             'id': user.id,
             'username': user.username,
-            'password_hash': user.password_hash.decode('utf-8'), # decodes bytes to str 
+            'password_hash': user.password_hash.decode('utf-8'),  # Decodes bytes to str
             'role': user.role
         })
     return jsonify(user_list), 200
 
+# ADMIN DASHBOARD ENDPOINT
 @app.route('/admin/dashboard', methods=['GET'])
-@role_required('admin') 
+@role_required('admin')
 def admin_dashboard():
     return jsonify({'message': 'Welcome to the admin dashboard'}), 200
 
+# EMPLOYEE DASHBOARD ENDPOINT
 @app.route('/employee/dashboard', methods=['GET'])
-@role_required('employee') 
+@role_required('employee')
 def employee_dashboard():
     return jsonify({'message': 'Welcome to the employee dashboard'}), 200
 
