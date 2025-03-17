@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/themedata.dart';
 import '../theme/colors.dart';
+import 'package:hover_menu/hover_menu.dart';
 
 class Navbar extends StatelessWidget {
   const Navbar({super.key});
@@ -39,7 +40,24 @@ class Navbar extends StatelessWidget {
                       children: <Widget>[
                         Row(
                           children: <Widget>[
-                            Text('placeholder text', style: TextStyle(fontSize: 20, color: ThemeColor.primaryColor, fontWeight: FontWeight.bold,)),
+                            Text(
+                              'placeholder text', 
+                              style: TextStyle(
+                                fontSize: 20, 
+                                color: ThemeColor.primaryColor, 
+                                fontWeight: FontWeight.bold,)
+                                ),
+                              Padding(padding: EdgeInsets.fromLTRB(0, 0, 750, 0)),
+                              HoverMenu(title: 
+                              Text('placeholder text'),
+                              items:[
+                                ListTile(
+                                  title: Text('Item1'),
+                                ),
+                                ListTile(
+                                  title: Text('Item2')
+                                )
+                              ])
                           ],
                         ),
                       ],
