@@ -61,21 +61,99 @@ class _NavbarState extends State<Navbar> {
                             ),
                             const Spacer(),
                             HoverMenu(
+                              width: 250,
                               title: const Text(
                                 'Menu',
                                 style: TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
                               ),
                               items: [
-                                _buildMenuItem('Registration', 'Registration'),
-                                _buildMenuItem('Machine Management', 'Machine Management'),
-                                _buildMenuItem('Production Tracking', 'Production Tracking'),
-                                _buildMenuItem('Forecasting', 'Forecasting'),
-                                _buildMenuItem('Search', 'Search'),
-                                _buildMenuItem('Reports', 'Reports'),
-                                _buildMenuItem('Maintenance', 'Maintenance'),
-                                _buildMenuItem('Help', 'Help'),
-                                _buildMenuItem('About', 'About'),
-                                _buildMenuItem('Logout', 'Logout'),
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    color: ThemeColor.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey,
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        title: const Text(
+                                          'Registration',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Registration'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Machine Management',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Machine Management'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Production Tracking',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Production Tracking'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Forecasting',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Forecasting'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Search',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Search'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Reports',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Reports'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Maintenance',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Maintenance'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Help',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Help'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'About',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('About'),
+                                      ),
+                                      ListTile(
+                                        title: const Text(
+                                          'Logout',
+                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
+                                        ),
+                                        onTap: () => _updateText('Logout'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(width: 30),
@@ -93,24 +171,6 @@ class _NavbarState extends State<Navbar> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(String title, String text) {
-    return MouseRegion(
-      onEnter: (_) => setState(() {}),
-      onExit: (_) => setState(() {}),
-      child: Container(
-        color: ThemeColor.white2,
-        child: ListTile(
-          mouseCursor: SystemMouseCursors.click,
-          title: Text(
-            title,
-            style: const TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-          ),
-          onTap: () => _updateText(text),
         ),
       ),
     );

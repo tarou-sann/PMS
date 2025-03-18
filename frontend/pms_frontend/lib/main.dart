@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'theme/themedata.dart';
+
 import 'widget/navbar.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp( const MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -16,8 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PMS Frontend',
       theme: ThemeData(
-        textTheme: GoogleFonts.interTextTheme(),
-      ),
+          textTheme: GoogleFonts.interTextTheme(), splashColor: Colors.transparent, highlightColor: Colors.transparent),
       home: const Navbar(),
     );
   }
