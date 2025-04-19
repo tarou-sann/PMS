@@ -3,6 +3,9 @@ import 'package:hover_menu/hover_menu.dart';
 
 import '../theme/colors.dart';
 
+const userName = 'test_user';
+const bool isAdmin = true; // For LoA
+
 class Navbar extends StatefulWidget {
   const Navbar({super.key});
 
@@ -11,17 +14,24 @@ class Navbar extends StatefulWidget {
 }
 
 class _NavbarState extends State<Navbar> {
-  String _currentText = 'Home';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  void _updateText(String newText) {
-    setState(() {
-      _currentText = newText;
-    });
+  void _openEndDrawer() {
+    _scaffoldKey.currentState!.openEndDrawer();
+  }
+  void _closeEndDrawer() {
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    const TextStyle listTileTextStyle = TextStyle(
+      fontSize: 20,
+      color: Colors.black,
+    );
+
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: ThemeColor.white,
       body: Padding(
         padding: const EdgeInsets.all(3.0),
@@ -32,145 +42,92 @@ class _NavbarState extends State<Navbar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  width: MediaQuery.of(context).size.width,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: ThemeColor.white2,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 100,
-                        blurRadius: 0,
-                        offset: const Offset(0, 0),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(30, 0, 50, 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Image.asset(
-                              'lib/assets/images/Straw_innovations_small2.png',
-                              width: 250,
-                            ),
-                            const Spacer(),
-                            HoverMenu(
-                              width: 250,
-                              title: const Text(
-                                'Menu',
-                                style: TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
-                              ),
-                              items: [
-                                Container(
-                                  decoration: const BoxDecoration(
-                                    color: ThemeColor.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        spreadRadius: 1,
-                                        blurRadius: 1,
-                                        offset: Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      ListTile(
-                                        title: const Text(
-                                          'Registration',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Registration'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Machine Management',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Machine Management'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Production Tracking',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Production Tracking'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Forecasting',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Forecasting'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Search',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Search'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Reports',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Reports'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Maintenance',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Maintenance'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Help',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Help'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'About',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('About'),
-                                      ),
-                                      ListTile(
-                                        title: const Text(
-                                          'Logout',
-                                          style: TextStyle(color: ThemeColor.primaryColor, fontSize: 20),
-                                        ),
-                                        onTap: () => _updateText('Logout'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 30),
-                            const Text(
-                              'Hello, user1001!',
-                              style: TextStyle(color: Colors.black, fontSize: 24),
-                            ),
-                            const SizedBox(width: 10),
-                          ],
+                Expanded( // Ensures the container takes up available space
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    height: 150,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: ThemeColor.white2,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 100,
+                          blurRadius: 0,
+                          offset: const Offset(0, 0),
                         ),
                       ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(30, 0, 50, 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Image.asset(
+                                'lib/assets/images/Straw_innovations_small2.png',
+                                width: 250,
+                              ),
+                              const Spacer(),
+                              const Text(
+                                'Hello, $userName',
+                                style: TextStyle(color: Colors.black, fontSize: 24),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(15, 0, 0 ,0),
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.menu,
+                                    size: 30,),
+                                  onPressed: _openEndDrawer, // Trigger the endDrawer
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
+        ),
+      ),
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            ListTile(
+              title: Text('Registration', style: listTileTextStyle),
+            ),
+            ListTile(
+              title: Text('Machine Management', style: listTileTextStyle),
+            ),
+            ListTile(
+              title: Text('Production Tracking', style: listTileTextStyle),
+            ),
+            ListTile(
+              title: Text('Forecasting', style: listTileTextStyle),
+            ),
+            ListTile(
+              title: Text('Search', style: listTileTextStyle),
+            ),
+            if (isAdmin) // Show "Maintenance" only for admin access
+              ListTile(
+                title: Text('Maintenance', style: listTileTextStyle),
+              ),
+            ListTile(
+              title: Text('Help', style: listTileTextStyle),
+            ),
+            ListTile(
+              title: Text('About', style: listTileTextStyle),
+            ),
+            ListTile(
+              title: Text('Logout', style: listTileTextStyle),
+            ),
+          ],
         ),
       ),
     );
