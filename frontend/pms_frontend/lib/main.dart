@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pms_frontend/pages/passwordrecovery.dart';
+import 'package:pms_frontend/pages/signup.dart';
 import 'widget/navbar.dart';
 
 void main() {
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PMS Frontend',
-      home: Navbar(),
+      home: SignUpForm(),
     );
   }
 }
