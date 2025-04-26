@@ -1,27 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hover_menu/hover_menu.dart';
-
 import '../theme/colors.dart';
+import '../pages/register.dart';
 
 const userName = 'test_user';
-const bool isAdmin = true; // For LoA
 
-class Navbar extends StatefulWidget {
+class Navbar extends StatelessWidget {
   const Navbar({super.key});
-
-  @override
-  _NavbarState createState() => _NavbarState();
-}
-
-class _NavbarState extends State<Navbar> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  void _openEndDrawer() {
-    _scaffoldKey.currentState!.openEndDrawer();
-  }
-  void _closeEndDrawer() {
-    Navigator.of(context).pop();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +15,6 @@ class _NavbarState extends State<Navbar> {
     );
 
     return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: ThemeColor.white,
       body: Padding(
         padding: const EdgeInsets.all(3.0),
         child: SingleChildScrollView(
@@ -42,7 +24,7 @@ class _NavbarState extends State<Navbar> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Expanded( // Ensures the container takes up available space
+                Expanded(
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     height: 150,
@@ -60,30 +42,29 @@ class _NavbarState extends State<Navbar> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(30, 0, 50, 0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Image.asset(
-                                'lib/assets/images/Straw_innovations_small2.png',
-                                width: 250,
+                          Image.asset(
+                            'lib/assets/images/Straw_innovations_small2.png',
+                            width: 250,
+                          ),
+                          const Spacer(),
+                          const Text(
+                            'Hello, $userName',
+                            style: TextStyle(color: Colors.black, fontSize: 24),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
+                            child: IconButton(
+                              icon: const Icon(
+                                Icons.menu,
+                                size: 30,
                               ),
-                              const Spacer(),
-                              const Text(
-                                'Hello, $userName',
-                                style: TextStyle(color: Colors.black, fontSize: 24),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(15, 0, 0 ,0),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.menu,
-                                    size: 30,),
-                                  onPressed: _openEndDrawer, // Trigger the endDrawer
-                                ),
-                              ),
-                            ],
+                              onPressed: () {
+                                Scaffold.of(context).openEndDrawer();
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -101,6 +82,14 @@ class _NavbarState extends State<Navbar> {
           children: [
             ListTile(
               title: Text('Registration', style: listTileTextStyle),
+              onTap: () {
+                 Navigator.push(
+                        context,
+                         MaterialPageRoute(
+                          builder: (context) => const RegisterBase(), // Fix the misplaced closing parenthesis
+                             ),
+                            );
+              },
             ),
             ListTile(
               title: Text('Machine Management', style: listTileTextStyle),
@@ -114,10 +103,6 @@ class _NavbarState extends State<Navbar> {
             ListTile(
               title: Text('Search', style: listTileTextStyle),
             ),
-            if (isAdmin) // Show "Maintenance" only for admin access
-              ListTile(
-                title: Text('Maintenance', style: listTileTextStyle),
-              ),
             ListTile(
               title: Text('Help', style: listTileTextStyle),
             ),
