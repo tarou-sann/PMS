@@ -287,291 +287,295 @@ class RegisterUser extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Back button and title
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: ThemeColor.secondaryColor,
-                    size: 30,
-                  ),
-                ),
-                const Text(
-                  "Register User",
-                  style: TextStyle(
-                    color: ThemeColor.secondaryColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Form fields
-            Expanded(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: Container(
+          color: ThemeColor.white2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Back button and title
+              Row(
                 children: [
-                  // Left column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: const TextSpan(
-                            text: 'Username',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const TextField(
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter username",
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        RichText(
-                          text: const TextSpan(
-                            text: 'Password',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const TextField(
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter password",
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        RichText(
-                          text: const TextSpan(
-                            text: 'Confirm Password',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const TextField(
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter confirm password",
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        RichText(
-                          text: const TextSpan(
-                            text: 'Security Question',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        DropdownButtonFormField<String>(
-                          dropdownColor: ThemeColor.white2,
-                          focusColor: ThemeColor.white2,
-                          items: const [
-                            DropdownMenuItem(
-                              value: "What is your pet's name?",
-                              child: Text("What is your pet's name?"),
-                            ),
-                            DropdownMenuItem(
-                              value: "What is your mother's maiden name?",
-                              child: Text("What is your mother's maiden name?"),
-                            ),
-                          ],
-                          onChanged: (value) {},
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              focusedBorder:
-                                  OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                        ),
-                        const SizedBox(height: 20),
-                        RichText(
-                          text: const TextSpan(
-                            text: 'Security Answer',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const TextField(
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter security answer",
-                          ),
-                        ),
-                      ],
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context, 
+                      MaterialPageRoute(builder: (context) => const RegisterBase()));
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: ThemeColor.secondaryColor,
+                      size: 30,
                     ),
                   ),
-                  const SizedBox(width: 20),
-                  // Right column
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: const TextSpan(
-                            text: 'E-mail',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        const TextField(
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter e-mail",
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        RichText(
-                          text: const TextSpan(
-                            text: 'Level of Access',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: ThemeColor.primaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: '*',
-                                style: TextStyle(
-                                  color: ThemeColor.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        DropdownButtonFormField<String>(
-                          dropdownColor: ThemeColor.white2,
-                          focusColor: ThemeColor.white2,
-                          items: const [
-                            DropdownMenuItem(
-                              value: "Admin",
-                              child: Text("Admin"),
-                            ),
-                            DropdownMenuItem(
-                              value: "User",
-                              child: Text("User"),
-                            ),
-                          ],
-                          onChanged: (value) {},
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              focusedBorder:
-                                  OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                        ),
-                        const Spacer(),
-                        // Register button
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {},
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                              foregroundColor: MaterialStateProperty.all(ThemeColor.white),
-                              minimumSize: MaterialStateProperty.all(const Size(213, 65)),
-                              shape: MaterialStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                              ),
-                            ),
-                            child: const Text(
-                              "Register",
-                              style: TextStyle(
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                  const Text(
+                    "Register User",
+                    style: TextStyle(
+                      color: ThemeColor.secondaryColor,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              // Form fields
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Username',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const TextField(
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Enter username",
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Password',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const TextField(
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Enter password",
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Confirm Password',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const TextField(
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Enter confirm password",
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Security Question',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          DropdownButtonFormField<String>(
+                            dropdownColor: ThemeColor.white2,
+                            focusColor: ThemeColor.white2,
+                            items: const [
+                              DropdownMenuItem(
+                                value: "What is your pet's name?",
+                                child: Text("What is your pet's name?"),
+                              ),
+                              DropdownMenuItem(
+                                value: "What is your mother's maiden name?",
+                                child: Text("What is your mother's maiden name?"),
+                              ),
+                            ],
+                            onChanged: (value) {},
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                focusedBorder:
+                                    OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
+                          ),
+                          const SizedBox(height: 20),
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Security Answer',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const TextField(
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Enter security answer",
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    // Right column
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: const TextSpan(
+                              text: 'E-mail',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const TextField(
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: "Enter e-mail",
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          RichText(
+                            text: const TextSpan(
+                              text: 'Level of Access',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: ThemeColor.primaryColor,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '*',
+                                  style: TextStyle(
+                                    color: ThemeColor.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          DropdownButtonFormField<String>(
+                            dropdownColor: ThemeColor.white2,
+                            focusColor: ThemeColor.white2,
+                            items: const [
+                              DropdownMenuItem(
+                                value: "Admin",
+                                child: Text("Admin"),
+                              ),
+                              DropdownMenuItem(
+                                value: "User",
+                                child: Text("User"),
+                              ),
+                            ],
+                            onChanged: (value) {},
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                focusedBorder:
+                                    OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
+                          ),
+                          const Spacer(),
+                          // Register button
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {},
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                                foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                                minimumSize: WidgetStateProperty.all(const Size(213, 65)),
+                                shape: WidgetStateProperty.all(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
+                                ),
+                              ),
+                              child: const Text(
+                                "Register",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -684,7 +688,8 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   children: [
                     IconButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context, 
+                    MaterialPageRoute(builder: (context) => const RegisterBase()));
                       },
                       icon: const Icon(
                         Icons.arrow_back_ios,
@@ -849,10 +854,10 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       print("Register Machinery: $_mobility, $_status");
                     },
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                      foregroundColor: MaterialStateProperty.all(ThemeColor.white),
-                      minimumSize: MaterialStateProperty.all(const Size(213, 65)),
-                      shape: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                      foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                      minimumSize: WidgetStateProperty.all(const Size(213, 65)),
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(9),
                         ),
@@ -1015,7 +1020,8 @@ class _RegisterRiceState extends State<RegisterRice> {
                     children: [
                       IconButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.pop(context, 
+                    MaterialPageRoute(builder: (context) => const RegisterBase()));
                         },
                         icon: const Icon(
                           Icons.arrow_back_ios,
@@ -1179,10 +1185,10 @@ class _RegisterRiceState extends State<RegisterRice> {
                         print("Expiration Date: ${_expirationDateController.text}");
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: MaterialStateProperty.all(ThemeColor.white),
-                        minimumSize: MaterialStateProperty.all(const Size(213, 65)),
-                        shape: MaterialStateProperty.all(
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                        minimumSize: WidgetStateProperty.all(const Size(213, 65)),
+                        shape: WidgetStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(9),
                           ),
