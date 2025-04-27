@@ -3,9 +3,78 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/themedata.dart';
 import 'signup.dart';
+import '../services/api_service.dart';
 
-class PasswordrecoveryForm extends StatelessWidget {
+class PasswordrecoveryForm extends StatefulWidget {
   const PasswordrecoveryForm({super.key});
+
+  @override
+  State<PasswordrecoveryForm> createState() => _PasswordrecoveryFormState();
+}
+
+class _PasswordrecoveryFormState extends State<PasswordrecoveryForm> {
+  final TextEditingController _usernameController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
+  String _errorMessage = '';
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _getSecurityQuestion() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    if (_usernameController.text.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Please enter a username';
+      });
+      return;
+    }
+
+    try {
+      final securityQuestion = await _apiService.getSecurityQuestion(_usernameController.text);
+      
+      if (securityQuestion != null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          
+          // Navigate to security module with the question
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SecurityModule(
+                username: _usernameController.text,
+                securityQuestion: securityQuestion,
+              ),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'User not found';
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error: $e';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +119,17 @@ class PasswordrecoveryForm extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (_errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      _errorMessage,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -57,6 +137,7 @@ class PasswordrecoveryForm extends StatelessWidget {
                       width: 635,
                       height: 75,
                       child: TextField(
+                        controller: _usernameController,
                         style: const TextStyle(
                           color: ThemeColor.primaryColor,
                           fontSize: 20,
@@ -77,16 +158,16 @@ class PasswordrecoveryForm extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                      Navigator.push(
-                        context,
-                         MaterialPageRoute(
-                          builder: (context) => const SecurityModule(), // Fix the misplaced closing parenthesis
-                             ),
-                            );
-                          },
+                      onPressed: _isLoading ? null : _getSecurityQuestion,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                          (states) {
+                            if (states.contains(MaterialState.disabled)) {
+                              return ThemeColor.grey;
+                            }
+                            return ThemeColor.secondaryColor;
+                          },
+                        ),
                         foregroundColor: MaterialStateProperty.all(ThemeColor.white),
                         minimumSize: MaterialStateProperty.all(const Size(635, 75)),
                         shape: MaterialStateProperty.all(
@@ -95,12 +176,21 @@ class PasswordrecoveryForm extends StatelessWidget {
                           ),
                         ),
                       ),
-                      child: const Text(
-                        "Confirm",
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: ThemeColor.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Text(
+                              "Confirm",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
                     ),
                   ],
                 ),
@@ -113,10 +203,88 @@ class PasswordrecoveryForm extends StatelessWidget {
   }
 }
 
-class SecurityModule extends StatelessWidget {
-  const SecurityModule({super.key});
+class SecurityModule extends StatefulWidget {
+  final String username;
+  final String securityQuestion;
+  
+  const SecurityModule({
+    super.key,
+    required this.username,
+    required this.securityQuestion,
+  });
 
-  static const securityQuestion = "test question";
+  @override
+  State<SecurityModule> createState() => _SecurityModuleState();
+}
+
+class _SecurityModuleState extends State<SecurityModule> {
+  final TextEditingController _answerController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
+  String _errorMessage = '';
+  String? _resetToken;
+
+  @override
+  void dispose() {
+    _answerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _verifySecurityAnswer() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    if (_answerController.text.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Please enter your answer';
+      });
+      return;
+    }
+
+    try {
+      final resetToken = await _apiService.verifySecurityAnswer(
+        widget.username,
+        _answerController.text,
+      );
+      
+      if (resetToken != null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _resetToken = resetToken;
+          });
+          
+          // Navigate to password reset form
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PasswordResetForm(
+                resetToken: resetToken,
+              ),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Incorrect answer';
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error: $e';
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,6 +328,17 @@ class SecurityModule extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (_errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      _errorMessage,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -176,12 +355,11 @@ class SecurityModule extends StatelessWidget {
                           ),
                           borderRadius: BorderRadius.circular(9)
                         ),
-                        child: 
-                       const  Padding (
-                          padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
                           child: Text(
-                            securityQuestion,
-                            style: TextStyle(
+                            widget.securityQuestion,
+                            style: const TextStyle(
                               fontSize: 20,
                               color: ThemeColor.primaryColor
                             ),
@@ -193,6 +371,7 @@ class SecurityModule extends StatelessWidget {
                       width: 635,
                       height: 75,
                       child: TextField(
+                        controller: _answerController,
                         style: const TextStyle(
                           color: ThemeColor.primaryColor,
                           fontSize: 20,
@@ -213,9 +392,16 @@ class SecurityModule extends StatelessWidget {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: _isLoading ? null : _verifySecurityAnswer,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                          (states) {
+                            if (states.contains(MaterialState.disabled)) {
+                              return ThemeColor.grey;
+                            }
+                            return ThemeColor.secondaryColor;
+                          },
+                        ),
                         foregroundColor: MaterialStateProperty.all(ThemeColor.white),
                         minimumSize: MaterialStateProperty.all(const Size(635, 75)),
                         shape: MaterialStateProperty.all(
@@ -224,12 +410,262 @@ class SecurityModule extends StatelessWidget {
                           ),
                         ),
                       ),
-                      child: const Text(
-                        "Confirm",
-                        style: TextStyle(
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: ThemeColor.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Text(
+                              "Confirm",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PasswordResetForm extends StatefulWidget {
+  final String resetToken;
+  
+  const PasswordResetForm({
+    super.key,
+    required this.resetToken,
+  });
+
+  @override
+  State<PasswordResetForm> createState() => _PasswordResetFormState();
+}
+
+class _PasswordResetFormState extends State<PasswordResetForm> {
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
+  String _errorMessage = '';
+  String _successMessage = '';
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _resetPassword() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    if (_passwordController.text.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Please enter a new password';
+      });
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Passwords do not match';
+      });
+      return;
+    }
+
+    try {
+      final success = await _apiService.resetPassword(
+        widget.resetToken,
+        _passwordController.text,
+      );
+      
+      if (success) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _successMessage = 'Password reset successful! Redirecting to login...';
+          });
+          
+          // Wait a moment and then navigate to login
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SignUpForm(),
+                ),
+                (route) => false,
+              );
+            }
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Failed to reset password';
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Error: $e';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: ThemeColor.white,
+      body: Padding(
+        padding: const EdgeInsets.all(35.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 30),
+                  child: Text(
+                    "Reset Password",
+                    style: TextStyle(
+                      color: ThemeColor.secondaryColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 48,
+                    ),
+                  ),
+                ),
+                if (_errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      _errorMessage,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                if (_successMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Text(
+                      _successMessage,
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 635,
+                      height: 75,
+                      child: TextField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        style: const TextStyle(
+                          color: ThemeColor.primaryColor,
                           fontSize: 20,
                         ),
+                        decoration: InputDecoration(
+                          hintText: "New Password",
+                          hintStyle: const TextStyle(
+                            color: ThemeColor.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: ThemeColor.grey,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: 635,
+                      height: 75,
+                      child: TextField(
+                        controller: _confirmPasswordController,
+                        obscureText: true,
+                        style: const TextStyle(
+                          color: ThemeColor.primaryColor,
+                          fontSize: 20,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: "Confirm New Password",
+                          hintStyle: const TextStyle(
+                            color: ThemeColor.grey,
+                          ),
+                          border: OutlineInputBorder(
+                            borderSide: const BorderSide(
+                              color: ThemeColor.grey,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextButton(
+                      onPressed: _isLoading ? null : _resetPassword,
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                          (states) {
+                            if (states.contains(MaterialState.disabled)) {
+                              return ThemeColor.grey;
+                            }
+                            return ThemeColor.secondaryColor;
+                          },
+                        ),
+                        foregroundColor: MaterialStateProperty.all(ThemeColor.white),
+                        minimumSize: MaterialStateProperty.all(const Size(635, 75)),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: ThemeColor.white,
+                                strokeWidth: 3,
+                              ),
+                            )
+                          : const Text(
+                              "Reset Password",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
                     ),
                   ],
                 ),

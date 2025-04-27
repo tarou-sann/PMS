@@ -1,11 +1,52 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../pages/register.dart';
+import '../services/api_service.dart';
+import '../pages/signup.dart';
 
-const userName = 'test_user';
-
-class Navbar extends StatelessWidget {
+class Navbar extends StatefulWidget {
   const Navbar({super.key});
+
+  @override
+  State<Navbar> createState() => _NavbarState();
+}
+
+class _NavbarState extends State<Navbar> {
+  String _username = '';
+  final ApiService _apiService = ApiService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userData = await _apiService.getUserData();
+    if (userData != null) {
+      setState(() {
+        _username = userData['username'] ?? 'User';
+        _isLoading = false;
+      });
+    } else {
+      setState(() {
+        _username = 'User';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    await _apiService.logout();
+    if (!mounted) return;
+    
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const SignUpForm()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +91,14 @@ class Navbar extends StatelessWidget {
                             width: 250,
                           ),
                           const Spacer(),
-                          const Text(
-                            'Hello, $userName',
-                            style: TextStyle(color: Colors.black, fontSize: 24),
-                          ),
+                          _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: ThemeColor.secondaryColor,
+                                )
+                              : Text(
+                                  'Hello, $_username',
+                                  style: const TextStyle(color: Colors.black, fontSize: 24),
+                                ),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
                             child: IconButton(
@@ -81,36 +126,38 @@ class Navbar extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             ListTile(
-              title: Text('Registration', style: listTileTextStyle),
+              title: const Text('Registration', style: listTileTextStyle),
               onTap: () {
-                 Navigator.push(
-                        context,
-                         MaterialPageRoute(
-                          builder: (context) => const RegisterBase(), // Fix the misplaced closing parenthesis
-                             ),
-                            );
+                Navigator.pop(context); // Close the drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RegisterBase(),
+                  ),
+                );
               },
             ),
-            ListTile(
+            const ListTile(
               title: Text('Machine Management', style: listTileTextStyle),
             ),
-            ListTile(
+            const ListTile(
               title: Text('Production Tracking', style: listTileTextStyle),
             ),
-            ListTile(
+            const ListTile(
               title: Text('Forecasting', style: listTileTextStyle),
             ),
-            ListTile(
+            const ListTile(
               title: Text('Search', style: listTileTextStyle),
             ),
-            ListTile(
+            const ListTile(
               title: Text('Help', style: listTileTextStyle),
             ),
-            ListTile(
+            const ListTile(
               title: Text('About', style: listTileTextStyle),
             ),
             ListTile(
-              title: Text('Logout', style: listTileTextStyle),
+              title: const Text('Logout', style: listTileTextStyle),
+              onTap: () => _logout(context),
             ),
           ],
         ),

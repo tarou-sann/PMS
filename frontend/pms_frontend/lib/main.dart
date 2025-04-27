@@ -15,7 +15,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PMS Frontend',
-      home: RegisterBase(),
+      theme: ThemeData(
+        primarySwatch: Colors.brown,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const SignUpForm(), // Start with the login screen
+      debugShowCheckedModeBanner: false,
     );
   }
 }
