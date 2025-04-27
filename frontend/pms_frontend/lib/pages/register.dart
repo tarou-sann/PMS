@@ -3,6 +3,7 @@ import '../theme/colors.dart';
 import '../widget/navbar.dart';
 import 'package:intl/intl.dart';
 
+import 'machinerymanagement.dart';
 
 class RegisterBase extends StatelessWidget {
   const RegisterBase({super.key});
@@ -37,8 +38,17 @@ class RegisterBase extends StatelessWidget {
               },
               title: const Text('Registration', style: listTileTextStyle),
             ),
-            const ListTile(
-              title: Text('Machine Management', style: listTileTextStyle),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MachineryManagementNav(),
+                  ),
+                );
+                print("moving to machinerymanagement");
+              },
+              title: const Text('Machine Management', style: listTileTextStyle),
             ),
             const ListTile(
               title: Text('Production Tracking', style: listTileTextStyle),
@@ -77,7 +87,7 @@ class RegisterBase extends StatelessWidget {
                         builder: (context) => const RegisterUser(),
                       ),
                     );
-                    },
+                  },
                   child: Container(
                     width: 450,
                     height: 450,
@@ -120,7 +130,7 @@ class RegisterBase extends StatelessWidget {
                         builder: (context) => const RegisterMachinery(),
                       ),
                     );
-                    },
+                  },
                   child: Container(
                     width: 450,
                     height: 450,
@@ -163,7 +173,7 @@ class RegisterBase extends StatelessWidget {
                         builder: (context) => const RegisterRice(),
                       ),
                     );
-                    },
+                  },
                   child: Container(
                     width: 450,
                     height: 450,
@@ -215,11 +225,11 @@ class RegisterUser extends StatelessWidget {
       color: ThemeColor.secondaryColor,
     );
     const TextStyle listTileTextStyle = TextStyle(
-        fontSize: 20,
-        color: Colors.black,
-      );
-  
-      return Scaffold(
+      fontSize: 20,
+      color: Colors.black,
+    );
+
+    return Scaffold(
       key: GlobalKey<ScaffoldState>(),
       backgroundColor: ThemeColor.white,
       appBar: const PreferredSize(
@@ -242,8 +252,17 @@ class RegisterUser extends StatelessWidget {
               },
               title: const Text('Registration', style: listTileTextStyle),
             ),
-            const ListTile(
-              title: Text('Machine Management', style: listTileTextStyle),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MachineryManagementNav(),
+                  ),
+                );
+                print("moving to machinerymanagement");
+              },
+              title: const Text('Machine Management', style: listTileTextStyle),
             ),
             const ListTile(
               title: Text('Production Tracking', style: listTileTextStyle),
@@ -419,13 +438,9 @@ class RegisterUser extends StatelessWidget {
                           ],
                           onChanged: (value) {},
                           decoration: const InputDecoration(
-                            border:  OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ThemeColor.primaryColor
-                              )
-                            )
-                          ),
+                              border: OutlineInputBorder(),
+                              focusedBorder:
+                                  OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
                         ),
                         const SizedBox(height: 20),
                         RichText(
@@ -522,37 +537,33 @@ class RegisterUser extends StatelessWidget {
                           ],
                           onChanged: (value) {},
                           decoration: const InputDecoration(
-                            border:  OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: ThemeColor.primaryColor
-                              )
-                            )
-                          ),
+                              border: OutlineInputBorder(),
+                              focusedBorder:
+                                  OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
                         ),
                         const Spacer(),
                         // Register button
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                foregroundColor: MaterialStateProperty.all(ThemeColor.white),
-                minimumSize: MaterialStateProperty.all(const Size(213, 65)),
-                shape: MaterialStateProperty.all(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                ),
-              ),
-              child: const Text(
-                "Register",
-                style: TextStyle(
-                  fontSize: 20,
-                ),
-              ),
-            ),
+                            onPressed: () {},
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                              foregroundColor: MaterialStateProperty.all(ThemeColor.white),
+                              minimumSize: MaterialStateProperty.all(const Size(213, 65)),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              "Register",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -567,7 +578,6 @@ class RegisterUser extends StatelessWidget {
   }
 }
 
-
 class RegisterMachinery extends StatefulWidget {
   const RegisterMachinery({super.key});
 
@@ -579,18 +589,17 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
   String _mobility = "Mobile";
   String _status = "Active";
 
-
   @override
   Widget build(BuildContext context) {
-     const TextStyle labelStyle = TextStyle(
+    const TextStyle labelStyle = TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w500,
       color: ThemeColor.secondaryColor,
     );
     const TextStyle listTileTextStyle = TextStyle(
-        fontSize: 20,
-        color: Colors.black,
-      );
+      fontSize: 20,
+      color: Colors.black,
+    );
 
     return Scaffold(
       key: GlobalKey<ScaffoldState>(),
@@ -615,8 +624,17 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
               },
               title: const Text('Registration', style: listTileTextStyle),
             ),
-            const ListTile(
-              title: Text('Machine Management', style: listTileTextStyle),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MachineryManagementNav(),
+                  ),
+                );
+                print("moving to machinerymanagement");
+              },
+              title: const Text('Machine Management', style: listTileTextStyle),
             ),
             const ListTile(
               title: Text('Production Tracking', style: listTileTextStyle),
@@ -665,23 +683,23 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: ThemeColor.secondaryColor,
-                      size: 30,
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(
+                        Icons.arrow_back_ios,
+                        color: ThemeColor.secondaryColor,
+                        size: 30,
+                      ),
                     ),
-                                    ),
-                                    const Text(
-                    "Register Machinery",
-                    style: TextStyle(
-                      color: ThemeColor.secondaryColor,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
+                    const Text(
+                      "Register Machinery",
+                      style: TextStyle(
+                        color: ThemeColor.secondaryColor,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                                    ),
                   ],
                 ),
                 // Machine Name
@@ -707,7 +725,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Machine Mobility
                 RichText(
                   text: const TextSpan(
@@ -724,7 +742,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                
+
                 // Fix: Using Column instead of Row for radio buttons
                 Row(
                   children: [
@@ -758,7 +776,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Machine Status
                 RichText(
                   text: const TextSpan(
@@ -775,7 +793,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                
+
                 // Fix: Using Column instead of Row for radio buttons
                 Row(
                   children: [
@@ -809,7 +827,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Machine ID Note
                 const Center(
                   child: Text(
@@ -822,7 +840,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                
+
                 // Register Button
                 Align(
                   alignment: Alignment.center,
@@ -866,7 +884,6 @@ class RegisterRice extends StatefulWidget {
 
 class _RegisterRiceState extends State<RegisterRice> {
   String _qualityGrade = "Premium";
-  // Add date controllers
   final TextEditingController _productionDateController = TextEditingController();
   final TextEditingController _expirationDateController = TextEditingController();
 
@@ -937,8 +954,17 @@ class _RegisterRiceState extends State<RegisterRice> {
               },
               title: const Text('Registration', style: listTileTextStyle),
             ),
-            const ListTile(
-              title: Text('Machine Management', style: listTileTextStyle),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MachineryManagementNav(),
+                  ),
+                );
+                print("moving to machinerymanagement");
+              },
+              title: const Text('Machine Management', style: listTileTextStyle),
             ),
             const ListTile(
               title: Text('Production Tracking', style: listTileTextStyle),
@@ -1076,16 +1102,11 @@ class _RegisterRiceState extends State<RegisterRice> {
                       });
                     },
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: ThemeColor.primaryColor
-                        )
-                      )
-                    ),
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Production Date - Added as requested
                   RichText(
                     text: const TextSpan(
@@ -1116,7 +1137,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                     onTap: () => _selectDate(context, _productionDateController),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Expiration Date - Added as requested
                   RichText(
                     text: const TextSpan(
@@ -1147,7 +1168,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                     onTap: () => _selectDate(context, _expirationDateController),
                   ),
                   const SizedBox(height: 30),
-                
+
                   // Register Button
                   Align(
                     alignment: Alignment.center,
