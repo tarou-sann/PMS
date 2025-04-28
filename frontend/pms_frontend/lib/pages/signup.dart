@@ -174,17 +174,17 @@ class _SignUpFormState extends State<SignUpForm> {
               TextButton(
                 onPressed: _isLoading ? null : _login,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                  backgroundColor: WidgetStateProperty.resolveWith<Color>(
                     (states) {
-                      if (states.contains(MaterialState.disabled)) {
+                      if (states.contains(WidgetState.disabled)) {
                         return ThemeColor.grey;
                       }
                       return ThemeColor.secondaryColor;
                     },
                   ),
-                  foregroundColor: MaterialStateProperty.all(ThemeColor.white),
-                  minimumSize: MaterialStateProperty.all(const Size(635, 75)),
-                  shape: MaterialStateProperty.all(
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                  minimumSize: WidgetStateProperty.all(const Size(635, 75)),
+                  shape: WidgetStateProperty.all(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(9),
                     ),

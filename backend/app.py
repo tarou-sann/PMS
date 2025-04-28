@@ -13,7 +13,15 @@ app.config.from_object(Config)
 
 # Initialize Flask extensions
 jwt = JWTManager(app)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+# Enable CORS with more specific configuration
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://localhost:*", "http://127.0.0.1:*"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # Register blueprints
 init_routes(app)

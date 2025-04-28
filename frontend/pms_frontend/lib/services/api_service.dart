@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // Base URL for the backend API
   // Change this to your LAN IP address when running on physical devices
-  static const String baseUrl = 'http://10.0.2.2:5000/api'; // Default for Android emulator
+  static const String baseUrl = 'http://localhost:5000/api'; // Default for Android emulator
   // For iOS simulator, use: 'http://localhost:5000/api'
   // For physical devices, use your computer's LAN IP, e.g. 'http://192.168.1.100:5000/api'
 
@@ -22,6 +22,8 @@ class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
+
+  final _prefs = SharedPreferences.getInstance();
 
   // Get stored tokens
   Future<String?> getAccessToken() async {
@@ -49,12 +51,20 @@ class ApiService {
 
   // Get user data
   Future<Map<String, dynamic>?> getUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userDataString = prefs.getString(userDataKey);
-    if (userDataString != null) {
-      return jsonDecode(userDataString) as Map<String, dynamic>;
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/me'),
+        headers: await _getAuthHeaders(),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Get user data error: $e');
+      return null;
     }
-    return null;
   }
 
   // Clear stored data on logout
@@ -185,34 +195,27 @@ class ApiService {
 
   Future<bool> refreshToken() async {
     try {
-      final refreshToken = await getRefreshToken();
-      if (refreshToken == null) {
-        return false;
-      }
+      final prefs = await _prefs;
+      final refreshToken = prefs.getString('refresh_token');
       
-      final response = await _client.post(
+      if (refreshToken == null) return false;
+
+      final response = await http.post(
         Uri.parse('$baseUrl/auth/refresh'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $refreshToken',
         },
       );
-      
-      final data = jsonDecode(response.body);
-      
+
       if (response.statusCode == 200) {
-        await setTokens(
-          data['access_token'],
-          refreshToken, // Keep the same refresh token
-        );
+        final data = jsonDecode(response.body);
+        await prefs.setString('access_token', data['access_token']);
         return true;
-      } else {
-        return false;
       }
+      return false;
     } catch (e) {
-      if (kDebugMode) {
-        print('Token refresh error: $e');
-      }
+      print('Refresh token error: $e');
       return false;
     }
   }
