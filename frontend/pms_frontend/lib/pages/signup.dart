@@ -28,57 +28,54 @@ class _SignUpFormState extends State<SignUpForm> {
   }
 
   Future<void> _login() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = '';
+  });
+
+  if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
     setState(() {
-      _isLoading = true;
-      _errorMessage = '';
+      _isLoading = false;
+      _errorMessage = 'Please enter both username and password';
     });
+    return;
+  }
 
-    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Please enter both username and password';
-      });
-      return;
-    }
+  try {
+    final success = await _apiService.login(
+      _usernameController.text,
+      _passwordController.text,
+    );
 
-    try {
-      final success = await _apiService.login(
-        _usernameController.text,
-        _passwordController.text,
-      );
-
-      if (success) {
-        // Get user data to check role
-        final userData = await _apiService.getUserData();
-        
-        if (userData != null) {
-          if (mounted) {
-            // Navigate to the appropriate screen based on role
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const RegisterBase(),
-              ),
-            );
-          }
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = 'Invalid username or password';
-          });
-        }
+    if (success) {
+      if (mounted) {
+        // Directly navigate to the main screen after successful login
+        // No need to check user data/role here as we'll assume all logged-in users
+        // can access the RegisterBase screen for now
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const RegisterBase(),
+          ),
+        );
       }
-    } catch (e) {
+    } else {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Login failed: $e';
+          _errorMessage = 'Invalid username or password';
         });
       }
     }
+  } catch (e) {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Login failed: $e';
+      });
+    }
   }
+}
 
   @override
   Widget build(BuildContext context) {

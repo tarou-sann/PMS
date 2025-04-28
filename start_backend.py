@@ -30,15 +30,28 @@ def setup_virtual_env():
         print("Creating virtual environment...")
         subprocess.run([sys.executable, '-m', 'venv', 'venv'])
     
-    # Activate the virtual environment
+    # Install dependencies
+    print("Installing dependencies...")
+    
+    # Use the correct pip path based on platform
     if platform.system() == 'Windows':
         pip_path = os.path.join('venv', 'Scripts', 'pip')
     else:
         pip_path = os.path.join('venv', 'bin', 'pip')
     
-    # Install dependencies
-    print("Installing dependencies...")
-    subprocess.run([pip_path, 'install', '-r', 'requirements.txt'])
+    # Check if requirements.txt exists
+    requirements_path = 'requirements.txt'
+    if not os.path.exists(requirements_path):
+        # Create a basic requirements.txt file if it doesn't exist
+        with open(requirements_path, 'w') as f:
+            f.write("Flask==2.0.1\n")
+            f.write("Flask-Cors==3.0.10\n")
+            f.write("Flask-JWT-Extended==4.2.3\n")
+            f.write("SQLAlchemy==1.4.23\n")
+            f.write("Werkzeug==2.0.1\n")
+        print("Created requirements.txt file with basic dependencies")
+    
+    subprocess.run([pip_path, 'install', '-r', requirements_path])
 
 def setup_admin_user():
     """Set environment variables for admin user"""
@@ -64,10 +77,11 @@ def start_server(host='0.0.0.0', port=5000):
     print(f"  For Physical Devices: http://{local_ip}:{port}/api")
     print("="*50)
     
-    # Run the Flask application
+    # Set Flask environment variables
     os.environ['FLASK_APP'] = 'app.py'
     os.environ['FLASK_ENV'] = 'development'
     
+    # Get the correct python path based on platform
     if platform.system() == 'Windows':
         python_path = os.path.join('venv', 'Scripts', 'python')
     else:
@@ -75,17 +89,24 @@ def start_server(host='0.0.0.0', port=5000):
     
     # Try to run the server
     try:
+        # Make sure we're using the app.py file in the current directory
         subprocess.run([python_path, 'app.py', '--host', host, '--port', str(port)])
     except KeyboardInterrupt:
         print("\nServer stopped.")
     except Exception as e:
         print(f"Error starting server: {e}")
+        print("Make sure the app.py file exists in the backend directory.")
 
 if __name__ == "__main__":
     # Change to the backend directory
     backend_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend')
+    
     if os.path.exists(backend_dir):
         os.chdir(backend_dir)
+    else:
+        print(f"Backend directory not found at: {backend_dir}")
+        print("Make sure you're running this script from the project root directory.")
+        sys.exit(1)
     
     setup_virtual_env()
     setup_admin_user()

@@ -4,11 +4,16 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Base URL for the backend API
-  // Change this to your LAN IP address when running on physical devices
-  static const String baseUrl = 'http://localhost:5000/api'; // Default for Android emulator
-  // For iOS simulator, use: 'http://localhost:5000/api'
-  // For physical devices, use your computer's LAN IP, e.g. 'http://192.168.1.100:5000/api'
+  // Base URL for the backend API with a getter to allow for runtime configuration
+  static String _baseUrl = 'http://localhost:5000/api'; // Default for testing
+  
+  // Getter for baseUrl
+  static String get baseUrl => _baseUrl;
+  
+  // Setter for baseUrl - can be called at app startup to configure the proper URL
+  static set baseUrl(String url) {
+    _baseUrl = url;
+  }
 
   // Token storage keys
   static const String accessTokenKey = 'access_token';
@@ -43,17 +48,32 @@ class ApiService {
     await prefs.setString(refreshTokenKey, refreshToken);
   }
 
-  // Store user data
+  // Add this property to store the current user ID
+  int? _currentUserId;
+
+  // Store user data along with ID
   Future<void> setUserData(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(userDataKey, jsonEncode(userData));
+    // Store the user ID
+    _currentUserId = userData['id'];
+    await prefs.setInt('current_user_id', userData['id']);
   }
 
-  // Get user data
+  // Update the getUserData method to use the stored ID
   Future<Map<String, dynamic>?> getUserData() async {
     try {
+      // Get the stored user ID from preferences
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('current_user_id') ?? _currentUserId;
+      
+      if (userId == null) {
+        return null;
+      }
+      
+      // Fetch user data using the ID
       final response = await http.get(
-        Uri.parse('$baseUrl/users/me'),
+        Uri.parse('$baseUrl/users/$userId'),
         headers: await _getAuthHeaders(),
       );
 
@@ -161,8 +181,7 @@ class ApiService {
     }
   }
 
-  // Authentication methods
-  Future<bool> login(String username, String password) async {
+    Future<bool> login(String username, String password) async {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/login'),
@@ -173,17 +192,26 @@ class ApiService {
         }),
       );
       
-      final data = jsonDecode(response.body);
-      
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        // Store tokens
         await setTokens(
           data['tokens']['access_token'],
           data['tokens']['refresh_token'],
         );
+        
+        // Store user data
         await setUserData(data['user']);
+        
         return true;
       } else {
-        throw Exception(data['message'] ?? 'Login failed');
+        // Handle non-200 status codes
+        final data = jsonDecode(response.body);
+        if (kDebugMode) {
+          print('Login failed: ${data['message'] ?? 'Unknown error'}');
+        }
+        return false;
       }
     } catch (e) {
       if (kDebugMode) {
