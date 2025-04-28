@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-
+import 'package:pms_frontend/pages/register.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
-import 'register.dart';
-import 'repair.dart';
-import 'reports.dart';
+
+import 'machinerymanagement.dart';
 import 'search.dart';
 
-class MachineryManagementNav extends StatelessWidget {
-  const MachineryManagementNav({super.key});
+class ReportsNav extends StatelessWidget {
+  const ReportsNav({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +34,9 @@ class MachineryManagementNav extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                  
+                  },
                   child: Container(
                     width: 450,
                     height: 450,
@@ -60,7 +61,7 @@ class MachineryManagementNav extends StatelessWidget {
                           color: ThemeColor.secondaryColor,
                         ),
                         Text(
-                          "Machines",
+                          "Machine Status Report",
                           style: TextStyle(fontSize: 24),
                         )
                       ],
@@ -72,7 +73,7 @@ class MachineryManagementNav extends StatelessWidget {
                 padding: const EdgeInsets.all(15.0),
                 child: GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const RepairNav()));
+                    
                   },
                   child: Container(
                     width: 450,
@@ -92,13 +93,13 @@ class MachineryManagementNav extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.build_outlined,
-                          weight: 22,
+                          Icons.compost,
+                          weight: 200,
                           size: 225,
                           color: ThemeColor.secondaryColor,
                         ),
                         Text(
-                          "Repairs",
+                          "Production Report",
                           style: TextStyle(fontSize: 24),
                         )
                       ],
@@ -106,6 +107,44 @@ class MachineryManagementNav extends StatelessWidget {
                   ),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: GestureDetector(
+                  onTap: () {
+                  
+                  },
+                  child: Container(
+                    width: 450,
+                    height: 450,
+                    decoration: BoxDecoration(
+                      color: ThemeColor.white2,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 3,
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.recent_actors,
+                          weight: 200,
+                          size: 225,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                        Text(
+                          "User Logs",
+                          style: TextStyle(fontSize: 24),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              )
             ],
           ),
         ),

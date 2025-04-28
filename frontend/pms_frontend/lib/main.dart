@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pms_frontend/pages/signup.dart';
+import 'package:pms_frontend/pages/search.dart';
 import 'package:pms_frontend/services/api_service.dart';
 import 'theme/themedata.dart';
 import 'dart:io' show Platform;
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PMS Frontend',
       theme: theme,
-      home: const SignUpForm(), // Start with the login screen
+      home: const SearchNav(), // Start with the login screen
       debugShowCheckedModeBanner: false,
     );
   }

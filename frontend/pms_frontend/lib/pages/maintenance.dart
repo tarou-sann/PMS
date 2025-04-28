@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show DateFormat;
 import '../theme/colors.dart';
-import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
-import 'package:intl/intl.dart';
+import '../widget/enddrawer.dart';
+import 'backup.dart';
 
-import 'machinerymanagement.dart';
-import 'reports.dart';
-import 'search.dart';
-
-class RegisterBase extends StatelessWidget {
-  const RegisterBase({super.key});
+class MaintenanceNav extends StatelessWidget {
+  const MaintenanceNav ({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,50 +36,7 @@ class RegisterBase extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegisterUser(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_add,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                        Text(
-                          "Add New User",
-                          style: TextStyle(fontSize: 24),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterMachinery(),
+                        builder: (context) => const EditMachinery(),
                       ),
                     );
                   },
@@ -110,7 +64,7 @@ class RegisterBase extends StatelessWidget {
                           color: ThemeColor.secondaryColor,
                         ),
                         Text(
-                          "Add Machinery",
+                          "Edit Machine Details",
                           style: TextStyle(fontSize: 24),
                         )
                       ],
@@ -125,7 +79,7 @@ class RegisterBase extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegisterRice(),
+                        builder: (context) => const EditRice(),
                       ),
                     );
                   },
@@ -153,7 +107,50 @@ class RegisterBase extends StatelessWidget {
                           color: ThemeColor.secondaryColor,
                         ),
                         Text(
-                          "Add Rice Variety",
+                          "Edit Rice Variety",
+                          style: TextStyle(fontSize: 24),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BackUpNav()
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: 450,
+                    height: 450,
+                    decoration: BoxDecoration(
+                      color: ThemeColor.white2,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 3,
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.backup,
+                          weight: 200,
+                          size: 225,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                        Text(
+                          "Back Up",
                           style: TextStyle(fontSize: 24),
                         )
                       ],
@@ -169,334 +166,14 @@ class RegisterBase extends StatelessWidget {
   }
 }
 
-class RegisterUser extends StatelessWidget {
-  const RegisterUser({super.key});
+class EditMachinery extends StatefulWidget {
+  const EditMachinery({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    const TextStyle labelStyle = TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w500,
-      color: ThemeColor.secondaryColor,
-    );
-    const TextStyle listTileTextStyle = TextStyle(
-      fontSize: 20,
-      color: Colors.black,
-    );
-
-    return Scaffold(
-      key: GlobalKey<ScaffoldState>(),
-      backgroundColor: ThemeColor.white,
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(150),
-        child: Navbar(),
-      ),
-      endDrawer: const EndDraw(),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Container(
-          color: ThemeColor.white2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back button and title
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context, 
-                      MaterialPageRoute(builder: (context) => const RegisterBase()));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: ThemeColor.secondaryColor,
-                      size: 30,
-                    ),
-                  ),
-                  const Text(
-                    "Register User",
-                    style: TextStyle(
-                      color: ThemeColor.secondaryColor,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Form fields
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Left column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Username',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter username",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter password",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Confirm Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter confirm password",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Security Question',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          DropdownButtonFormField<String>(
-                            dropdownColor: ThemeColor.white2,
-                            focusColor: ThemeColor.white2,
-                            items: const [
-                              DropdownMenuItem(
-                                value: "What is your pet's name?",
-                                child: Text("What is your pet's name?"),
-                              ),
-                              DropdownMenuItem(
-                                value: "What is your mother's maiden name?",
-                                child: Text("What is your mother's maiden name?"),
-                              ),
-                            ],
-                            onChanged: (value) {},
-                            decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                focusedBorder:
-                                    OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Security Answer',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter security answer",
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    // Right column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: const TextSpan(
-                              text: 'E-mail',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter e-mail",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Level of Access',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          DropdownButtonFormField<String>(
-                            dropdownColor: ThemeColor.white2,
-                            focusColor: ThemeColor.white2,
-                            items: const [
-                              DropdownMenuItem(
-                                value: "Admin",
-                                child: Text("Admin"),
-                              ),
-                              DropdownMenuItem(
-                                value: "User",
-                                child: Text("User"),
-                              ),
-                            ],
-                            onChanged: (value) {},
-                            decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                focusedBorder:
-                                    OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                          ),
-                          const Spacer(),
-                          // Register button
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {},
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                                foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                                minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                                shape: WidgetStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(9),
-                                  ),
-                                ),
-                              ),
-                              child: const Text(
-                                "Register",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  State<EditMachinery> createState() => _EditMachineryState();
 }
 
-class RegisterMachinery extends StatefulWidget {
-  const RegisterMachinery({super.key});
-
-  @override
-  State<RegisterMachinery> createState() => _RegisterMachineryState();
-}
-
-class _RegisterMachineryState extends State<RegisterMachinery> {
+class _EditMachineryState extends State<EditMachinery> {
   String _mobility = "Mobile";
   String _status = "Active";
 
@@ -548,7 +225,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                     IconButton(
                       onPressed: () {
                         Navigator.pop(context, 
-                    MaterialPageRoute(builder: (context) => const RegisterBase()));
+                    MaterialPageRoute(builder: (context) => const MaintenanceNav()));
                       },
                       icon: const Icon(
                         Icons.arrow_back_ios,
@@ -557,7 +234,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       ),
                     ),
                     const Text(
-                      "Register Machinery",
+                      "Edit Machinery",
                       style: TextStyle(
                         color: ThemeColor.secondaryColor,
                         fontSize: 32,
@@ -705,30 +382,56 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                 ),
                 const SizedBox(height: 30),
 
-                // Register Button
-                Align(
-                  alignment: Alignment.center,
-                  child: TextButton(
-                    onPressed: () {
-                      print("Register Machinery: $_mobility, $_status");
-                    },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                      foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                      minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
+                // Confirm and Cancel Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        print("Register Machinery: $_mobility, $_status");
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: MaterialStateProperty.all(ThemeColor.white),
+                        minimumSize: MaterialStateProperty.all(const Size(213, 65)),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                        ),
+                      ),
+                      child: const Text(
+                        "Confirm",
+                        style: TextStyle(
+                          fontSize: 20,
                         ),
                       ),
                     ),
-                    child: const Text(
-                      "Register",
-                      style: TextStyle(
-                        fontSize: 20,
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(ThemeColor.white2),
+                        foregroundColor: MaterialStateProperty.all(ThemeColor.primaryColor),
+                        minimumSize: MaterialStateProperty.all(const Size(213, 65)),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                            side: const BorderSide(
+                              color: ThemeColor.grey
+                            )
+                          ),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -739,14 +442,14 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
   }
 }
 
-class RegisterRice extends StatefulWidget {
-  const RegisterRice({super.key});
+class EditRice extends StatefulWidget {
+  const EditRice({super.key});
 
   @override
-  State<RegisterRice> createState() => _RegisterRiceState();
+  State<EditRice> createState() => _EditRiceState();
 }
 
-class _RegisterRiceState extends State<RegisterRice> {
+class _EditRiceState extends State<EditRice> {
   String _qualityGrade = "Premium";
   final TextEditingController _productionDateController = TextEditingController();
   final TextEditingController _expirationDateController = TextEditingController();
@@ -832,7 +535,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                       IconButton(
                         onPressed: () {
                           Navigator.pop(context, 
-                    MaterialPageRoute(builder: (context) => const RegisterBase()));
+                    MaterialPageRoute(builder: (context) => const MaintenanceNav()));
                         },
                         icon: const Icon(
                           Icons.arrow_back_ios,
@@ -841,7 +544,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                         ),
                       ),
                       const Text(
-                        "Register Rice Variety",
+                        "Edit Rice Variety",
                         style: TextStyle(
                           color: ThemeColor.secondaryColor,
                           fontSize: 32,
@@ -987,32 +690,56 @@ class _RegisterRiceState extends State<RegisterRice> {
                   const SizedBox(height: 30),
 
                   // Register Button
-                  Align(
-                    alignment: Alignment.center,
-                    child: TextButton(
+                  Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
                       onPressed: () {
-                        print("Register Rice Variety: $_qualityGrade");
-                        print("Production Date: ${_productionDateController.text}");
-                        print("Expiration Date: ${_expirationDateController.text}");
+
                       },
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                        minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                        shape: WidgetStateProperty.all(
+                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: MaterialStateProperty.all(ThemeColor.white),
+                        minimumSize: MaterialStateProperty.all(const Size(213, 65)),
+                        shape: MaterialStateProperty.all(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(9),
                           ),
                         ),
                       ),
                       child: const Text(
-                        "Register",
+                        "Confirm",
                         style: TextStyle(
                           fontSize: 20,
                         ),
                       ),
                     ),
-                  ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(ThemeColor.white2),
+                        foregroundColor: MaterialStateProperty.all(ThemeColor.primaryColor),
+                        minimumSize: MaterialStateProperty.all(const Size(213, 65)),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9),
+                            side: const BorderSide(
+                              color: ThemeColor.grey
+                            )
+                          ),
+                        ),
+                      ),
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 ],
               ),
             ),

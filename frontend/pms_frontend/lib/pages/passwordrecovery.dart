@@ -1,7 +1,5 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
-import '../theme/themedata.dart';
 import 'signup.dart';
 import '../services/api_service.dart';
 

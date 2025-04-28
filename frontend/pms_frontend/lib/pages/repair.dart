@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:pms_frontend/pages/machinerymanagement.dart';
 
 import '../theme/colors.dart';
+import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import 'register.dart';
+import 'reports.dart';
+import 'search.dart';
 
 class RepairNav extends StatelessWidget {
   const RepairNav({super.key});
@@ -22,55 +25,7 @@ class RepairNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            ListTile(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RegisterBase(),
-                  ),
-                );
-                print("moving to registration");
-              },
-              title: const Text('Registration', style: listTileTextStyle),
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MachineryManagementNav(),
-                  ),
-                );
-                print("moving to machinerymanagement");
-              },
-              title: const Text('Machine Management', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Production Tracking', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Forecasting', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Search', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Help', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('About', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Logout', style: listTileTextStyle),
-            ),
-          ],
-        ),
-      ),
+      endDrawer: const EndDraw(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(
@@ -202,55 +157,7 @@ class _RepairOrderCreate extends State<RepairOrderCreate> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            ListTile(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RegisterBase(),
-                  ),
-                );
-                print("moving to registration");
-              },
-              title: const Text('Registration', style: listTileTextStyle),
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MachineryManagementNav(),
-                  ),
-                );
-                print("moving to machinerymanagement");
-              },
-              title: const Text('Machine Management', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Production Tracking', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Forecasting', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Search', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Help', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('About', style: listTileTextStyle),
-            ),
-            const ListTile(
-              title: Text('Logout', style: listTileTextStyle),
-            ),
-          ],
-        ),
-      ),
+      endDrawer: const EndDraw(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
