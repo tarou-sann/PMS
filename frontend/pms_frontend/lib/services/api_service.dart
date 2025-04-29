@@ -1,11 +1,18 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // Base URL for the backend API with a getter to allow for runtime configuration
-  static String _baseUrl = 'http://localhost:5000/api'; // Default for testing
+  // Update your _baseUrl depending on where you're running the app
+
+  // For Android emulator, use 10.0.2.2 instead of localhost
+  static String _baseUrl = 'http://10.0.2.2:5000/api';
+
+  // Or use your machine's actual IP address
+  // static String _baseUrl = 'http://192.168.1.xxx:5000/api';
   
   // Getter for baseUrl
   static String get baseUrl => _baseUrl;
@@ -33,7 +40,20 @@ class ApiService {
   // Get stored tokens
   Future<String?> getAccessToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(accessTokenKey);
+    final token = prefs.getString(accessTokenKey);
+    
+    if (token == null) {
+      if (kDebugMode) {
+        print('No access token found in storage');
+      }
+      return null;
+    }
+    
+    if (kDebugMode) {
+      print('Retrieved access token from storage: ${token.substring(0, min(10, token.length))}...');
+    }
+    
+    return token;
   }
 
   Future<String?> getRefreshToken() async {
@@ -98,15 +118,45 @@ class ApiService {
   // Helper method to get authorization headers
   Future<Map<String, String>> _getAuthHeaders() async {
     final token = await getAccessToken();
-    return {
+    
+    if (kDebugMode) {
+      print('Authorization header: ${token != null ? "Bearer ${token.substring(0, min(10, token.length))}..." : "MISSING"}');
+    }
+    
+    final headers = <String, String>{
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
     };
+    
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    
+    return headers;
   }
 
   // Generic HTTP methods with token handling
   Future<Map<String, dynamic>> _handleResponse(http.Response response) async {
-    final data = jsonDecode(response.body);
+    if (kDebugMode) {
+      print('Response status code: ${response.statusCode}');
+      print('Response body length: ${response.body.length}');
+    }
+    
+    // Handle empty responses
+    if (response.body.isEmpty) {
+      throw Exception('Empty response from server');
+    }
+    
+    // Safely parse response
+    Map<String, dynamic> data;
+    try {
+      data = jsonDecode(response.body);
+    } catch (e) {
+      if (kDebugMode) {
+        print('JSON parse error: $e');
+        print('Raw response: "${response.body}"');
+      }
+      throw Exception('Invalid JSON response from server');
+    }
     
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return data;
@@ -114,26 +164,31 @@ class ApiService {
       // Token expired, try to refresh
       final refreshed = await refreshToken();
       if (refreshed) {
-        // Retry the original request
-        // Note: This is a simplified implementation
         throw Exception('Token expired. Please retry the request.');
       } else {
-        // Refresh failed, log out
         await clearStoredData();
         throw Exception('Authentication required. Please log in again.');
       }
     } else {
-      throw Exception(data['message'] ?? 'Request failed');
+      throw Exception(data['message'] ?? 'Request failed with status ${response.statusCode}');
     }
   }
 
   Future<Map<String, dynamic>> get(String endpoint) async {
     try {
+      // Ensure endpoint starts with / for proper path construction
+      String path = endpoint.startsWith('/') ? endpoint : '/$endpoint';
       final headers = await _getAuthHeaders();
+      
+      if (kDebugMode) {
+        print('GET request to: $baseUrl$path');
+      }
+      
       final response = await _client.get(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('$baseUrl$path'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
+      
       return _handleResponse(response);
     } catch (e) {
       rethrow;
@@ -181,7 +236,7 @@ class ApiService {
     }
   }
 
-    Future<bool> login(String username, String password) async {
+  Future<bool> login(String username, String password) async {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/login'),
@@ -195,24 +250,37 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         
-        // Store tokens
-        await setTokens(
-          data['tokens']['access_token'],
-          data['tokens']['refresh_token'],
-        );
-        
-        // Store user data
-        await setUserData(data['user']);
-        
-        return true;
-      } else {
-        // Handle non-200 status codes
-        final data = jsonDecode(response.body);
         if (kDebugMode) {
-          print('Login failed: ${data['message'] ?? 'Unknown error'}');
+          print('Login response structure: ${data.keys}');
         }
-        return false;
+        
+        // Make sure we're accessing the correct token structure
+        if (data['tokens'] != null) {
+          final accessToken = data['tokens']['access_token'];
+          final refreshToken = data['tokens']['refresh_token'];
+          
+          if (kDebugMode) {
+            print('Access token length: ${accessToken?.length ?? 0}');
+            print('Refresh token length: ${refreshToken?.length ?? 0}');
+          }
+          
+          await setTokens(accessToken, refreshToken);
+          
+          // Verify token was stored
+          final storedToken = await getAccessToken();
+          if (kDebugMode) {
+            print('Stored token matches: ${storedToken == accessToken}');
+          }
+          
+          return true;
+        } else {
+          if (kDebugMode) {
+            print('Invalid token structure in response: $data');
+          }
+          return false;
+        }
       }
+      return false;
     } catch (e) {
       if (kDebugMode) {
         print('Login error: $e');
@@ -223,12 +291,12 @@ class ApiService {
 
   Future<bool> refreshToken() async {
     try {
-      final prefs = await _prefs;
-      final refreshToken = prefs.getString('refresh_token');
+      final prefs = await SharedPreferences.getInstance();
+      final refreshToken = prefs.getString(refreshTokenKey);
       
       if (refreshToken == null) return false;
 
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse('$baseUrl/auth/refresh'),
         headers: {
           'Content-Type': 'application/json',
@@ -238,12 +306,14 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        await prefs.setString('access_token', data['access_token']);
+        await prefs.setString(accessTokenKey, data['access_token']);
         return true;
       }
       return false;
     } catch (e) {
-      print('Refresh token error: $e');
+      if (kDebugMode) {
+        print('Refresh token error: $e');
+      }
       return false;
     }
   }
@@ -252,19 +322,45 @@ class ApiService {
     await clearStoredData();
   }
 
-  // Get security question for password recovery
+  // Replace the existing getSecurityQuestion method with this improved version
+
   Future<String?> getSecurityQuestion(String username) async {
     try {
+      if (kDebugMode) {
+        print('Requesting security question for username: $username');
+      }
+
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/password-recovery/question'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': username}),
       );
       
-      final data = jsonDecode(response.body);
+      // Enhanced debug information
+      if (kDebugMode) {
+        print('Response status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        print('Request URL: ${Uri.parse('$baseUrl/auth/password-recovery/question')}');
+      }
+      
+      if (response.body.isEmpty) {
+        throw Exception('Backend returned an empty response');
+      }
+      
+      Map<String, dynamic> data;
+      try {
+        data = jsonDecode(response.body);
+      } catch (e) {
+        if (kDebugMode) {
+          print('JSON parse error: $e');
+        }
+        throw Exception('Invalid JSON response from server');
+      }
       
       if (response.statusCode == 200) {
         return data['security_question'];
+      } else if (response.statusCode == 404) {
+        return null; // User not found
       } else {
         throw Exception(data['message'] ?? 'Failed to get security question');
       }
@@ -276,36 +372,89 @@ class ApiService {
     }
   }
 
-  // Verify security answer
-  Future<String?> verifySecurityAnswer(String username, String answer) async {
+  // // Verify security answer
+  // Future<String?> verifySecurityAnswer(String username, String answer) async {
+  //   try {
+  //     final response = await _client.post(
+  //       Uri.parse('$baseUrl/auth/password-recovery/verify'),
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: jsonEncode({
+  //         'username': username,
+  //         'answer': answer,
+  //       }),
+  //     );
+      
+  //     final data = jsonDecode(response.body);
+      
+  //     if (response.statusCode == 200) {
+  //       return data['reset_token'];
+  //     } else {
+  //       throw Exception(data['message'] ?? 'Incorrect answer');
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print('Verify security answer error: $e');
+  //     }
+  //     return null;
+  //   }
+  // }
+
+  Future<String> verifySecurityAnswer(String username, String answer) async {
     try {
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/password-recovery/verify'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
-          'answer': answer,
+          'answer': answer
         }),
       );
       
-      final data = jsonDecode(response.body);
+      if (kDebugMode) {
+        print('Verify security answer status code: ${response.statusCode}');
+      }
       
       if (response.statusCode == 200) {
-        return data['reset_token'];
+        final data = jsonDecode(response.body);
+        final token = data['reset_token'];
+        
+        // Debug the token format
+        if (kDebugMode) {
+          print('Token received length: ${token?.length}');
+          print('Token contains dots: ${token?.contains('.')}');
+          print('Token segments: ${token?.split('.').length}');
+        }
+        
+        if (token == null || token.isEmpty) {
+          throw Exception('No token received from server');
+        }
+        
+        return token;
       } else {
-        throw Exception(data['message'] ?? 'Incorrect answer');
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Failed to verify security answer');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Verify security answer error: $e');
       }
-      return null;
+      throw e;
     }
   }
 
   // Reset password
   Future<bool> resetPassword(String resetToken, String newPassword) async {
     try {
+      // Debug the token before sending
+      if (kDebugMode) {
+        print('Reset token length: ${resetToken.length}');
+        print('Reset token segments: ${resetToken.split('.').length}');
+        
+        if (resetToken.split('.').length != 3) {
+          print('WARNING: JWT token does not have 3 segments!');
+        }
+      }
+      
       final response = await _client.post(
         Uri.parse('$baseUrl/auth/password-recovery/reset'),
         headers: {
@@ -315,18 +464,22 @@ class ApiService {
         body: jsonEncode({'password': newPassword}),
       );
       
-      final data = jsonDecode(response.body);
+      if (kDebugMode) {
+        print('Reset password status code: ${response.statusCode}');
+        print('Reset password response: ${response.body}');
+      }
       
       if (response.statusCode == 200) {
         return true;
       } else {
-        throw Exception(data['message'] ?? 'Password reset failed');
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? data['error'] ?? 'Failed to reset password');
       }
     } catch (e) {
       if (kDebugMode) {
         print('Reset password error: $e');
       }
-      return false;
+      throw e;
     }
   }
 
@@ -356,15 +509,23 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> getUser(int userId) async {
+  Future<Map<String, dynamic>> getUser(int userId) async {
     try {
-      final result = await get('/users/$userId');
-      return result;
+      // Make sure you have valid authentication headers
+      final headers = await _getAuthHeaders(); // This should include your JWT token
+      
+      final response = await _client.get(
+        Uri.parse('$baseUrl/users/$userId'),
+        headers: headers,
+      );
+      
+      // Handle the response
+      return _handleResponse(response);
     } catch (e) {
       if (kDebugMode) {
         print('Get user error: $e');
       }
-      return null;
+      throw Exception('Failed to get user: $e');
     }
   }
 
@@ -514,5 +675,167 @@ class ApiService {
       }
       return false;
     }
+  }
+
+  // Add this method to the ApiService class
+
+  Future<bool> signup(Map<String, dynamic> userData) async {
+    try {
+      if (kDebugMode) {
+        print('Attempting signup with data: ${userData.toString()}');
+        print('Signup URL: $baseUrl/auth/signup');
+      }
+
+      // The signup endpoint should not require authentication
+      final response = await _client.post(
+        Uri.parse('$baseUrl/auth/signup'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(userData),
+      ).timeout(const Duration(seconds: 15)); // Increase timeout for signup
+      
+      // Debug information
+      if (kDebugMode) {
+        print('Signup response status code: ${response.statusCode}');
+        print('Signup response body: ${response.body}');
+      }
+      
+      if (response.statusCode == 201) {
+        // Try to parse response data if available
+        if (response.body.isNotEmpty) {
+          try {
+            final data = jsonDecode(response.body);
+            
+            // If the backend returns tokens directly after signup
+            if (data['tokens'] != null) {
+              await setTokens(
+                data['tokens']['access_token'],
+                data['tokens']['refresh_token'],
+              );
+              
+              // Store user data if available
+              if (data['user'] != null) {
+                await setUserData(data['user']);
+              }
+            }
+          } catch (e) {
+            if (kDebugMode) {
+              print('Warning: Could not parse signup response: $e');
+            }
+          }
+        }
+        return true;
+      } else {
+        // Handle non-201 status codes
+        String errorMessage = 'Unknown error';
+        try {
+          if (response.body.isNotEmpty) {
+            final data = jsonDecode(response.body);
+            errorMessage = data['message'] ?? 'Unknown error';
+          }
+        } catch (e) {
+          errorMessage = 'Could not parse error response';
+        }
+        
+        if (kDebugMode) {
+          print('Signup failed: $errorMessage');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Signup error: $e');
+      }
+      return false;
+    }
+  }
+
+  // Add this method to your ApiService class
+
+  Future<Map<String, dynamic>> checkBackendConnection() async {
+    try {
+      if (kDebugMode) {
+        print('Testing backend connectivity to: $baseUrl');
+      }
+
+      // First, try a simple GET request to the root endpoint
+      final rootResponse = await _client.get(
+        Uri.parse(baseUrl),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 5));
+      
+      // Then try a health check endpoint if available
+      final healthResponse = await _client.get(
+        Uri.parse('$baseUrl/health'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 5));
+      
+      return {
+        'connected': true,
+        'root_status': rootResponse.statusCode,
+        'health_status': healthResponse.statusCode,
+        'root_body': rootResponse.body,
+        'health_body': healthResponse.body,
+      };
+    } catch (e) {
+      if (kDebugMode) {
+        print('Backend connectivity test failed: $e');
+      }
+      
+      // Try to determine if it's a connection refused error
+      String errorType = 'unknown';
+      if (e.toString().contains('Connection refused')) {
+        errorType = 'connection_refused';
+      } else if (e.toString().contains('SocketException')) {
+        errorType = 'socket_exception';
+      } else if (e.toString().contains('timeout')) {
+        errorType = 'timeout';
+      }
+      
+      return {
+        'connected': false,
+        'error': e.toString(),
+        'error_type': errorType
+      };
+    }
+  }
+
+  // Add this method to auto-detect the working base URL
+
+  Future<bool> autoConfigureBaseUrl() async {
+    List<String> possibleUrls = [
+      'http://localhost:5000/api',
+      'http://10.0.2.2:5000/api',  // For Android emulator
+      'http://127.0.0.1:5000/api',
+      // Add any other potential URLs including your actual IP address
+    ];
+    
+    for (String url in possibleUrls) {
+      if (kDebugMode) {
+        print('Trying base URL: $url');
+      }
+      
+      _baseUrl = url;
+      
+      try {
+        final response = await _client.get(
+          Uri.parse('$url/health'),
+          headers: {'Content-Type': 'application/json'},
+        ).timeout(const Duration(seconds: 2));
+        
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          if (kDebugMode) {
+            print('Successfully connected to: $url');
+          }
+          return true;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Failed to connect to $url: $e');
+        }
+        // Continue to next URL
+      }
+    }
+    
+    return false;
   }
 }

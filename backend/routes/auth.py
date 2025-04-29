@@ -1,9 +1,10 @@
 from flask import request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, get_jwt
 from routes import api
 from services.auth import AuthService
 from models import db_session
 from models.user import User
+from datetime import timedelta
 
 @api.route('/auth/login', methods=['POST'])
 def login():
@@ -75,8 +76,20 @@ def verify_security_answer():
     if error:
         return jsonify({'message': error}), 400
     
-    # Generate a temporary token for password reset
-    reset_token = create_access_token(identity=user.id, expires_delta=False)
+    # Fix: Convert user.id to string for JWT subject
+    reset_token = create_access_token(
+        identity=str(user.id),  # Convert to string
+        expires_delta=timedelta(minutes=15),
+        additional_claims={"type": "password_reset"}
+    )
+    
+    # Optional debug
+    try:
+        from flask_jwt_extended import decode_token
+        decoded = decode_token(reset_token)
+        print(f"Generated token for user {user.id}, sub type: {type(decoded['sub'])}, value: {decoded['sub']}")
+    except Exception as e:
+        print(f"Token validation error: {e}")
     
     return jsonify({
         'message': 'Security answer verified',
@@ -94,7 +107,15 @@ def reset_password():
     if not data or not data.get('password'):
         return jsonify({'message': 'Missing password'}), 400
     
-    user_id = get_jwt_identity()
+    # Get the user ID from the token (will be a string)
+    user_id_str = get_jwt_identity()
+    
+    # Convert back to integer for database lookup
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
+        return jsonify({'message': 'Invalid user ID in token'}), 400
+    
     success, error = AuthService.reset_password(user_id, data['password'])
     
     if not success:
@@ -103,3 +124,27 @@ def reset_password():
     return jsonify({
         'message': 'Password reset successful'
     }), 200
+
+@api.route('/auth/debug-token', methods=['POST'])
+def debug_token():
+    """Temporary endpoint to debug token issues"""
+    data = request.get_json()
+    token = data.get('token')
+    
+    if not token:
+        return jsonify({'error': 'No token provided'}), 400
+    
+    try:
+        from flask_jwt_extended import decode_token
+        decoded = decode_token(token)
+        return jsonify({
+            'valid': True,
+            'identity': decoded.get('sub'),
+            'expiry': decoded.get('exp'),
+            'type': decoded.get('type', 'none')
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'valid': False,
+            'error': str(e)
+        }), 400

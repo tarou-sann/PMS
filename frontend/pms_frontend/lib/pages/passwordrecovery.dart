@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // Add this import for kDebugMode
 import '../theme/colors.dart';
 import 'signup.dart';
 import '../services/api_service.dart';
@@ -248,30 +249,22 @@ class _SecurityModuleState extends State<SecurityModule> {
         _answerController.text,
       );
       
-      if (resetToken != null) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _resetToken = resetToken;
-          });
-          
-          // Navigate to password reset form
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PasswordResetForm(
-                resetToken: resetToken,
-              ),
-            ),
-          );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        if (kDebugMode) {
+          print('Navigating to reset form with token (length: ${resetToken.length})');
         }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = 'Incorrect answer';
-          });
-        }
+
+        // Navigate to password reset form
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PasswordResetForm(resetToken: resetToken),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

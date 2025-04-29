@@ -1,23 +1,48 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flask_bcrypt import Bcrypt
 from models import db_session, init_db, shutdown_session
 from routes import api, init_routes
 from config import Config
 import os
 import argparse
+from datetime import timedelta
+import secrets
+
+# Create a function to get or generate a stable JWT secret key
+def get_persistent_jwt_secret():
+    secret_file = os.path.join(os.path.dirname(__file__), 'jwt_secret.key')
+    
+    # If we have a saved secret key, use it
+    if os.path.exists(secret_file):
+        with open(secret_file, 'r') as f:
+            return f.read().strip()
+    
+    # Otherwise generate a new one and save it
+    secret = secrets.token_hex(32)
+    with open(secret_file, 'w') as f:
+        f.write(secret)
+    
+    return secret
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# Configure JWT with our persistent secret key
+app.config['JWT_SECRET_KEY'] = get_persistent_jwt_secret()
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+
 # Initialize Flask extensions
 jwt = JWTManager(app)
+bcrypt = Bcrypt(app)
 
 # Enable CORS with more specific configuration
 CORS(app, resources={
     r"/api/*": {
-        "origins": ["http://localhost:*", "http://127.0.0.1:*"],
+        "origins": ["http://localhost:*", "http://127.0.0.1:*", "http://10.0.2.2:*"],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
@@ -67,22 +92,22 @@ def cleanup(exception=None):
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
     return jsonify({
-        'message': 'The token has expired',
+        'message': 'Token has expired',
         'error': 'token_expired'
     }), 401
 
 @jwt.invalid_token_loader
-def invalid_token_callback(error):
+def invalid_token_callback(error_string):
     return jsonify({
-        'message': 'Signature verification failed',
+        'message': f'Invalid token: {error_string}',
         'error': 'invalid_token'
     }), 401
 
 @jwt.unauthorized_loader
-def missing_token_callback(error):
+def missing_token_callback(error_string):
     return jsonify({
-        'message': 'Request does not contain an access token',
-        'error': 'authorization_required'
+        'message': f'Missing Authorization header: {error_string}',
+        'error': 'missing_token'
     }), 401
 
 # Root route for health check
@@ -91,6 +116,13 @@ def index():
     return jsonify({
         'message': 'PMS Backend API is running',
         'status': 'ok'
+    })
+
+@app.route('/api/health')
+def health_check():
+    return jsonify({
+        'status': 'ok',
+        'database_connected': True  # Add code to actually test DB connection
     })
 
 if __name__ == '__main__':

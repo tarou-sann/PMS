@@ -47,11 +47,38 @@ def setup_virtual_env():
             f.write("Flask==2.0.1\n")
             f.write("Flask-Cors==3.0.10\n")
             f.write("Flask-JWT-Extended==4.2.3\n")
+            f.write("Flask-Bcrypt==1.0.1\n")  # Added bcrypt dependency
             f.write("SQLAlchemy==1.4.23\n")
             f.write("Werkzeug==2.0.1\n")
         print("Created requirements.txt file with basic dependencies")
+    else:
+        # Check if Flask-Bcrypt is in the existing requirements.txt
+        with open(requirements_path, 'r') as f:
+            requirements = f.read()
+            
+        if 'Flask-Bcrypt' not in requirements:
+            # Add Flask-Bcrypt to requirements.txt
+            print("Adding Flask-Bcrypt to requirements.txt")
+            with open(requirements_path, 'a') as f:
+                f.write("Flask-Bcrypt==1.0.1\n")
     
+    # Install dependencies
     subprocess.run([pip_path, 'install', '-r', requirements_path])
+    
+    # Verify bcrypt is installed
+    try:
+        verify_process = subprocess.run(
+            [pip_path, 'show', 'Flask-Bcrypt'], 
+            capture_output=True, 
+            text=True
+        )
+        if "Name: Flask-Bcrypt" in verify_process.stdout:
+            print("✓ Flask-Bcrypt is properly installed")
+        else:
+            print("⚠️ Flask-Bcrypt is missing - installing directly")
+            subprocess.run([pip_path, 'install', 'Flask-Bcrypt==1.0.1'])
+    except Exception as e:
+        print(f"Error verifying bcrypt installation: {e}")
 
 def setup_admin_user():
     """Set environment variables for admin user"""
