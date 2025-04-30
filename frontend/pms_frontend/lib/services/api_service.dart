@@ -113,6 +113,8 @@ class ApiService {
     await prefs.remove(accessTokenKey);
     await prefs.remove(refreshTokenKey);
     await prefs.remove(userDataKey);
+    await prefs.remove('username'); // Add this line
+    await prefs.remove('current_user_id'); // Add this line
   }
 
   // Helper method to get authorization headers
@@ -236,6 +238,8 @@ class ApiService {
     }
   }
 
+  // Update your login method to save the username
+
   Future<bool> login(String username, String password) async {
     try {
       final response = await _client.post(
@@ -250,41 +254,22 @@ class ApiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         
-        if (kDebugMode) {
-          print('Login response structure: ${data.keys}');
-        }
-        
-        // Make sure we're accessing the correct token structure
+        // Save the access token and refresh token
         if (data['tokens'] != null) {
           final accessToken = data['tokens']['access_token'];
           final refreshToken = data['tokens']['refresh_token'];
-          
-          if (kDebugMode) {
-            print('Access token length: ${accessToken?.length ?? 0}');
-            print('Refresh token length: ${refreshToken?.length ?? 0}');
-          }
-          
           await setTokens(accessToken, refreshToken);
           
-          // Verify token was stored
-          final storedToken = await getAccessToken();
-          if (kDebugMode) {
-            print('Stored token matches: ${storedToken == accessToken}');
-          }
+          // Save the username for future use
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('username', username);
           
           return true;
-        } else {
-          if (kDebugMode) {
-            print('Invalid token structure in response: $data');
-          }
-          return false;
         }
       }
       return false;
     } catch (e) {
-      if (kDebugMode) {
-        print('Login error: $e');
-      }
+      print('Login error: $e');
       return false;
     }
   }
@@ -319,7 +304,26 @@ class ApiService {
   }
 
   Future<void> logout() async {
-    await clearStoredData();
+    try {
+      // Attempt to notify the backend about logout (optional)
+      final token = await getAccessToken();
+      if (token != null) {
+        try {
+          await _client.post(
+            Uri.parse('$baseUrl/auth/logout'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          );
+        } catch (e) {
+          // Ignore errors during logout request
+        }
+      }
+    } finally {
+      // Always clear local storage
+      await clearStoredData();
+    }
   }
 
   // Replace the existing getSecurityQuestion method with this improved version
@@ -837,5 +841,34 @@ class ApiService {
     }
     
     return false;
+  }
+
+  // Add this method to your ApiService class
+
+  Future<Map<String, dynamic>?> getCurrentUser() async {
+    try {
+      final token = await getAccessToken();
+      if (token == null) {
+        return null;
+      }
+      
+      final response = await _client.get(
+        Uri.parse('$baseUrl/auth/user'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        print('Failed to get user info: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error getting user info: $e');
+      return null;
+    }
   }
 }

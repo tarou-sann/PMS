@@ -1,11 +1,33 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
+import '../services/user_service.dart';
 import '../pages/register.dart';
 
-const userName = 'test_user';
+class Navbar extends StatefulWidget {
+  const Navbar({Key? key}) : super(key: key);
 
-class Navbar extends StatelessWidget {
-  const Navbar({super.key});
+  @override
+  _NavbarState createState() => _NavbarState();
+}
+
+class _NavbarState extends State<Navbar> {
+  final UserService _userService = UserService();
+  String _username = "";
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+  
+  Future<void> _loadUsername() async {
+    final username = await _userService.getUsername();
+    if (mounted) {
+      setState(() {
+        _username = username;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +72,9 @@ class Navbar extends StatelessWidget {
                             width: 250,
                           ),
                           const Spacer(),
-                          const Text(
-                            'Hello, $userName',
-                            style: TextStyle(color: Colors.black, fontSize: 24),
+                          Text(
+                            'Hello, ${_username.isNotEmpty ? _username : "Guest"}',
+                            style: const TextStyle(color: Colors.black, fontSize: 24),
                           ),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),

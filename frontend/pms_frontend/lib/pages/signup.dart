@@ -4,6 +4,7 @@ import 'package:pms_frontend/pages/passwordrecovery.dart';
 import 'package:pms_frontend/pages/register.dart';
 import 'package:pms_frontend/services/api_service.dart';
 import '../theme/colors.dart';
+import 'dashboard.dart'; // Add this import
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -26,12 +27,13 @@ class _SignUpFormState extends State<SignUpForm> {
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _handleLogin() async {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
+    // Validate inputs first
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
       setState(() {
         _isLoading = false;
@@ -41,41 +43,31 @@ class _SignUpFormState extends State<SignUpForm> {
     }
 
     try {
-      final success = await _apiService.login(
+      bool loginSuccess = await _apiService.login(
         _usernameController.text,
         _passwordController.text,
       );
 
-      if (success) {
-        // Get user data to check role
-        final userData = await _apiService.getUserData();
-        
-        if (userData != null) {
-          if (mounted) {
-            // Navigate to the appropriate screen based on role
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const RegisterBase(),
-              ),
-            );
-          }
-        }
+      if (loginSuccess) {
+        // Navigate to dashboard after successful login
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const DashboardNav(),
+          ),
+          (route) => false, // This clears the navigation stack
+        );
       } else {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = 'Invalid username or password';
-          });
-        }
-      }
-    } catch (e) {
-      if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Login failed: $e';
+          _errorMessage = 'Login failed. Please check your credentials.';
         });
       }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error: $e';
+      });
     }
   }
 
@@ -171,7 +163,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 ),
               ),
               TextButton(
-                onPressed: _isLoading ? null : _login,
+                onPressed: _isLoading ? null : _handleLogin,
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.resolveWith<Color>(
                     (states) {
