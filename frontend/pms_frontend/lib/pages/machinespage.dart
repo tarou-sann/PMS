@@ -153,10 +153,6 @@ class _MachinesNavState extends State<MachinesNav> {
                     flex: 2,
                     child: Text('Status', style: tableHeaderStyle),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Actions', style: tableHeaderStyle),
-                  ),
                 ],
               ),
             ),
@@ -265,34 +261,6 @@ class _MachinesNavState extends State<MachinesNav> {
                                                     : Colors.red,
                                                 fontWeight: FontWeight.w500,
                                               ),
-                                            ),
-                                          ),
-                                          // Actions
-                                          Expanded(
-                                            flex: 2,
-                                            child: Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.edit,
-                                                    color: ThemeColor.secondaryColor,
-                                                  ),
-                                                  onPressed: () {
-                                                    // Edit action will be implemented here
-                                                  },
-                                                  tooltip: 'Edit',
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
-                                                  ),
-                                                  onPressed: () {
-                                                    // Delete action will be implemented here
-                                                  },
-                                                  tooltip: 'Delete',
-                                                ),
-                                              ],
                                             ),
                                           ),
                                         ],

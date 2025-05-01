@@ -651,8 +651,29 @@ class ApiService {
 
   Future<Map<String, dynamic>?> updateMachinery(int machineryId, Map<String, dynamic> machineryData) async {
     try {
-      final result = await put('/machinery/$machineryId', machineryData);
-      return result['machinery'];
+      final token = await getAccessToken();
+      if (token == null) {
+        return null;
+      }
+
+      final response = await _client.put(
+        Uri.parse('$baseUrl/machinery/$machineryId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(machineryData),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['machinery'];
+      } else {
+        if (kDebugMode) {
+          print('Update machinery error: ${response.body}');
+        }
+        return null;
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Update machinery error: $e');
@@ -663,8 +684,19 @@ class ApiService {
 
   Future<bool> deleteMachinery(int machineryId) async {
     try {
-      await delete('/machinery/$machineryId');
-      return true;
+      final token = await getAccessToken();
+      if (token == null) {
+        return false;
+      }
+
+      final response = await _client.delete(
+        Uri.parse('$baseUrl/machinery/$machineryId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      return response.statusCode == 200;
     } catch (e) {
       if (kDebugMode) {
         print('Delete machinery error: $e');

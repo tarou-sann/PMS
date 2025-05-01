@@ -945,13 +945,24 @@ class RegisterRice extends StatefulWidget {
   State<RegisterRice> createState() => _RegisterRiceState();
 }
 
+// Update the _RegisterRiceState class to match the machinery layout
 class _RegisterRiceState extends State<RegisterRice> {
-  String _qualityGrade = "Premium";
+  final ApiService _apiService = ApiService();
+  final _formKey = GlobalKey<FormState>();
+  
+  // Form controllers and state variables
+  final TextEditingController _varietyNameController = TextEditingController();
   final TextEditingController _productionDateController = TextEditingController();
   final TextEditingController _expirationDateController = TextEditingController();
+  String _qualityGrade = "Premium";
+  
+  bool _isLoading = false;
+  String _errorMessage = '';
+  String _successMessage = '';
 
   @override
   void dispose() {
+    _varietyNameController.dispose();
     _productionDateController.dispose();
     _expirationDateController.dispose();
     super.dispose();
@@ -962,22 +973,75 @@ class _RegisterRiceState extends State<RegisterRice> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: ThemeColor.secondaryColor,
-            ),
-          ),
-          child: child!,
-        );
-      },
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
     );
+
     if (picked != null) {
       setState(() {
-        controller.text = DateFormat('MM / dd / yyyy').format(picked);
+        // Format date as YYYY-MM-DD for API compatibility
+        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
+  }
+
+  // Method to register rice variety
+  Future<void> _registerRiceVariety() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Validate dates
+    if (_productionDateController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Production date is required';
+      });
+      return;
+    }
+
+    if (_expirationDateController.text.isEmpty) {
+      setState(() {
+        _errorMessage = 'Expiration date is required';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    try {
+      // Prepare rice variety data
+      final riceData = {
+        'variety_name': _varietyNameController.text,
+        'quality_grade': _qualityGrade,
+        'production_date': _productionDateController.text,
+        'expiration_date': _expirationDateController.text,
+      };
+
+      // Call API to create rice variety
+      final result = await _apiService.createRiceVariety(riceData);
+
+      setState(() {
+        _isLoading = false;
+        if (result != null) {
+          _successMessage = 'Rice variety registered successfully!';
+          
+          // Clear form after successful submission
+          _varietyNameController.clear();
+          _productionDateController.clear();
+          _expirationDateController.clear();
+          _qualityGrade = "Premium";
+        } else {
+          _errorMessage = 'Failed to register rice variety';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error: $e';
       });
     }
   }
@@ -1008,7 +1072,7 @@ class _RegisterRiceState extends State<RegisterRice> {
           child: Container(
             padding: const EdgeInsets.all(20),
             width: 753,
-            height: 606,
+            height: 606,  // Match machinery height
             decoration: BoxDecoration(
               color: ThemeColor.white2,
               boxShadow: [
@@ -1020,7 +1084,8 @@ class _RegisterRiceState extends State<RegisterRice> {
                 )
               ],
             ),
-            child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -1031,7 +1096,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                       IconButton(
                         onPressed: () {
                           Navigator.pop(context, 
-                    MaterialPageRoute(builder: (context) => const RegisterBase()));
+                            MaterialPageRoute(builder: (context) => const RegisterBase()));
                         },
                         icon: const Icon(
                           Icons.arrow_back_ios,
@@ -1049,8 +1114,26 @@ class _RegisterRiceState extends State<RegisterRice> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  // Rice Variety
+                  
+                  // Display status messages
+                  if (_errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        _errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  if (_successMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        _successMessage,
+                        style: const TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  
+                  // Rice Variety Name
                   RichText(
                     text: const TextSpan(
                       text: 'Rice Variety',
@@ -1059,158 +1142,145 @@ class _RegisterRiceState extends State<RegisterRice> {
                         TextSpan(
                           text: '*',
                           style: TextStyle(
-                            color: ThemeColor.red,
+                            color: Colors.red,
                           ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const TextField(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Enter Rice Variety",
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Quality Grade
-                  RichText(
-                    text: const TextSpan(
-                      text: 'Quality Grade',
-                      style: labelStyle,
-                      children: [
-                        TextSpan(
-                          text: '*',
-                          style: TextStyle(
-                            color: ThemeColor.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    dropdownColor: ThemeColor.white2,
-                    focusColor: ThemeColor.white2,
-                    value: _qualityGrade,
-                    items: const [
-                      DropdownMenuItem(
-                        value: "Premium",
-                        child: Text("Premium"),
-                      ),
-                      DropdownMenuItem(
-                        value: "Grade A",
-                        child: Text("Grade A"),
-                      ),
-                      DropdownMenuItem(
-                        value: "Grade B",
-                        child: Text("Grade B"),
-                      ),
-                      DropdownMenuItem(
-                        value: "Grade C",
-                        child: Text("Grade C"),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _qualityGrade = value!;
-                      });
+                  TextFormField(
+                    controller: _varietyNameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter rice variety name';
+                      }
+                      return null;
                     },
                     decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Production Date - Added as requested
-                  RichText(
-                    text: const TextSpan(
-                      text: 'Production Date',
-                      style: labelStyle,
-                      children: [
-                        TextSpan(
-                          text: '*',
-                          style: TextStyle(
-                            color: ThemeColor.red,
-                          ),
-                        ),
-                      ],
+                      border: OutlineInputBorder(),
+                      hintText: "Enter rice variety name",
                     ),
                   ),
+                  const SizedBox(height: 30),
+
+                  // Quality Grade
+                  const Text(
+                    'Quality Grade',
+                    style: labelStyle,
+                  ),
                   const SizedBox(height: 10),
-                  TextField(
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: DropdownButton<String>(
+                      value: _qualityGrade,
+                      isExpanded: true,
+                      underline: Container(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _qualityGrade = newValue!;
+                        });
+                      },
+                      items: <String>[
+                        'Premium',
+                        'Grade A',
+                        'Grade B',
+                        'Grade C'
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value, style: listTileTextStyle),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Production Date
+                  const Text(
+                    'Production Date',
+                    style: labelStyle,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
                     controller: _productionDateController,
                     readOnly: true,
+                    onTap: () {
+                      _selectDate(context, _productionDateController);
+                    },
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
-                      hintText: "MM / DD / YYYY",
+                      hintText: "Select Production Date",
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor),
-                        onPressed: () => _selectDate(context, _productionDateController),
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () {
+                          _selectDate(context, _productionDateController);
+                        },
                       ),
                     ),
-                    onTap: () => _selectDate(context, _productionDateController),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
-                  // Expiration Date - Added as requested
-                  RichText(
-                    text: const TextSpan(
-                      text: 'Expiration Date',
-                      style: labelStyle,
-                      children: [
-                        TextSpan(
-                          text: '*',
-                          style: TextStyle(
-                            color: ThemeColor.red,
-                          ),
-                        ),
-                      ],
-                    ),
+                  // Expiration Date
+                  const Text(
+                    'Expiration Date',
+                    style: labelStyle,
                   ),
                   const SizedBox(height: 10),
-                  TextField(
+                  TextFormField(
                     controller: _expirationDateController,
                     readOnly: true,
+                    onTap: () {
+                      _selectDate(context, _expirationDateController);
+                    },
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
-                      hintText: "MM / DD / YYYY",
+                      hintText: "Select Expiration Date",
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor),
-                        onPressed: () => _selectDate(context, _expirationDateController),
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () {
+                          _selectDate(context, _expirationDateController);
+                        },
                       ),
                     ),
-                    onTap: () => _selectDate(context, _expirationDateController),
                   ),
                   const SizedBox(height: 30),
 
                   // Register Button
                   Align(
                     alignment: Alignment.center,
-                    child: TextButton(
-                      onPressed: () {
-                        print("Register Rice Variety: $_qualityGrade");
-                        print("Production Date: ${_productionDateController.text}");
-                        print("Expiration Date: ${_expirationDateController.text}");
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                        minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(9),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                ThemeColor.secondaryColor),
+                          )
+                        : TextButton(
+                            onPressed: _registerRiceVariety,
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                              foregroundColor: MaterialStateProperty.all(ThemeColor.white),
+                              minimumSize: MaterialStateProperty.all(const Size(213, 65)),
+                              shape: MaterialStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              "Register",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      child: const Text(
-                        "Register",
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
                   ),
                 ],
               ),
