@@ -5,6 +5,7 @@ from models import db_session
 from models.user import User
 from utils.security import admin_required
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func  # Add this import for func.lower()
 
 @api.route('/users', methods=['POST'])
 @jwt_required()
@@ -16,36 +17,57 @@ def create_user():
     data = request.get_json()
     
     # Validate required fields
-    required_fields = ['username', 'password', 'email', 'security_question', 'security_answer']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'message': f'Missing required field: {field}'}), 400
+    if not data or not data.get('username') or not data.get('password') or not data.get('security_question') or not data.get('security_answer'):
+        return jsonify({'message': 'Missing required fields'}), 400
     
     try:
-        # Create new user
-        user = User(
-            username=data['username'],
-            password=data['password'],
-            email=data['email'],
-            security_question=data['security_question'],
-            security_answer=data['security_answer'],
-            is_admin=data.get('is_admin', False)
-        )
+        # Check if username exists
+        existing_user = User.query.filter(func.lower(User.username) == data['username'].lower()).first()
+        if existing_user:
+            return jsonify({'message': 'Username already exists'}), 409
+        
+        # Debug print statement
+        print(f"Attempting to create user: {data['username']}")
+        
+        # Create user with empty string for email (not NULL)
+        try:
+            # Try the direct approach first
+            user = User(
+                username=data['username'],
+                password=data['password'],
+                email="",  # Empty string to satisfy NOT NULL constraint
+                security_question=data['security_question'],
+                security_answer=data['security_answer'],
+                is_admin=bool(data.get('is_admin', False))  # Ensure boolean type
+            )
+        except TypeError as e:
+            # If parameter mismatch, try the alternative approach
+            print(f"TypeError in User creation: {e}")
+            user = User(
+                username=data['username'],
+                password=data['password'],
+                security_question=data['security_question'],
+                security_answer=data['security_answer'],
+                is_admin=bool(data.get('is_admin', False))
+            )
+            user.email = ""  # Set email after creation
         
         db_session.add(user)
         db_session.commit()
         
-        return jsonify({
-            'message': 'User created successfully',
-            'user': user.to_dict()
-        }), 201
-    
-    except IntegrityError:
+        return jsonify({'message': 'User created successfully'}), 201
+        
+    except IntegrityError as ie:
         db_session.rollback()
-        return jsonify({'message': 'Username or email already exists'}), 409
-    
+        error_msg = str(ie)
+        print(f"IntegrityError in user creation: {error_msg}")
+        if "UNIQUE constraint" in error_msg:
+            return jsonify({'message': 'Username already exists'}), 409
+        else:
+            return jsonify({'message': f'Database integrity error: {error_msg}'}), 400
     except Exception as e:
         db_session.rollback()
+        print(f"ERROR in users: Error creating user: {str(e)}")
         return jsonify({'message': f'Error creating user: {str(e)}'}), 500
 
 @api.route('/users', methods=['GET'])

@@ -488,15 +488,69 @@ class ApiService {
   }
 
   // User management methods
-  Future<Map<String, dynamic>?> createUser(Map<String, dynamic> userData) async {
+  Future<Map<String, dynamic>?> createUserFromData(Map<String, dynamic> userData) async {
     try {
-      final result = await post('/users', userData);
+      // Remove email field if it exists
+      Map<String, dynamic> cleanData = {...userData};
+      cleanData.remove('email');
+      
+      final result = await post('/users', cleanData);
       return result['user'];
     } catch (e) {
       if (kDebugMode) {
         print('Create user error: $e');
       }
       return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> createUser(
+    String username, 
+    String password, 
+    String securityQuestion, 
+    String securityAnswer,
+    bool isAdmin
+  ) async {
+    try {
+      final token = await getAccessToken();
+      if (token == null) {
+        return {'success': false, 'message': 'Not authenticated'};
+      }
+
+      if (kDebugMode) {
+        print('Creating user with username: $username, security question: $securityQuestion, isAdmin: $isAdmin');
+      }
+
+      final response = await _client.post(
+        Uri.parse('$baseUrl/users'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+          'security_question': securityQuestion,
+          'security_answer': securityAnswer,
+          'is_admin': isAdmin,
+        }),
+      );
+
+      if (kDebugMode) {
+        print('Create user response: ${response.statusCode}, ${response.body}');
+      }
+
+      if (response.statusCode == 201) {
+        return {'success': true};
+      } else {
+        final data = jsonDecode(response.body);
+        return {'success': false, 'message': data['message'] ?? 'Failed to create user'};
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating user: $e');
+      }
+      return {'success': false, 'message': 'An error occurred: $e'};
     }
   }
 
@@ -868,6 +922,114 @@ class ApiService {
       }
     } catch (e) {
       print('Error getting user info: $e');
+      return null;
+    }
+  }
+
+  // Add these methods to your existing ApiService class:
+
+  // Repair management methods
+  Future<Map<String, dynamic>?> createRepair(Map<String, dynamic> repairData) async {
+    try {
+      final token = await getAccessToken();
+      if (token == null) {
+        return {'success': false, 'message': 'Not authenticated'};
+      }
+
+      final response = await _client.post(
+        Uri.parse('$baseUrl/repairs'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(repairData),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['repair'];
+      } else {
+        if (kDebugMode) {
+          print('Create repair error: ${response.body}');
+        }
+        return null;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Create repair error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>?> getRepairs() async {
+    try {
+      final result = await get('/repairs');
+      final List<dynamic> repairsData = result['repairs'];
+      return repairsData.map((repair) => repair as Map<String, dynamic>).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get repairs error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getRepairById(int repairId) async {
+    try {
+      final result = await get('/repairs/$repairId');
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get repair by ID error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> updateRepair(int repairId, Map<String, dynamic> repairData) async {
+    try {
+      final result = await put('/repairs/$repairId', repairData);
+      return result['repair'];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Update repair error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<bool> deleteRepair(int repairId) async {
+    try {
+      await delete('/repairs/$repairId');
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Delete repair error: $e');
+      }
+      return false;
+    }
+  }
+
+  // Add this method to search for repairs by parts
+  Future<List<Map<String, dynamic>>?> searchRepairsByParts(String partName) async {
+    try {
+      final result = await get('/repairs');
+      final List<dynamic> repairsData = result['repairs'];
+      
+      // Filter repairs based on parts concerned (stored in notes field)
+      final filteredRepairs = repairsData
+          .map((repair) => repair as Map<String, dynamic>)
+          .where((repair) => 
+              repair['notes'] != null && 
+              repair['notes'].toString().toLowerCase().contains(partName.toLowerCase()))
+          .toList();
+          
+      return filteredRepairs;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Search repairs by parts error: $e');
+      }
       return null;
     }
   }

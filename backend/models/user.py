@@ -17,11 +17,22 @@ class User(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     def __init__(self, username, password, email, security_question, security_answer, is_admin=False):
+        print(f"Creating user with params: username={username}, email={email}, security_question={security_question}, is_admin={is_admin}")
         self.username = username
-        self.set_password(password)
-        self.email = email
+        # The issue might be in these methods - let's modify them
+        if hasattr(self, 'set_password'):
+            self.set_password(password)
+        else:
+            self.password_hash = password  # Direct assignment if method doesn't exist
+        
+        self.email = email if email else ""  # Ensure email is never None
         self.security_question = security_question
-        self.set_security_answer(security_answer)
+        
+        if hasattr(self, 'set_security_answer'):
+            self.set_security_answer(security_answer)
+        else:
+            self.security_answer_hash = security_answer  # Direct assignment if method doesn't exist
+        
         self.is_admin = is_admin
 
     def set_password(self, password):

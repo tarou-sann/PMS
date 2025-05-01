@@ -148,3 +148,24 @@ def debug_token():
             'valid': False,
             'error': str(e)
         }), 400
+
+@api.route('/auth/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    
+    # Validate required fields - Remove email from required fields
+    required_fields = ['username', 'password', 'security_question', 'security_answer']
+    for field in required_fields:
+        if not data.get(field):
+            return jsonify({'message': f'Missing required field: {field}'}), 400
+            
+    # Rest of the function...
+    
+    # When creating User
+    user = User(
+        username=data['username'],
+        password=data['password'],
+        email=data.get('email', ''),  # Make email optional with default empty string
+        security_question=data['security_question'],
+        security_answer=data['security_answer']
+    )

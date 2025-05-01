@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
+import 'machinespage.dart';
 import 'register.dart';
 import 'repair.dart';
 import 'reports.dart';
@@ -35,7 +36,9 @@ class MachineryManagementNav extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const MachinesNav()));
+                  },
                   child: Container(
                     width: 450,
                     height: 450,

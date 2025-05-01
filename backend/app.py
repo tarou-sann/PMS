@@ -37,6 +37,12 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 
 # Initialize Flask extensions
 jwt = JWTManager(app)
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    # Convert user ID to string before using it in the token
+    return str(user)
+
 bcrypt = Bcrypt(app)
 
 # Enable CORS with more specific configuration

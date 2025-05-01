@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from models import Base
 
 class Machinery(Base):
@@ -11,6 +12,8 @@ class Machinery(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    repairs = relationship("Repair", back_populates="machinery", cascade="all, delete-orphan")
 
     def __init__(self, machine_name, is_mobile=True, is_active=True):
         self.machine_name = machine_name

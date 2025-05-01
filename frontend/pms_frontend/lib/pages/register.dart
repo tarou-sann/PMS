@@ -3,6 +3,8 @@ import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import 'package:intl/intl.dart';
+import '../services/api_service.dart';
+import 'package:flutter/foundation.dart';
 
 import 'machinerymanagement.dart';
 import 'reports.dart';
@@ -169,8 +171,94 @@ class RegisterBase extends StatelessWidget {
   }
 }
 
-class RegisterUser extends StatelessWidget {
+class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
+
+  @override
+  State<RegisterUser> createState() => _RegisterUserState();
+}
+
+class _RegisterUserState extends State<RegisterUser> {
+  final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _securityAnswerController = TextEditingController();
+  String _securityQuestion = "What is your pet's name?";
+  String _userRole = "user"; // Changed from boolean to string
+  bool _isLoading = false;
+  String _errorMessage = '';
+  String _successMessage = '';
+  final ApiService _apiService = ApiService();
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _securityAnswerController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _registerUser() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Check if passwords match
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _errorMessage = 'Passwords do not match';
+        _successMessage = '';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    try {
+      // Call API to register user
+      final response = await _apiService.createUser(
+        _usernameController.text,
+        _passwordController.text,
+        _securityQuestion,
+        _securityAnswerController.text,
+        _userRole == "admin", // Convert to boolean for API
+      );
+
+      setState(() {
+        _isLoading = false;
+        if (response['success'] == true) {
+          _successMessage = 'User registered successfully!';
+          _errorMessage = '';
+          // Clear form
+          _usernameController.clear();
+          _passwordController.clear();
+          _confirmPasswordController.clear();
+          _securityAnswerController.clear();
+          _userRole = "user";
+        } else {
+          // More descriptive error message
+          if (response['message']?.contains('already exists') ?? false) {
+            _errorMessage = 'Username already exists. Please choose a different username.';
+          } else {
+            _errorMessage = response['message'] ?? 'Failed to register user';
+          }
+          _successMessage = '';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error: $e';
+        _successMessage = '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,10 +266,6 @@ class RegisterUser extends StatelessWidget {
       fontSize: 18,
       fontWeight: FontWeight.w500,
       color: ThemeColor.secondaryColor,
-    );
-    const TextStyle listTileTextStyle = TextStyle(
-      fontSize: 20,
-      color: Colors.black,
     );
 
     return Scaffold(
@@ -194,294 +278,345 @@ class RegisterUser extends StatelessWidget {
       endDrawer: const EndDraw(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Container(
-          color: ThemeColor.white2,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back button and title
-              Row(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            width: 753,
+            height: 635,
+            decoration: BoxDecoration(
+              color: ThemeColor.white2,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 3,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context, 
-                      MaterialPageRoute(builder: (context) => const RegisterBase()));
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: ThemeColor.secondaryColor,
-                      size: 30,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context, 
+                            MaterialPageRoute(builder: (context) => const RegisterBase()));
+                        },
+                        icon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: ThemeColor.secondaryColor,
+                          size: 30,
+                        ),
+                      ),
+                      const Text(
+                        "Register User",
+                        style: TextStyle(
+                          color: ThemeColor.secondaryColor,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Show errors/success without changing layout
+                  if (_errorMessage.isNotEmpty)
+                    Text(
+                      _errorMessage,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  if (_successMessage.isNotEmpty)
+                    Text(
+                      _successMessage,
+                      style: const TextStyle(color: Colors.green),
+                    ),
+                    
+                  // Form fields in two columns - keeping original layout
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left column
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Username
+                            RichText(
+                              text: const TextSpan(
+                                text: 'Username',
+                                style: labelStyle,
+                                children: [
+                                  TextSpan(
+                                    text: '*',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _usernameController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter username';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: "Enter username",
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            // Password
+                            RichText(
+                              text: const TextSpan(
+                                text: 'Password',
+                                style: labelStyle,
+                                children: [
+                                  TextSpan(
+                                    text: '*',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter password';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: "Enter password",
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      
+                      // Right column
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Confirm Password
+                            RichText(
+                              text: const TextSpan(
+                                text: 'Confirm Password',
+                                style: labelStyle,
+                                children: [
+                                  TextSpan(
+                                    text: '*',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: _confirmPasswordController,
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please confirm password';
+                                }
+                                return null;
+                              },
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: "Enter confirm password",
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            // Security Question
+                            RichText(
+                              text: const TextSpan(
+                                text: 'Security Question',
+                                style: labelStyle,
+                                children: [
+                                  TextSpan(
+                                    text: '*',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            DropdownButtonFormField<String>(
+                              value: _securityQuestion,
+                              dropdownColor: ThemeColor.white2,
+                              focusColor: ThemeColor.white2,
+                              items: const [
+                                DropdownMenuItem(
+                                  value: "What is your pet's name?",
+                                  child: Text("What is your pet's name?"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "What is your favorite color?",
+                                  child: Text("What is your favorite color?"),
+                                ),
+                                DropdownMenuItem(
+                                  value: "What is your mother's maiden name?",
+                                  child: Text("What is your mother's maiden name?"),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() {
+                                    _securityQuestion = value;
+                                  });
+                                }
+                              },
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: ThemeColor.primaryColor)
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Security Answer
+                  RichText(
+                    text: const TextSpan(
+                      text: 'Security Answer',
+                      style: labelStyle,
+                      children: [
+                        TextSpan(
+                          text: '*',
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Text(
-                    "Register User",
-                    style: TextStyle(
-                      color: ThemeColor.secondaryColor,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _securityAnswerController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter security answer';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "Enter security answer",
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // User Role dropdown (replacing the Admin checkbox)
+                  RichText(
+                    text: const TextSpan(
+                      text: 'User Role',
+                      style: labelStyle,
+                      children: [
+                        TextSpan(
+                          text: '*',
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: _userRole,
+                    dropdownColor: ThemeColor.white2,
+                    focusColor: ThemeColor.white2,
+                    items: const [
+                      DropdownMenuItem(
+                        value: "admin",
+                        child: Text("Admin"),
+                      ),
+                      DropdownMenuItem(
+                        value: "user",
+                        child: Text("User"),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _userRole = value;
+                        });
+                      }
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: ThemeColor.primaryColor)
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 30),
+                  
+                  // Register button
+                  Center(
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                ThemeColor.secondaryColor),
+                          )
+                        : TextButton(
+                            onPressed: _registerUser,
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(
+                                  ThemeColor.secondaryColor),
+                              foregroundColor:
+                                  WidgetStateProperty.all(ThemeColor.white),
+                              minimumSize: WidgetStateProperty.all(
+                                  const Size(213, 65)),
+                              shape: WidgetStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              "Register",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              // Form fields
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Left column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Username',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter username",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter password",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Confirm Password',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            obscureText: true,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter confirm password",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Security Question',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          DropdownButtonFormField<String>(
-                            dropdownColor: ThemeColor.white2,
-                            focusColor: ThemeColor.white2,
-                            items: const [
-                              DropdownMenuItem(
-                                value: "What is your pet's name?",
-                                child: Text("What is your pet's name?"),
-                              ),
-                              DropdownMenuItem(
-                                value: "What is your mother's maiden name?",
-                                child: Text("What is your mother's maiden name?"),
-                              ),
-                            ],
-                            onChanged: (value) {},
-                            decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                focusedBorder:
-                                    OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Security Answer',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter security answer",
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    // Right column
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: const TextSpan(
-                              text: 'E-mail',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const TextField(
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: "Enter e-mail",
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            text: const TextSpan(
-                              text: 'Level of Access',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: ThemeColor.primaryColor,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: '*',
-                                  style: TextStyle(
-                                    color: ThemeColor.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          DropdownButtonFormField<String>(
-                            dropdownColor: ThemeColor.white2,
-                            focusColor: ThemeColor.white2,
-                            items: const [
-                              DropdownMenuItem(
-                                value: "Admin",
-                                child: Text("Admin"),
-                              ),
-                              DropdownMenuItem(
-                                value: "User",
-                                child: Text("User"),
-                              ),
-                            ],
-                            onChanged: (value) {},
-                            decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                focusedBorder:
-                                    OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor))),
-                          ),
-                          const Spacer(),
-                          // Register button
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {},
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                                foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                                minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                                shape: WidgetStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(9),
-                                  ),
-                                ),
-                              ),
-                              child: const Text(
-                                "Register",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -497,8 +632,73 @@ class RegisterMachinery extends StatefulWidget {
 }
 
 class _RegisterMachineryState extends State<RegisterMachinery> {
+  // Maintain existing state variables
   String _mobility = "Mobile";
   String _status = "Active";
+  
+  // Add new functionality variables
+  final _formKey = GlobalKey<FormState>();
+  final _machineNameController = TextEditingController();
+  bool _isLoading = false;
+  String _errorMessage = '';
+  String _successMessage = '';
+  final ApiService _apiService = ApiService();
+
+  @override
+  void dispose() {
+    _machineNameController.dispose();
+    super.dispose();
+  }
+
+  // Function to register machinery
+  Future<void> _registerMachinery() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    try {
+      // Convert string values to booleans
+      final isMobile = _mobility == "Mobile";
+      final isActive = _status == "Active";
+      
+      // Prepare machinery data
+      final machineryData = {
+        'machine_name': _machineNameController.text,
+        'is_mobile': isMobile,
+        'is_active': isActive,
+      };
+      
+      // Call API to register machinery
+      final result = await _apiService.createMachinery(machineryData);
+      
+      setState(() {
+        _isLoading = false;
+        if (result != null) {
+          _successMessage = 'Machinery registered successfully!';
+          _errorMessage = '';
+          // Clear form
+          _machineNameController.clear();
+          _mobility = "Mobile";
+          _status = "Active";
+        } else {
+          _errorMessage = 'Failed to register machinery';
+          _successMessage = '';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error: $e';
+        _successMessage = '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -538,199 +738,198 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                 )
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context, 
-                    MaterialPageRoute(builder: (context) => const RegisterBase()));
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back_ios,
-                        color: ThemeColor.secondaryColor,
-                        size: 30,
-                      ),
-                    ),
-                    const Text(
-                      "Register Machinery",
-                      style: TextStyle(
-                        color: ThemeColor.secondaryColor,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                // Machine Name
-                RichText(
-                  text: const TextSpan(
-                    text: 'Machine Name',
-                    style: labelStyle,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      TextSpan(
-                        text: '*',
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context, 
+                      MaterialPageRoute(builder: (context) => const RegisterBase()));
+                        },
+                        icon: const Icon(
+                          Icons.arrow_back_ios,
+                          color: ThemeColor.secondaryColor,
+                          size: 30,
+                        ),
+                      ),
+                      const Text(
+                        "Register Machinery",
                         style: TextStyle(
-                          color: ThemeColor.red,
+                          color: ThemeColor.secondaryColor,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 10),
-                const TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter machine name",
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Machine Mobility
-                RichText(
-                  text: const TextSpan(
-                    text: 'Machine Mobility',
-                    style: labelStyle,
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: TextStyle(
-                          color: ThemeColor.red,
+                  
+                  // Display status messages
+                  if (_errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        _errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  if (_successMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        _successMessage,
+                        style: const TextStyle(color: Colors.green),
+                      ),
+                    ),
+                  
+                  // Machine Name
+                  RichText(
+                    text: const TextSpan(
+                      text: 'Machine Name',
+                      style: labelStyle,
+                      children: [
+                        TextSpan(
+                          text: '*',
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Fix: Using Column instead of Row for radio buttons
-                Row(
-                  children: [
-                    // Fix: Wrap RadioListTile with Expanded to provide constraints
-                    Expanded(
-                      child: RadioListTile<String>(
-                        title: const Text("Mobile"),
-                        value: "Mobile",
-                        groupValue: _mobility,
-                        activeColor: ThemeColor.secondaryColor,
-                        onChanged: (value) {
-                          setState(() {
-                            _mobility = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: RadioListTile<String>(
-                        title: const Text("Not Mobile"),
-                        value: "Not Mobile",
-                        groupValue: _mobility,
-                        activeColor: ThemeColor.secondaryColor,
-                        onChanged: (value) {
-                          setState(() {
-                            _mobility = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Machine Status
-                RichText(
-                  text: const TextSpan(
-                    text: 'Machine Status',
-                    style: labelStyle,
-                    children: [
-                      TextSpan(
-                        text: '*',
-                        style: TextStyle(
-                          color: ThemeColor.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Fix: Using Column instead of Row for radio buttons
-                Row(
-                  children: [
-                    // Fix: Wrap RadioListTile with Expanded to provide constraints
-                    Expanded(
-                      child: RadioListTile<String>(
-                        title: const Text("Active"),
-                        value: "Active",
-                        groupValue: _status,
-                        activeColor: ThemeColor.secondaryColor,
-                        onChanged: (value) {
-                          setState(() {
-                            _status = value!;
-                          });
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: RadioListTile<String>(
-                        title: const Text("Inactive"),
-                        value: "Inactive",
-                        groupValue: _status,
-                        activeColor: ThemeColor.secondaryColor,
-                        onChanged: (value) {
-                          setState(() {
-                            _status = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Machine ID Note
-                const Center(
-                  child: Text(
-                    "Machine ID is automatically assigned*",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-
-                // Register Button
-                Align(
-                  alignment: Alignment.center,
-                  child: TextButton(
-                    onPressed: () {
-                      print("Register Machinery: $_mobility, $_status");
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _machineNameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter machine name';
+                      }
+                      return null;
                     },
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                      foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                      minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                      ),
-                    ),
-                    child: const Text(
-                      "Register",
-                      style: TextStyle(
-                        fontSize: 20,
-                      ),
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "Enter machine name",
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 30),
+
+                  // Mobility
+                  const Text(
+                    'Mobility',
+                    style: labelStyle,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        activeColor: ThemeColor.secondaryColor,
+                        value: 'Mobile',
+                        groupValue: _mobility,
+                        onChanged: (value) {
+                          setState(() {
+                            _mobility = value!;
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Mobile',
+                        style: listTileTextStyle,
+                      ),
+                      const SizedBox(width: 40),
+                      Radio<String>(
+                        activeColor: ThemeColor.secondaryColor,
+                        value: 'Static',
+                        groupValue: _mobility,
+                        onChanged: (value) {
+                          setState(() {
+                            _mobility = value!;
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Static',
+                        style: listTileTextStyle,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Status
+                  const Text(
+                    'Status',
+                    style: labelStyle,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        activeColor: ThemeColor.secondaryColor,
+                        value: 'Active',
+                        groupValue: _status,
+                        onChanged: (value) {
+                          setState(() {
+                            _status = value!;
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Active',
+                        style: listTileTextStyle,
+                      ),
+                      const SizedBox(width: 40),
+                      Radio<String>(
+                        activeColor: ThemeColor.secondaryColor,
+                        value: 'Inactive',
+                        groupValue: _status,
+                        onChanged: (value) {
+                          setState(() {
+                            _status = value!;
+                          });
+                        },
+                      ),
+                      const Text(
+                        'Inactive',
+                        style: listTileTextStyle,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Register Button
+                  Align(
+                    alignment: Alignment.center,
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                ThemeColor.secondaryColor),
+                          )
+                        : TextButton(
+                            onPressed: _registerMachinery,
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                              foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                              minimumSize: WidgetStateProperty.all(const Size(213, 65)),
+                              shape: WidgetStateProperty.all(
+                                RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(9),
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              "Register",
+                              style: TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
