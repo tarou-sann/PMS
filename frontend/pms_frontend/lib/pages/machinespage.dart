@@ -147,7 +147,7 @@ class _MachinesNavState extends State<MachinesNav> {
                   ),
                   Expanded(
                     flex: 2,
-                    child: Text('Mobility', style: tableHeaderStyle),
+                    child: Text('Is Mobile?', style: tableHeaderStyle),  // Changed from "Mobility" to "Is Mobile?"
                   ),
                   Expanded(
                     flex: 2,
@@ -237,11 +237,11 @@ class _MachinesNavState extends State<MachinesNav> {
                                               ),
                                             ),
                                           ),
-                                          // Mobility
+                                          // Is Mobile?
                                           Expanded(
                                             flex: 2,
                                             child: Text(
-                                              machine['is_mobile'] ? 'Mobile' : 'Static',
+                                              machine['is_mobile'] ? 'Yes' : 'No',  // Changed from "Mobile"/"Static" to "Yes"/"No"
                                               style: TextStyle(
                                                 color: machine['is_mobile']
                                                     ? Colors.blue

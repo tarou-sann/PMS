@@ -5,6 +5,7 @@ import '../widget/navbar.dart';
 import '../widget/enddrawer.dart';
 import 'backup.dart';
 import '../services/api_service.dart';
+import '../services/user_activity_service.dart';
 
 class MaintenanceNav extends StatelessWidget {
   const MaintenanceNav ({super.key});
@@ -394,6 +395,11 @@ class _EditMachineryState extends State<EditMachinery> {
                             );
                             
                             if (result != null) {
+                              await UserActivityService().logActivity(
+                                'Edit Machinery',
+                                'Updated machinery: ${_machineNameController.text}',
+                                target: 'Machinery Management',
+                              );
                               // Close the dialog and reload the machinery list
                               Navigator.of(dialogContext).pop();
                               this._loadMachinery();
@@ -492,6 +498,11 @@ class _EditMachineryState extends State<EditMachinery> {
                           final success = await _apiService.deleteMachinery(machine['id']);
                           
                           if (success) {
+                            await UserActivityService().logActivity(
+                              'Delete Machinery',
+                              'Deleted machinery: ${machine['machine_name']}',
+                              target: 'Machinery Management',
+                            );
                             // Close the dialog and reload the machinery list
                             Navigator.of(dialogContext).pop();
                             this._loadMachinery();
@@ -844,7 +855,7 @@ class _EditRiceState extends State<EditRice> {
     final _varietyNameController = TextEditingController(text: rice['variety_name']);
     final _productionDateController = TextEditingController(text: rice['production_date']);
     final _expirationDateController = TextEditingController(text: rice['expiration_date']);
-    String _qualityGrade = rice['quality_grade'] ?? 'Premium';
+    String _qualityGrade = rice['quality_grade'] ?? 'Shatter';
     bool _isLoading = false;
     String _errorMessage = '';
 
@@ -948,10 +959,8 @@ class _EditRiceState extends State<EditRice> {
                               });
                             },
                             items: <String>[
-                              'Premium',
-                              'Grade A',
-                              'Grade B', 
-                              'Grade C'
+                              'Shatter',
+                              'Non-Shattering'
                             ].map<DropdownMenuItem<String>>((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
@@ -1060,6 +1069,11 @@ class _EditRiceState extends State<EditRice> {
                             );
                             
                             if (result != null) {
+                              await UserActivityService().logActivity(
+                                'Edit Rice Variety',
+                                'Updated rice variety: ${_varietyNameController.text}',
+                                target: 'Rice Management',
+                              );
                               // Close the dialog and reload the rice varieties list
                               Navigator.of(dialogContext).pop();
                               this._loadRiceVarieties();
@@ -1158,6 +1172,11 @@ class _EditRiceState extends State<EditRice> {
                           final success = await _apiService.deleteRiceVariety(rice['id']);
                           
                           if (success) {
+                            await UserActivityService().logActivity(
+                              'Delete Rice Variety',
+                              'Deleted rice variety: ${rice['variety_name']}',
+                              target: 'Rice Management',
+                            );
                             // Close the dialog and reload the rice varieties list
                             Navigator.of(dialogContext).pop();
                             this._loadRiceVarieties();
@@ -1457,14 +1476,10 @@ class _EditRiceState extends State<EditRice> {
   // Helper method to determine quality grade color
   Color _getQualityColor(String? grade) {
     switch (grade) {
-      case 'Premium':
+      case 'Shatter':
         return Colors.purple;
-      case 'Grade A':
+      case 'Non-Shattering':
         return Colors.green;
-      case 'Grade B':
-        return Colors.blue;
-      case 'Grade C':
-        return Colors.orange;
       default:
         return Colors.grey;
     }

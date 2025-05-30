@@ -35,7 +35,7 @@ def create_user():
             user = User(
                 username=data['username'],
                 password=data['password'],
-                email="",  # Empty string to satisfy NOT NULL constraint
+                # email="",  # Empty string to satisfy NOT NULL constraint
                 security_question=data['security_question'],
                 security_answer=data['security_answer'],
                 is_admin=bool(data.get('is_admin', False))  # Ensure boolean type
@@ -50,7 +50,7 @@ def create_user():
                 security_answer=data['security_answer'],
                 is_admin=bool(data.get('is_admin', False))
             )
-            user.email = ""  # Set email after creation
+            # user.email = ""  # Set email after creation
         
         db_session.add(user)
         db_session.commit()
@@ -126,8 +126,8 @@ def update_user(user_id):
     
     try:
         # Update user fields
-        if data.get('email'):
-            user.email = data['email']
+        # if data.get('email'):
+        #     user.email = data['email']
         
         if data.get('security_question'):
             user.security_question = data['security_question']

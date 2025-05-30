@@ -509,48 +509,45 @@ class ApiService {
     String password, 
     String securityQuestion, 
     String securityAnswer,
-    bool isAdmin
+    bool isAdmin,
   ) async {
     try {
-      final token = await getAccessToken();
-      if (token == null) {
-        return {'success': false, 'message': 'Not authenticated'};
+      // Use a unique identifier to prevent caching issues
+      final uniqueId = DateTime.now().millisecondsSinceEpoch;
+      
+      // First reset the session using the proper API call pattern
+      try {
+        await get('/auth/reset-session?_nocache=$uniqueId');
+      } catch (e) {
+        // Ignore errors from reset_session as it might not be critical
+        if (kDebugMode) {
+          print('Session reset warning (non-critical): $e');
+        }
       }
-
-      if (kDebugMode) {
-        print('Creating user with username: $username, security question: $securityQuestion, isAdmin: $isAdmin');
+      
+      // Now make the register call using the post helper method
+      final result = await post('/auth/register?_nocache=$uniqueId', {
+        'username': username,
+        'password': password,
+        'security_question': securityQuestion,
+        'security_answer': securityAnswer,
+        'is_admin': isAdmin,
+        'timestamp': uniqueId.toString(),
+      });
+      
+      // Reset session again after registration (using proper pattern)
+      try {
+        await get('/auth/reset-session?_nocache=$uniqueId');
+      } catch (e) {
+        // Ignore errors
       }
-
-      final response = await _client.post(
-        Uri.parse('$baseUrl/users'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-          'security_question': securityQuestion,
-          'security_answer': securityAnswer,
-          'is_admin': isAdmin,
-        }),
-      );
-
-      if (kDebugMode) {
-        print('Create user response: ${response.statusCode}, ${response.body}');
-      }
-
-      if (response.statusCode == 201) {
-        return {'success': true};
-      } else {
-        final data = jsonDecode(response.body);
-        return {'success': false, 'message': data['message'] ?? 'Failed to create user'};
-      }
+      
+      return {'success': true, 'message': 'User registered successfully'};
     } catch (e) {
       if (kDebugMode) {
-        print('Error creating user: $e');
+        print('User registration error: $e');
       }
-      return {'success': false, 'message': 'An error occurred: $e'};
+      return {'success': false, 'message': e.toString()};
     }
   }
 
@@ -1064,5 +1061,12 @@ class ApiService {
       }
       return null;
     }
+  }
+
+  // Add this method to ApiService class
+  Future<void> resetSession() async {
+    // Clear any cached data that might be causing issues
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('temp_user_data');
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:pms_frontend/pages/machinespage.dart';
 import 'package:pms_frontend/pages/register.dart';
 import 'package:pms_frontend/pages/search.dart';
 import 'package:pms_frontend/pages/signup.dart';

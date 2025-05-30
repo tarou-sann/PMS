@@ -4,6 +4,7 @@ import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import 'package:intl/intl.dart';
 import '../services/api_service.dart';
+import '../services/user_activity_service.dart';
 import 'package:flutter/foundation.dart';
 
 import 'machinerymanagement.dart';
@@ -179,17 +180,20 @@ class RegisterUser extends StatefulWidget {
 }
 
 class _RegisterUserState extends State<RegisterUser> {
+  final ApiService _apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _securityAnswerController = TextEditingController();
-  String _securityQuestion = "What is your pet's name?";
-  String _userRole = "user"; // Changed from boolean to string
+  
+  // Form controllers
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _securityAnswerController = TextEditingController();
+  
+  String _userRole = "user";
+  String _securityQuestion = "What is your favorite color?";
   bool _isLoading = false;
   String _errorMessage = '';
   String _successMessage = '';
-  final ApiService _apiService = ApiService();
 
   @override
   void dispose() {
@@ -201,7 +205,17 @@ class _RegisterUserState extends State<RegisterUser> {
   }
 
   Future<void> _registerUser() async {
+    // Reset messages at the beginning of each registration attempt
+    setState(() {
+      _errorMessage = '';
+      _successMessage = '';
+      _isLoading = true;
+    });
+
     if (!_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -209,65 +223,53 @@ class _RegisterUserState extends State<RegisterUser> {
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
         _errorMessage = 'Passwords do not match';
-        _successMessage = '';
+        _isLoading = false;
       });
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-      _successMessage = '';
-    });
-
     try {
-      // Call API to register user
-      final response = await _apiService.createUser(
+        final response = await _apiService.createUser(
         _usernameController.text,
         _passwordController.text,
         _securityQuestion,
         _securityAnswerController.text,
-        _userRole == "admin", // Convert to boolean for API
+        _userRole == "admin",
       );
 
-      setState(() {
-        _isLoading = false;
-        if (response['success'] == true) {
-          _successMessage = 'User registered successfully!';
-          _errorMessage = '';
-          // Clear form
-          _usernameController.clear();
-          _passwordController.clear();
-          _confirmPasswordController.clear();
-          _securityAnswerController.clear();
-          _userRole = "user";
-        } else {
-          // More descriptive error message
-          if (response['message']?.contains('already exists') ?? false) {
-            _errorMessage = 'Username already exists. Please choose a different username.';
-          } else {
-            _errorMessage = response['message'] ?? 'Failed to register user';
-          }
-          _successMessage = '';
-        }
-      });
+      if (response['success'] == true) {
+        // Log the activity
+        await UserActivityService().logActivity(
+          'Register User',
+          'Successfully registered new user: ${_usernameController.text}',
+          target: 'User Management',
+        );
+        
+        // Reset the form completely
+        _usernameController.clear();
+        _passwordController.clear();
+        _confirmPasswordController.clear();
+        _securityAnswerController.clear();
+        _userRole = "user";
+        _securityQuestion = "What is your favorite color?";
+        
+        // This is important - reset form validation state
+        _formKey.currentState?.reset();
+      } else {
+        setState(() {
+          _errorMessage = response['message'] ?? 'Failed to register user';
+        });
+      }
     } catch (e) {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Error: $e';
-        _successMessage = '';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const TextStyle labelStyle = TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w500,
-      color: ThemeColor.secondaryColor,
-    );
-
     return Scaffold(
       key: GlobalKey<ScaffoldState>(),
       backgroundColor: ThemeColor.white,
@@ -278,345 +280,377 @@ class _RegisterUserState extends State<RegisterUser> {
       endDrawer: const EndDraw(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            width: 753,
-            height: 635,
-            decoration: BoxDecoration(
-              color: ThemeColor.white2,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 3,
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ],
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with back button and title
+              Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context, 
-                            MaterialPageRoute(builder: (context) => const RegisterBase()));
-                        },
-                        icon: const Icon(
-                          Icons.arrow_back_ios,
-                          color: ThemeColor.secondaryColor,
-                          size: 30,
-                        ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context,
+                        MaterialPageRoute(builder: (context) => const RegisterBase()));
+                    },
+                    child: const Text(
+                      "< ",
+                      style: TextStyle(
+                        color: Color(0xFFA67C52), // Gold/bronze color
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const Text(
-                        "Register User",
-                        style: TextStyle(
-                          color: ThemeColor.secondaryColor,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  
-                  // Show errors/success without changing layout
-                  if (_errorMessage.isNotEmpty)
-                    Text(
-                      _errorMessage,
-                      style: const TextStyle(color: Colors.red),
+                  const Text(
+                    "Register User",
+                    style: TextStyle(
+                      color: Color(0xFFA67C52), // Gold/bronze color
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
                     ),
-                  if (_successMessage.isNotEmpty)
-                    Text(
-                      _successMessage,
-                      style: const TextStyle(color: Colors.green),
-                    ),
-                    
-                  // Form fields in two columns - keeping original layout
-                  Row(
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Error/Success messages
+              if (_errorMessage.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              if (_successMessage.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _successMessage,
+                    style: const TextStyle(color: Colors.green),
+                  ),
+                ),
+              
+              // Main form in two columns
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Left column
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Username
-                            RichText(
-                              text: const TextSpan(
-                                text: 'Username',
-                                style: labelStyle,
-                                children: [
-                                  TextSpan(
-                                    text: '*',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                    ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Username field
+                              RichText(
+                                text: const TextSpan(
+                                  text: 'Username ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            TextFormField(
-                              controller: _usernameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter username';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: "Enter username",
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            // Password
-                            RichText(
-                              text: const TextSpan(
-                                text: 'Password',
-                                style: labelStyle,
-                                children: [
-                                  TextSpan(
-                                    text: '*',
-                                    style: TextStyle(
-                                      color: Colors.red,
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
                                     ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _usernameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter username';
+                                  }
+                                  return null;
+                                },
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 10,
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter password';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: "Enter password",
+                              const SizedBox(height: 16),
+                              
+                              // Password field
+                              RichText(
+                                text: const TextSpan(
+                                  text: 'Password ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                          ],
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter password';
+                                  }
+                                  return null;
+                                },
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 10,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              // Confirm Password field
+                              RichText(
+                                text: const TextSpan(
+                                  text: 'Confirm Password',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _confirmPasswordController,
+                                obscureText: true,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please confirm password';
+                                  } else if (value != _passwordController.text) {
+                                    return 'Passwords do not match';
+                                  }
+                                  return null;
+                                },
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 10,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              // Security Question
+                              RichText(
+                                text: const TextSpan(
+                                  text: 'Security Question ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                value: _securityQuestion,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 10,
+                                  ),
+                                ),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    _securityQuestion = newValue!;
+                                  });
+                                },
+                                items: <String>[
+                                  'What is your favorite color?',
+                                  'What is your mother\'s maiden name?',
+                                  'What was your first pet\'s name?',
+                                  'What city were you born in?',
+                                  'What is your favorite food?'
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 20),
                       
                       // Right column
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Confirm Password
-                            RichText(
-                              text: const TextSpan(
-                                text: 'Confirm Password',
-                                style: labelStyle,
-                                children: [
-                                  TextSpan(
-                                    text: '*',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                    ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Level of Access (User Role)
+                              RichText(
+                                text: const TextSpan(
+                                  text: 'Level of Access ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            TextFormField(
-                              controller: _confirmPasswordController,
-                              obscureText: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please confirm password';
-                                }
-                                return null;
-                              },
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: "Enter confirm password",
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            
-                            // Security Question
-                            RichText(
-                              text: const TextSpan(
-                                text: 'Security Question',
-                                style: labelStyle,
-                                children: [
-                                  TextSpan(
-                                    text: '*',
-                                    style: TextStyle(
-                                      color: Colors.red,
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            DropdownButtonFormField<String>(
-                              value: _securityQuestion,
-                              dropdownColor: ThemeColor.white2,
-                              focusColor: ThemeColor.white2,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: "What is your pet's name?",
-                                  child: Text("What is your pet's name?"),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                value: _userRole,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 10,
+                                  ),
                                 ),
-                                DropdownMenuItem(
-                                  value: "What is your favorite color?",
-                                  child: Text("What is your favorite color?"),
-                                ),
-                                DropdownMenuItem(
-                                  value: "What is your mother's maiden name?",
-                                  child: Text("What is your mother's maiden name?"),
-                                ),
-                              ],
-                              onChanged: (value) {
-                                if (value != null) {
+                                onChanged: (String? newValue) {
                                   setState(() {
-                                    _securityQuestion = value;
+                                    _userRole = newValue!;
                                   });
-                                }
-                              },
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: ThemeColor.primaryColor)
+                                },
+                                items: <String>[
+                                  'user',
+                                  'admin',
+                                ].map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                              ),
+                              
+                              // Fill in remaining space to align with left column
+                              const SizedBox(height: 16),
+                              const SizedBox(height: 56), // Match the space of the empty field on the left
+                              
+                              // Security Answer
+                              RichText(
+                                text: const TextSpan(
+                                  text: 'Security Answer ',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black87,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: '*',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _securityAnswerController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter security answer';
+                                  }
+                                  return null;
+                                },
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  
-                  // Security Answer
-                  RichText(
-                    text: const TextSpan(
-                      text: 'Security Answer',
-                      style: labelStyle,
-                      children: [
-                        TextSpan(
-                          text: '*',
-                          style: TextStyle(
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: _securityAnswerController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter security answer';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Enter security answer",
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // User Role dropdown (replacing the Admin checkbox)
-                  RichText(
-                    text: const TextSpan(
-                      text: 'User Role',
-                      style: labelStyle,
-                      children: [
-                        TextSpan(
-                          text: '*',
-                          style: TextStyle(
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButtonFormField<String>(
-                    value: _userRole,
-                    dropdownColor: ThemeColor.white2,
-                    focusColor: ThemeColor.white2,
-                    items: const [
-                      DropdownMenuItem(
-                        value: "admin",
-                        child: Text("Admin"),
-                      ),
-                      DropdownMenuItem(
-                        value: "user",
-                        child: Text("User"),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _userRole = value;
-                        });
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: ThemeColor.primaryColor)
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Register button
-                  Center(
-                    child: _isLoading
-                        ? const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                ThemeColor.secondaryColor),
-                          )
-                        : TextButton(
-                            onPressed: _registerUser,
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(
-                                  ThemeColor.secondaryColor),
-                              foregroundColor:
-                                  WidgetStateProperty.all(ThemeColor.white),
-                              minimumSize: WidgetStateProperty.all(
-                                  const Size(213, 65)),
-                              shape: WidgetStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(9),
-                                ),
-                              ),
-                            ),
-                            child: const Text(
-                              "Register",
-                              style: TextStyle(
-                                fontSize: 20,
-                              ),
-                            ),
-                          ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              
+              // Register Button at bottom right
+              Align(
+                alignment: Alignment.bottomRight,
+                child: _isLoading
+                    ? const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFFA67C52)), // Gold/bronze color
+                      )
+                    : SizedBox(
+                        width: 200,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _registerUser,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFA67C52), // Gold/bronze color
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          child: const Text(
+                            "Register",
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
+            ],
           ),
         ),
       ),
@@ -633,8 +667,8 @@ class RegisterMachinery extends StatefulWidget {
 
 class _RegisterMachineryState extends State<RegisterMachinery> {
   // Maintain existing state variables
-  String _mobility = "Mobile";
-  String _status = "Active";
+  String _mobility = "Yes";  // Changed from "Mobile" to "Yes"
+  String _status = "Yes";  // Changed from "Active" to "Yes"
   
   // Add new functionality variables
   final _formKey = GlobalKey<FormState>();
@@ -664,18 +698,28 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
 
     try {
       // Convert string values to booleans
-      final isMobile = _mobility == "Mobile";
-      final isActive = _status == "Active";
+      final isMobile = _mobility == "Yes";  // Changed from "Mobile" to "Yes"
+      final canHarvest = _status == "Yes";  // Changed from isActive to canHarvest
+      
       
       // Prepare machinery data
       final machineryData = {
         'machine_name': _machineNameController.text,
         'is_mobile': isMobile,
-        'is_active': isActive,
+        'can_harvest': canHarvest,  // Changed variable name but keep same API field
       };
       
       // Call API to register machinery
       final result = await _apiService.createMachinery(machineryData);
+
+      if (result == null) {
+        // Log the activity
+        await UserActivityService().logActivity(
+          'Add Machinery',
+          'Added new machinery: ${_machineNameController.text}',
+          target: 'Machinery Management',
+        );
+      }
       
       setState(() {
         _isLoading = false;
@@ -684,8 +728,8 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
           _errorMessage = '';
           // Clear form
           _machineNameController.clear();
-          _mobility = "Mobile";
-          _status = "Active";
+          _mobility = "Yes";  // Changed from "Mobile" to "Yes"
+          _status = "Yes";  // Changed from "Active" to "Yes"
         } else {
           _errorMessage = 'Failed to register machinery';
           _successMessage = '';
@@ -820,7 +864,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
 
                   // Mobility
                   const Text(
-                    'Mobility',
+                    'Is Mobile?',  // Changed from "Mobility" to "Is Mobile?"
                     style: labelStyle,
                   ),
                   const SizedBox(height: 10),
@@ -828,7 +872,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                     children: [
                       Radio<String>(
                         activeColor: ThemeColor.secondaryColor,
-                        value: 'Mobile',
+                        value: 'Yes',  // Changed from "Mobile" to "Yes"
                         groupValue: _mobility,
                         onChanged: (value) {
                           setState(() {
@@ -837,13 +881,13 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                         },
                       ),
                       const Text(
-                        'Mobile',
+                        'Yes',  // Changed from "Mobile" to "Yes"
                         style: listTileTextStyle,
                       ),
                       const SizedBox(width: 40),
                       Radio<String>(
                         activeColor: ThemeColor.secondaryColor,
-                        value: 'Static',
+                        value: 'No',  // Changed from "Static" to "No"
                         groupValue: _mobility,
                         onChanged: (value) {
                           setState(() {
@@ -852,7 +896,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                         },
                       ),
                       const Text(
-                        'Static',
+                        'No',  // Changed from "Static" to "No"
                         style: listTileTextStyle,
                       ),
                     ],
@@ -861,7 +905,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
 
                   // Status
                   const Text(
-                    'Status',
+                    'Can Harvest?',  // Changed from "Status" to "Can Harvest?"
                     style: labelStyle,
                   ),
                   const SizedBox(height: 10),
@@ -869,7 +913,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                     children: [
                       Radio<String>(
                         activeColor: ThemeColor.secondaryColor,
-                        value: 'Active',
+                        value: 'Yes',  // Changed from "Active" to "Yes"
                         groupValue: _status,
                         onChanged: (value) {
                           setState(() {
@@ -878,13 +922,13 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                         },
                       ),
                       const Text(
-                        'Active',
+                        'Yes',  // Changed from "Active" to "Yes"
                         style: listTileTextStyle,
                       ),
                       const SizedBox(width: 40),
                       Radio<String>(
                         activeColor: ThemeColor.secondaryColor,
-                        value: 'Inactive',
+                        value: 'No',  // Changed from "Inactive" to "No"
                         groupValue: _status,
                         onChanged: (value) {
                           setState(() {
@@ -893,7 +937,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                         },
                       ),
                       const Text(
-                        'Inactive',
+                        'No',  // Changed from "Inactive" to "No"
                         style: listTileTextStyle,
                       ),
                     ],
@@ -954,7 +998,7 @@ class _RegisterRiceState extends State<RegisterRice> {
   final TextEditingController _varietyNameController = TextEditingController();
   final TextEditingController _productionDateController = TextEditingController();
   final TextEditingController _expirationDateController = TextEditingController();
-  String _qualityGrade = "Premium";
+  String _qualityGrade = "Shatter";
   
   bool _isLoading = false;
   String _errorMessage = '';
@@ -1024,6 +1068,15 @@ class _RegisterRiceState extends State<RegisterRice> {
       // Call API to create rice variety
       final result = await _apiService.createRiceVariety(riceData);
 
+      if (result == null) {
+        // Log the activity
+        await UserActivityService().logActivity(
+          'Add Rice Variety',
+          'Added new rice variety: ${_varietyNameController.text}',
+          target: 'Rice Management',
+        );
+      }
+
       setState(() {
         _isLoading = false;
         if (result != null) {
@@ -1033,7 +1086,7 @@ class _RegisterRiceState extends State<RegisterRice> {
           _varietyNameController.clear();
           _productionDateController.clear();
           _expirationDateController.clear();
-          _qualityGrade = "Premium";
+          _qualityGrade = "Shatter";
         } else {
           _errorMessage = 'Failed to register rice variety';
         }
@@ -1190,10 +1243,8 @@ class _RegisterRiceState extends State<RegisterRice> {
                         });
                       },
                       items: <String>[
-                        'Premium',
-                        'Grade A',
-                        'Grade B',
-                        'Grade C'
+                        'Shatter',
+                        'Non-Shattering',
                       ].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,

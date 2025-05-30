@@ -9,29 +9,28 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(50), unique=True, nullable=False)
     password_hash = Column(String(128), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
+    # email = Column(String(100), unique=True, nullable=False)
     security_question = Column(String(200), nullable=False)
     security_answer_hash = Column(String(128), nullable=False)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    def __init__(self, username, password, email, security_question, security_answer, is_admin=False):
-        print(f"Creating user with params: username={username}, email={email}, security_question={security_question}, is_admin={is_admin}")
+    def __init__(self, username, password, security_question, security_answer, is_admin=False):
+        print(f"Creating user with params: username={username}, security_question={security_question}, is_admin={is_admin}")
         self.username = username
-        # The issue might be in these methods - let's modify them
+        
         if hasattr(self, 'set_password'):
             self.set_password(password)
         else:
-            self.password_hash = password  # Direct assignment if method doesn't exist
+            self.password_hash = password
         
-        self.email = email if email else ""  # Ensure email is never None
         self.security_question = security_question
         
         if hasattr(self, 'set_security_answer'):
             self.set_security_answer(security_answer)
         else:
-            self.security_answer_hash = security_answer  # Direct assignment if method doesn't exist
+            self.security_answer_hash = security_answer
         
         self.is_admin = is_admin
 
@@ -79,7 +78,7 @@ class User(Base):
         return {
             'id': self.id,
             'username': self.username,
-            'email': self.email,
+            # 'email': self.email,
             'security_question': self.security_question,
             'is_admin': self.is_admin,
             'created_at': self.created_at.isoformat() if self.created_at else None,

@@ -68,7 +68,6 @@ def setup_database():
     
     admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
     admin_password = os.environ.get('ADMIN_PASSWORD', 'admin')
-    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@example.com')
     
     try:
         admin = User.query.filter_by(username=admin_username).first()
@@ -76,7 +75,6 @@ def setup_database():
             admin = User(
                 username=admin_username,
                 password=admin_password,
-                email=admin_email,
                 security_question="What is the default admin username?",
                 security_answer="admin",
                 is_admin=True
@@ -93,6 +91,7 @@ def setup_database():
 @app.teardown_appcontext
 def cleanup(exception=None):
     shutdown_session(exception)
+    db_session.remove()
 
 # JWT error handlers
 @jwt.expired_token_loader

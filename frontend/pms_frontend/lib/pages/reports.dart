@@ -6,6 +6,9 @@ import '../widget/navbar.dart';
 
 import 'machinerymanagement.dart';
 import 'search.dart';
+import 'machinestatusreport.dart';
+import 'productionreport.dart';
+import 'userlogs.dart';
 
 class ReportsNav extends StatelessWidget {
   const ReportsNav({super.key});
@@ -31,11 +34,17 @@ class ReportsNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Machine Status Report
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: GestureDetector(
                   onTap: () {
-                  
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MachineStatusReport(),
+                      ),
+                    );
                   },
                   child: Container(
                     width: 450,
@@ -73,7 +82,12 @@ class ReportsNav extends StatelessWidget {
                 padding: const EdgeInsets.all(15.0),
                 child: GestureDetector(
                   onTap: () {
-                    
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProductionReport(),
+                      ),
+                    );
                   },
                   child: Container(
                     width: 450,
@@ -111,7 +125,12 @@ class ReportsNav extends StatelessWidget {
                 padding: const EdgeInsets.all(15.0),
                 child: GestureDetector(
                   onTap: () {
-                  
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserLogs(),
+                      ),
+                    );
                   },
                   child: Container(
                     width: 450,

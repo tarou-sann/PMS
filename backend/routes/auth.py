@@ -1,10 +1,10 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, get_jwt
 from routes import api
 from services.auth import AuthService
 from models import db_session
 from models.user import User
-from datetime import timedelta
+from datetime import timedelta  # Change this path if needed to match your project structure
 
 @api.route('/auth/login', methods=['POST'])
 def login():
@@ -149,23 +149,48 @@ def debug_token():
             'error': str(e)
         }), 400
 
-@api.route('/auth/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-    
-    # Validate required fields - Remove email from required fields
-    required_fields = ['username', 'password', 'security_question', 'security_answer']
-    for field in required_fields:
-        if not data.get(field):
-            return jsonify({'message': f'Missing required field: {field}'}), 400
-            
-    # Rest of the function...
-    
-    # When creating User
-    user = User(
-        username=data['username'],
-        password=data['password'],
-        email=data.get('email', ''),  # Make email optional with default empty string
-        security_question=data['security_question'],
-        security_answer=data['security_answer']
-    )
+# In backend/routes/auth.py
+@api.route('/auth/register', methods=['POST'])
+def register_user():
+    try:
+        db_session.expire_all()
+        
+        data = request.get_json()
+        
+        required_fields = ['username', 'password', 'security_question', 'security_answer']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'message': f'Missing required field: {field}'}), 400
+        
+        existing_user = User.query.filter_by(username=data['username']).first()
+        if existing_user:
+            return jsonify({'message': 'Username already exists. Please choose a different username.'}), 409
+        
+        # Create new user WITHOUT email parameter
+        user = User(
+            username=data['username'],
+            password=data['password'],
+            security_question=data['security_question'],
+            security_answer=data['security_answer'],
+            is_admin=data.get('is_admin', False)
+        )
+        
+        # Add and commit to database
+        db_session.add(user)
+        db_session.commit()
+        
+        return jsonify({'message': 'User registered successfully'}), 201
+        
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@api.route('/auth/reset-session', methods=['GET'])
+def reset_session():
+    try:
+        # Use directly imported db_session instead of current_app.db_session
+        db_session.expire_all()
+        db_session.close()
+        return jsonify({"message": "Session reset"}), 200
+    except Exception as e:
+        return jsonify({"message": f"Error resetting session: {str(e)}"}), 500
