@@ -314,7 +314,7 @@ class _EditMachineryState extends State<EditMachinery> {
                         const SizedBox(height: 16),
                         
                         const Text(
-                          'Status',
+                          'Harvest Status',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -646,7 +646,7 @@ class _EditMachineryState extends State<EditMachinery> {
                   ),
                   Expanded(
                     flex: 2,
-                    child: Text('Status', style: tableHeaderStyle),
+                    child: Text('Harvest Status', style: tableHeaderStyle),
                   ),
                   Expanded(
                     flex: 2,

@@ -1,10 +1,14 @@
 // Update: frontend/pms_frontend/lib/pages/userlogs.dart
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:intl/intl.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/user_activity_service.dart';
-import 'package:intl/intl.dart';
+import 'reports.dart';
 
 class UserLogs extends StatefulWidget {
   const UserLogs({super.key});
@@ -46,6 +50,111 @@ class _UserLogsState extends State<UserLogs> {
       });
     }
   }
+
+  // Print function for user logs
+  Future<void> _printReport() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Header
+              pw.Text(
+                'User Activity Logs',
+                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 20),
+              
+              // Summary
+              pw.Text(
+                'Total Activities: ${_activities.length}',
+                style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 20),
+              
+              // Table
+              pw.Table(
+                border: pw.TableBorder.all(),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(2),
+                  1: const pw.FlexColumnWidth(2),
+                  2: const pw.FlexColumnWidth(3),
+                  3: const pw.FlexColumnWidth(2),
+                  4: const pw.FlexColumnWidth(2),
+                },
+                children: [
+                  // Header row
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(color: PdfColors.grey200),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text('User', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text('Action', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text('Details', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text('Target', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text('Time', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                      ),
+                    ],
+                  ),
+                  // Data rows
+                  ..._activities.map((activity) => pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(activity['username'] ?? 'Unknown', style: pw.TextStyle(fontSize: 9)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(activity['action'] ?? 'Unknown', style: pw.TextStyle(fontSize: 9)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(activity['details'] ?? 'No details', style: pw.TextStyle(fontSize: 9)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(activity['target'] ?? '-', style: pw.TextStyle(fontSize: 9)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(_formatTimestamp(activity['timestamp'] ?? ''), style: pw.TextStyle(fontSize: 9)),
+                      ),
+                    ],
+                  )).toList(),
+                ],
+              ),
+              
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Generated on: ${DateTime.now().toString().split('.')[0]}',
+                style: pw.TextStyle(fontSize: 10, color: PdfColors.grey),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+  }
+
 
   String _formatTimestamp(String timestamp) {
     try {
@@ -125,6 +234,21 @@ class _UserLogsState extends State<UserLogs> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ReportsNav(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: ThemeColor.secondaryColor,
+                            size: 30,
+                          ),
+                        ),
                       const Text(
                         'User Activity Logs',
                         style: TextStyle(
@@ -133,10 +257,24 @@ class _UserLogsState extends State<UserLogs> {
                           color: ThemeColor.secondaryColor,
                         ),
                       ),
-                      IconButton(
-                        onPressed: _loadUserActivities,
-                        icon: const Icon(Icons.refresh),
-                        tooltip: 'Refresh',
+                      Row(
+                        children: [
+                          // Print button
+                          ElevatedButton.icon(
+                            onPressed: _printReport,
+                            icon: const Icon(Icons.print, color: Colors.white),
+                            label: const Text('Print Report', style: TextStyle(color: Colors.white)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ThemeColor.secondaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          IconButton(
+                            onPressed: _loadUserActivities,
+                            icon: const Icon(Icons.refresh),
+                            tooltip: 'Refresh',
+                          ),
+                        ],
                       ),
                     ],
                   ),

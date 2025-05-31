@@ -244,6 +244,12 @@ class _RegisterUserState extends State<RegisterUser> {
           'Successfully registered new user: ${_usernameController.text}',
           target: 'User Management',
         );
+
+        setState(() {
+          _successMessage = 'User registered successfully!';  // Add this line
+          _errorMessage = '';  // Clear any previous error
+          _isLoading = false;  // Stop loading
+        });
         
         // Reset the form completely
         _usernameController.clear();
@@ -725,6 +731,13 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
         _isLoading = false;
         if (result != null) {
           _successMessage = 'Machinery registered successfully!';
+
+          UserActivityService().logActivity(
+            'Add Rice Variety',
+            'Added new rice variety: ${_machineNameController.text}',
+            target: 'Rice Management',
+          );
+
           _errorMessage = '';
           // Clear form
           _machineNameController.clear();
@@ -1081,6 +1094,12 @@ class _RegisterRiceState extends State<RegisterRice> {
         _isLoading = false;
         if (result != null) {
           _successMessage = 'Rice variety registered successfully!';
+
+          UserActivityService().logActivity(
+            'Add Rice Variety',
+            'Added new rice variety: ${_varietyNameController.text}',
+            target: 'Rice Management',
+          );
           
           // Clear form after successful submission
           _varietyNameController.clear();

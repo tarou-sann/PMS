@@ -8,6 +8,7 @@ from routes.auth import *
 from routes.users import *
 from routes.machinery import *
 from routes.rice import *
+from routes.activity import *
 # Add the import for the new repair routes
 from . import repair
 

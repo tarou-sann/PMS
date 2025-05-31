@@ -1,9 +1,12 @@
-// Create new file: frontend/pms_frontend/lib/pages/machine_status_report.dart
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/api_service.dart';
+import 'reports.dart';
 
 class MachineStatusReport extends StatefulWidget {
   const MachineStatusReport({super.key});
@@ -41,6 +44,124 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
     }
   }
 
+  // Print function for machine status report
+  Future<void> _printReport() async {
+    final pdf = pw.Document();
+    final activeMachines = _machinery.where((m) => m['is_active'] == true).length;
+    final inactiveMachines = _machinery.where((m) => m['is_active'] == false).length;
+    final mobileMachines = _machinery.where((m) => m['is_mobile'] == true).length;
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              // Header
+              pw.Text(
+                'Machine Status Report',
+                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 20),
+              
+              // Summary
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                children: [
+                  pw.Column(
+                    children: [
+                      pw.Text('Total Machines', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(_machinery.length.toString(), style: pw.TextStyle(fontSize: 18)),
+                    ],
+                  ),
+                  pw.Column(
+                    children: [
+                      pw.Text('Active', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(activeMachines.toString(), style: pw.TextStyle(fontSize: 18)),
+                    ],
+                  ),
+                  pw.Column(
+                    children: [
+                      pw.Text('Inactive', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(inactiveMachines.toString(), style: pw.TextStyle(fontSize: 18)),
+                    ],
+                  ),
+                  pw.Column(
+                    children: [
+                      pw.Text('Mobile', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      pw.Text(mobileMachines.toString(), style: pw.TextStyle(fontSize: 18)),
+                    ],
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 30),
+              
+              // Table
+              pw.Table(
+                border: pw.TableBorder.all(),
+                children: [
+                  // Header row
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(color: PdfColors.grey200),
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('ID', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Machine Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Mobile', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Status', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                  // Data rows
+                  ..._machinery.map((machine) => pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(machine['id'].toString()),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(machine['machine_name'] ?? 'Unknown'),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(machine['is_mobile'] ? 'Yes' : 'No'),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(machine['is_active'] ? 'Active' : 'Inactive'),
+                      ),
+                    ],
+                  )).toList(),
+                ],
+              ),
+              
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Generated on: ${DateTime.now().toString().split('.')[0]}',
+                style: pw.TextStyle(fontSize: 10, color: PdfColors.grey),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final activeMachines = _machinery.where((m) => m['is_active'] == true).length;
@@ -62,9 +183,33 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ReportsNav(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: ThemeColor.secondaryColor,
+                      size: 30,
+                    ),
+                  ),
                   const Text(
                     'Machine Status Report',
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  ),
+                  // Print button
+                  ElevatedButton.icon(
+                    onPressed: _printReport,
+                    icon: const Icon(Icons.print, color: Colors.white),
+                    label: const Text('Print Report', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ThemeColor.secondaryColor,
+                    ),
                   ),
                   const SizedBox(height: 30),
                   
@@ -102,8 +247,8 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
                           final machine = _machinery[index];
                           return Card(
                             child: ListTile(
-                              title: Text(machine['name'] ?? 'Unknown'),
-                              subtitle: Text('${machine['type']} - ${machine['model']}'),
+                              title: Text(machine['machine_name'] ?? 'Unknown'),
+                              subtitle: Text('ID: ${machine['id'] ?? 'N/A'}'),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

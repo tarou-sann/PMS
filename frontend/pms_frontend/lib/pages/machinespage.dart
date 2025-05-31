@@ -151,7 +151,7 @@ class _MachinesNavState extends State<MachinesNav> {
                   ),
                   Expanded(
                     flex: 2,
-                    child: Text('Status', style: tableHeaderStyle),
+                    child: Text('Harvest Status', style: tableHeaderStyle),
                   ),
                 ],
               ),
