@@ -8,7 +8,7 @@ import '../pages/maintenance.dart';
 import '../pages/dashboard.dart';
 import '../pages/signup.dart';
 import '../services/api_service.dart';
-import '../services/user_service.dart'; // Add this import
+import '../services/user_service.dart';
 
 class EndDraw extends StatelessWidget {
   const EndDraw({super.key});
@@ -16,15 +16,20 @@ class EndDraw extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const TextStyle listTileTextStyle = TextStyle(
-      fontSize: 20,
+      fontSize: 24,
+      fontWeight: FontWeight.w500,
       color: Colors.black,
     );
 
     return Drawer(
+      backgroundColor: ThemeColor.white2,
+      width: 400,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Home',
+            style: listTileTextStyle,
             onTap: () {
               Navigator.push(
                 context,
@@ -32,11 +37,12 @@ class EndDraw extends StatelessWidget {
                   builder: (context) => const DashboardNav(),
                 ),
               );
-              print("moving to registration");
+              print("moving to navigation");
             },
-            title: const Text('Home', style: listTileTextStyle),
           ),
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Registration',
+            style: listTileTextStyle,
             onTap: () {
               Navigator.push(
                 context,
@@ -46,9 +52,10 @@ class EndDraw extends StatelessWidget {
               );
               print("moving to registration");
             },
-            title: const Text('Registration', style: listTileTextStyle),
           ),
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Machine Management',
+            style: listTileTextStyle,
             onTap: () {
               Navigator.push(
                 context,
@@ -58,15 +65,18 @@ class EndDraw extends StatelessWidget {
               );
               print("moving to machinerymanagement");
             },
-            title: const Text('Machine Management', style: listTileTextStyle),
           ),
-          const ListTile(
-            title: Text('Production Tracking', style: listTileTextStyle),
+          _buildPaddedListTile(
+            title: 'Production Tracking',
+            style: listTileTextStyle,
           ),
-          const ListTile(
-            title: Text('Forecasting', style: listTileTextStyle),
+          _buildPaddedListTile(
+            title: 'Forecasting',
+            style: listTileTextStyle,
           ),
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Search',
+            style: listTileTextStyle,
             onTap: () {
               Navigator.push(
                 context,
@@ -76,9 +86,10 @@ class EndDraw extends StatelessWidget {
               );
               print("moving to search");
             },
-            title: const Text('Search', style: listTileTextStyle),
           ),
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Reports',
+            style: listTileTextStyle,
             onTap: () {
               Navigator.push(
                 context,
@@ -88,9 +99,10 @@ class EndDraw extends StatelessWidget {
               );
               print("moving to reports");
             },
-            title: const Text('Reports', style: listTileTextStyle),
           ),
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Maintenance',
+            style: listTileTextStyle,
             onTap: () {
               Navigator.push(
                 context,
@@ -100,22 +112,38 @@ class EndDraw extends StatelessWidget {
               );
               print("moving to maintenance");
             },
-            title: const Text('Maintenance', style: listTileTextStyle),
           ),
-          const ListTile(
-            title: Text('Help', style: listTileTextStyle),
+          _buildPaddedListTile(
+            title: 'Help',
+            style: listTileTextStyle,
           ),
-          const ListTile(
-            title: Text('About', style: listTileTextStyle),
+          _buildPaddedListTile(
+            title: 'About',
+            style: listTileTextStyle,
           ),
-          ListTile(
+          _buildPaddedListTile(
+            title: 'Logout',
+            style: listTileTextStyle,
             onTap: () {
               // Show confirmation dialog
               showLogoutConfirmationDialog(context);
             },
-            title: const Text('Logout', style: listTileTextStyle),
           ),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildPaddedListTile({
+    required String title, 
+    required TextStyle style, 
+    VoidCallback? onTap
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
+      child: ListTile(
+        onTap: onTap,
+        title: Text(title, style: style),
       ),
     );
   }
@@ -124,43 +152,72 @@ class EndDraw extends StatelessWidget {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Confirm Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                // Close the dialog
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Cancel'),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 400,
+            height: 350,
+            constraints: BoxConstraints(maxWidth: 450),
+            decoration: BoxDecoration(
+              color: ThemeColor.white2,
+              borderRadius: BorderRadius.circular(8),
             ),
-            TextButton(
-              onPressed: () async {
-                // Close the dialog
-                Navigator.of(dialogContext).pop();
-                
-                // Log out user - clear tokens and stored data
-                final apiService = ApiService();
-                await apiService.logout();
-                
-                // Clear username cache
-                UserService().clearCache();
-                
-                // Navigate to sign up screen and clear navigation stack
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                    builder: (context) => const SignUpForm(),
-                  ),
-                  (Route<dynamic> route) => false, // Remove all previous routes
-                );
-              },
-              child: const Text(
-                'Logout',
-                style: TextStyle(color: Colors.red),
+            child: AlertDialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: const Text('Confirm Logout', 
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 26,
+                  color: Colors.black,
+                ),
               ),
+              content: const Text('Are you sure you want to logout?',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.black,
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    // Close the dialog
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('Cancel',
+                    style: TextStyle(color: ThemeColor.primaryColor,
+                    fontSize: 24),),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    // Close the dialog
+                    Navigator.of(dialogContext).pop();
+                    
+                    // Log out user - clear tokens and stored data
+                    final apiService = ApiService();
+                    await apiService.logout();
+                    
+                    // Clear username cache
+                    UserService().clearCache();
+                    
+                    // Navigate to sign up screen and clear navigation stack
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const SignUpForm(),
+                      ),
+                      (Route<dynamic> route) => false, // Remove all previous routes
+                    );
+                  },
+                  child: const Text(
+                    'Logout',
+                    style: TextStyle(
+                    color: ThemeColor.red,
+                    fontSize: 24),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

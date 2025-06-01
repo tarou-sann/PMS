@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PMS Frontend',
       theme: theme,
-      home: const SignUpForm(), // Now this will work
+      home: const RegisterBase(), // Now this will work
       debugShowCheckedModeBanner: false,
     );
   }
