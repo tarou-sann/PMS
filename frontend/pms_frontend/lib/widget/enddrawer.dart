@@ -154,9 +154,8 @@ class EndDraw extends StatelessWidget {
             width: 400,
             height: 350,
             constraints: const BoxConstraints(maxWidth: 450),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: ThemeColor.white2,
-              borderRadius: BorderRadius.circular(8),
             ),
             child: AlertDialog(
               backgroundColor: Colors.transparent,

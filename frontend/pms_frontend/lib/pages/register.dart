@@ -13,7 +13,7 @@ class RegisterBase extends StatelessWidget {
   Widget build(BuildContext context) {
     const TextStyle listTileTextStyle = TextStyle(
       fontSize: 20,
-      color: Colors.black,
+      color: ThemeColor.primaryColor,
     );
 
     return Scaffold(
@@ -333,12 +333,12 @@ class _RegisterUserState extends State<RegisterUser> {
                       padding: const EdgeInsets.all(8),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: ThemeColor.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         _errorMessage,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: ThemeColor.red),
                       ),
                     ),
                   if (_successMessage.isNotEmpty)
@@ -374,13 +374,13 @@ class _RegisterUserState extends State<RegisterUser> {
                                       text: 'Username ',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: ThemeColor.primaryColor,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: '*',
                                           style: TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeColor.red,
                                           ),
                                         ),
                                       ],
@@ -397,6 +397,12 @@ class _RegisterUserState extends State<RegisterUser> {
                                     },
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 16,
                                         horizontal: 10,
@@ -411,13 +417,13 @@ class _RegisterUserState extends State<RegisterUser> {
                                       text: 'Password ',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: ThemeColor.primaryColor,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: '*',
                                           style: TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeColor.red,
                                           ),
                                         ),
                                       ],
@@ -435,6 +441,12 @@ class _RegisterUserState extends State<RegisterUser> {
                                     },
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 16,
                                         horizontal: 10,
@@ -449,13 +461,13 @@ class _RegisterUserState extends State<RegisterUser> {
                                       text: 'Confirm Password',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: ThemeColor.primaryColor,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: '*',
                                           style: TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeColor.red,
                                           ),
                                         ),
                                       ],
@@ -475,6 +487,12 @@ class _RegisterUserState extends State<RegisterUser> {
                                     },
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 16,
                                         horizontal: 10,
@@ -489,13 +507,13 @@ class _RegisterUserState extends State<RegisterUser> {
                                       text: 'Security Question ',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: ThemeColor.primaryColor,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: '*',
                                           style: TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeColor.red,
                                           ),
                                         ),
                                       ],
@@ -504,13 +522,28 @@ class _RegisterUserState extends State<RegisterUser> {
                                   const SizedBox(height: 8),
                                   DropdownButtonFormField<String>(
                                     value: _securityQuestion,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
+                                    style: const TextStyle(
+                                      color: ThemeColor.primaryColor,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16,
+                                      
+                                    ),
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      contentPadding: const EdgeInsets.symmetric(
                                         vertical: 16,
                                         horizontal: 10,
                                       ),
+                                      fillColor: Colors.grey[50],
+                                      filled: true,
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: ThemeColor.primaryColor,
+                                          width: 2,
+                                        ),
+                                      ),
                                     ),
+                                    dropdownColor: Colors.white,
                                     onChanged: (String? newValue) {
                                       setState(() {
                                         _securityQuestion = newValue!;
@@ -525,7 +558,15 @@ class _RegisterUserState extends State<RegisterUser> {
                                     ].map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                          value,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 14,
+                                            
+                                            color: ThemeColor.primaryColor,
+                                          ),
+                                        ),
                                       );
                                     }).toList(),
                                   ),
@@ -547,13 +588,13 @@ class _RegisterUserState extends State<RegisterUser> {
                                       text: 'Level of Access ',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: ThemeColor.primaryColor,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: '*',
                                           style: TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeColor.red,
                                           ),
                                         ),
                                       ],
@@ -562,13 +603,27 @@ class _RegisterUserState extends State<RegisterUser> {
                                   const SizedBox(height: 8),
                                   DropdownButtonFormField<String>(
                                     value: _userRole,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
+                                    style: const TextStyle(
+                                      color: ThemeColor.primaryColor,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 16,
+                                    ),
+                                    decoration: InputDecoration(
+                                      border: const OutlineInputBorder(),
+                                      contentPadding: const EdgeInsets.symmetric(
                                         vertical: 16,
                                         horizontal: 10,
                                       ),
+                                      fillColor: Colors.grey[50],
+                                      filled: true,
+                                      focusedBorder: const OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: ThemeColor.primaryColor,
+                                          width: 2,
+                                        ),
+                                      ),
                                     ),
+                                    dropdownColor: Colors.white,
                                     onChanged: (String? newValue) {
                                       setState(() {
                                         _userRole = newValue!;
@@ -580,7 +635,15 @@ class _RegisterUserState extends State<RegisterUser> {
                                     ].map<DropdownMenuItem<String>>((String value) {
                                       return DropdownMenuItem<String>(
                                         value: value,
-                                        child: Text(value),
+                                        child: Text(
+                                          value,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 14,
+                                            
+                                            color: ThemeColor.primaryColor,
+                                          ),
+                                        ),
                                       );
                                     }).toList(),
                                   ),
@@ -593,13 +656,13 @@ class _RegisterUserState extends State<RegisterUser> {
                                       text: 'Security Answer ',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        color: Colors.black87,
+                                        color: ThemeColor.primaryColor,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: '*',
                                           style: TextStyle(
-                                            color: Colors.red,
+                                            color: ThemeColor.red,
                                           ),
                                         ),
                                       ],
@@ -616,6 +679,12 @@ class _RegisterUserState extends State<RegisterUser> {
                                     },
                                     decoration: const InputDecoration(
                                       border: OutlineInputBorder(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.grey),
+                                      ),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 16,
                                         horizontal: 10,
@@ -767,10 +836,11 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
       fontSize: 18,
       fontWeight: FontWeight.w500,
       color: ThemeColor.secondaryColor,
+      fontFamily: 'Lexend',
     );
     const TextStyle listTileTextStyle = TextStyle(
       fontSize: 20,
-      color: Colors.black,
+      color: ThemeColor.primaryColor,
     );
 
     return Scaffold(
@@ -835,7 +905,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         _errorMessage,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: ThemeColor.red),
                       ),
                     ),
                   if (_successMessage.isNotEmpty)
@@ -856,7 +926,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                         TextSpan(
                           text: '*',
                           style: TextStyle(
-                            color: Colors.red,
+                            color: ThemeColor.red,
                           ),
                         ),
                       ],
@@ -1004,7 +1074,6 @@ class RegisterRice extends StatefulWidget {
   State<RegisterRice> createState() => _RegisterRiceState();
 }
 
-// Update the _RegisterRiceState class to match the machinery layout
 class _RegisterRiceState extends State<RegisterRice> {
   final ApiService _apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
@@ -1125,12 +1194,12 @@ class _RegisterRiceState extends State<RegisterRice> {
   Widget build(BuildContext context) {
     const TextStyle labelStyle = TextStyle(
       fontSize: 18,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w400,
       color: ThemeColor.secondaryColor,
     );
     const TextStyle listTileTextStyle = TextStyle(
       fontSize: 20,
-      color: Colors.black,
+      color: ThemeColor.primaryColor,
     );
 
     return Scaffold(
@@ -1147,7 +1216,7 @@ class _RegisterRiceState extends State<RegisterRice> {
           child: Container(
             padding: const EdgeInsets.all(20),
             width: 753,
-            height: 606, // Match machinery height
+            height: 650,
             decoration: BoxDecoration(
               color: ThemeColor.white2,
               boxShadow: [
@@ -1195,7 +1264,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         _errorMessage,
-                        style: const TextStyle(color: Colors.red),
+                        style: const TextStyle(color: ThemeColor.red),
                       ),
                     ),
                   if (_successMessage.isNotEmpty)
@@ -1203,7 +1272,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         _successMessage,
-                        style: const TextStyle(color: Colors.green),
+                        style: const TextStyle(color: ThemeColor.green),
                       ),
                     ),
 
@@ -1216,7 +1285,7 @@ class _RegisterRiceState extends State<RegisterRice> {
                         TextSpan(
                           text: '*',
                           style: TextStyle(
-                            color: Colors.red,
+                            color: ThemeColor.red,
                           ),
                         ),
                       ],
@@ -1246,18 +1315,26 @@ class _RegisterRiceState extends State<RegisterRice> {
                   const SizedBox(height: 10),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 5,
-                    ),
+                    height: 50,
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(4.0),
+                      color: Colors.grey[50],
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
                     ),
                     child: DropdownButton<String>(
                       value: _qualityGrade,
                       isExpanded: true,
                       underline: Container(),
+                      dropdownColor: Colors.white,
+                      style: const TextStyle(
+                        color: ThemeColor.primaryColor,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                      ),
                       onChanged: (String? newValue) {
                         setState(() {
                           _qualityGrade = newValue!;
@@ -1269,7 +1346,15 @@ class _RegisterRiceState extends State<RegisterRice> {
                       ].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value, style: listTileTextStyle),
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+    
+                              color: ThemeColor.primaryColor,
+                            ),
+                          ),
                         );
                       }).toList(),
                     ),

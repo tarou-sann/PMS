@@ -9,4 +9,5 @@ class ThemeColor {
   static const Color red = Color(0xFFA81818);
   static const Color white = Color(0xFFF4F4F4);
   static const Color white2 = Color(0xFFF7F7F7);
+  static const Color green = Color.fromARGB(255, 82, 123, 82);
 }

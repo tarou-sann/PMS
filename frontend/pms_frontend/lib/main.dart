@@ -6,7 +6,6 @@ import 'package:pms_frontend/pages/search.dart';
 import 'package:pms_frontend/pages/signup.dart';
 import 'package:pms_frontend/pages/dashboard.dart'; // Add this import
 import 'package:pms_frontend/services/api_service.dart';
-import 'theme/themedata.dart';
 import 'dart:io' show Platform;
 
 void main() async {
@@ -44,7 +43,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PMS Frontend',
-      theme: theme,
+      theme: ThemeData(
+        fontFamily: 'Lexend',
+      ),
       home: const RegisterBase(), // Now this will work
       debugShowCheckedModeBanner: false,
     );
