@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../pages/register.dart';
+
+import '../pages/dashboard.dart';
 import '../pages/machinerymanagement.dart';
+import '../pages/maintenance.dart';
+import '../pages/register.dart';
 import '../pages/reports.dart';
 import '../pages/search.dart';
-import '../pages/maintenance.dart';
-import '../pages/dashboard.dart';
 import '../pages/signup.dart';
 import '../services/api_service.dart';
 import '../services/user_service.dart';
+import '../theme/colors.dart';
 
 class EndDraw extends StatelessWidget {
   const EndDraw({super.key});
@@ -17,7 +18,6 @@ class EndDraw extends StatelessWidget {
   Widget build(BuildContext context) {
     const TextStyle listTileTextStyle = TextStyle(
       fontSize: 24,
-      fontWeight: FontWeight.w500,
       color: Colors.black,
     );
 
@@ -133,12 +133,8 @@ class EndDraw extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildPaddedListTile({
-    required String title, 
-    required TextStyle style, 
-    VoidCallback? onTap
-  }) {
+
+  Widget _buildPaddedListTile({required String title, required TextStyle style, VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
       child: ListTile(
@@ -147,7 +143,7 @@ class EndDraw extends StatelessWidget {
       ),
     );
   }
-  
+
   void showLogoutConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -157,7 +153,7 @@ class EndDraw extends StatelessWidget {
           child: Container(
             width: 400,
             height: 350,
-            constraints: BoxConstraints(maxWidth: 450),
+            constraints: const BoxConstraints(maxWidth: 450),
             decoration: BoxDecoration(
               color: ThemeColor.white2,
               borderRadius: BorderRadius.circular(8),
@@ -165,14 +161,16 @@ class EndDraw extends StatelessWidget {
             child: AlertDialog(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              title: const Text('Confirm Logout', 
+              title: const Text(
+                'Confirm Logout',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 26,
                   color: Colors.black,
                 ),
               ),
-              content: const Text('Are you sure you want to logout?',
+              content: const Text(
+                'Are you sure you want to logout?',
                 style: TextStyle(
                   fontSize: 24,
                   color: Colors.black,
@@ -184,22 +182,23 @@ class EndDraw extends StatelessWidget {
                     // Close the dialog
                     Navigator.of(dialogContext).pop();
                   },
-                  child: const Text('Cancel',
-                    style: TextStyle(color: ThemeColor.primaryColor,
-                    fontSize: 24),),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
+                  ),
                 ),
                 TextButton(
                   onPressed: () async {
                     // Close the dialog
                     Navigator.of(dialogContext).pop();
-                    
+
                     // Log out user - clear tokens and stored data
                     final apiService = ApiService();
                     await apiService.logout();
-                    
+
                     // Clear username cache
                     UserService().clearCache();
-                    
+
                     // Navigate to sign up screen and clear navigation stack
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
@@ -210,9 +209,7 @@ class EndDraw extends StatelessWidget {
                   },
                   child: const Text(
                     'Logout',
-                    style: TextStyle(
-                    color: ThemeColor.red,
-                    fontSize: 24),
+                    style: TextStyle(color: ThemeColor.red, fontSize: 24),
                   ),
                 ),
               ],
