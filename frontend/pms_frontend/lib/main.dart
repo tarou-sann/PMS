@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Lexend',
       ),
-      home: const RegisterBase(), // Now this will work
+      home: const SignUpForm(),
       debugShowCheckedModeBanner: false,
     );
   }

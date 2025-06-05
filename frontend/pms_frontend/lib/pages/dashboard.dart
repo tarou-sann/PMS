@@ -127,26 +127,27 @@ class _DashboardNavState extends State<DashboardNav> {
 
   Widget _buildTimePanel() {
     return Container(
+      height: 280, // Fixed height
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1, // Reduced from 100 to 1
-            blurRadius: 5,  // Increased from 0 to 5
-            offset: const Offset(0, 3), // Changed from (0,0) to (0,3) for better depth
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: _SystemTimeDisplay(),
+      child: Center(child: _SystemTimeDisplay()),
     );
   }
 
   Widget _buildOverviewPanel() {
-    // For production overview panel
     return Container(
+      height: 280,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -172,16 +173,16 @@ class _DashboardNavState extends State<DashboardNav> {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 200,
-            width: double.infinity,
-            // This would be replaced with actual production data
-            child: const Center(
-              child: Text(
-                'No production data available',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
+          Expanded( // Use Expanded to fill remaining space
+            child: Container(
+              width: double.infinity,
+              child: const Center(
+                child: Text(
+                  'No production data available',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
                 ),
               ),
             ),
@@ -368,7 +369,7 @@ class _SystemTimeDisplayState extends State<_SystemTimeDisplay> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row with title and date side by side
+  
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
