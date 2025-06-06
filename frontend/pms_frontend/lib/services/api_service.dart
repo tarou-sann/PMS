@@ -1070,4 +1070,51 @@ class ApiService {
     await prefs.remove('temp_user_data');
   }
   
+   Future<Map<String, dynamic>?> restoreMachinery(List<dynamic> machineryData) async {
+    try {
+      final result = await post('/machinery/restore', {'machinery': machineryData});
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Restore machinery error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> restoreRiceVarieties(List<dynamic> riceData) async {
+    try {
+      final result = await post('/rice-varieties/restore', {'rice_varieties': riceData});
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Restore rice varieties error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> restoreUsers(List<dynamic> usersData) async {
+    try {
+      final result = await post('/users/restore', {'users': usersData});
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Restore users error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> restoreFullBackup(Map<String, dynamic> backupData) async {
+    try {
+      final result = await post('/restore', backupData);
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Restore full backup error: $e');
+      }
+      return null;
+    }
+  }
 }

@@ -18,3 +18,11 @@ def init_db():
 
 def shutdown_session(exception=None):
     db_session.remove()
+
+# Export model classes for direct import
+from models.user import User
+from models.machinery import Machinery
+from models.rice import RiceVariety
+
+# Make them available when importing from models
+__all__ = ['db_session', 'Base', 'init_db', 'shutdown_session', 'User', 'Machinery', 'RiceVariety']

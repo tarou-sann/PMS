@@ -122,18 +122,6 @@ class AboutUs extends StatelessWidget {
     return Container(
       width: 200,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          )
-        ],
-      ),
       child: Column(
         children: [
           ClipRRect(

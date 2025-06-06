@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Startup script for the PMS Backend
 This script helps to set up and run the backend server

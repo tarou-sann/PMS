@@ -257,8 +257,8 @@ class _ArchivesPageState extends State<ArchivesPage> {
                   _statusMessage,
                   style: TextStyle(
                     color: _statusMessage.contains('Error') || _statusMessage.contains('Failed')
-                        ? ThemeColor.red.withOpacity(0.1)
-                      : ThemeColor.green.withOpacity(0.1),
+                        ? ThemeColor.red
+                        : ThemeColor.green,
                   ),
                 ),
               ),

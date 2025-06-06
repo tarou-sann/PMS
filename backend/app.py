@@ -5,6 +5,7 @@ from flask_bcrypt import Bcrypt
 from models import db_session, init_db, shutdown_session
 from routes import api, init_routes
 from config import Config
+from routes.restore import restore_api
 import os
 import argparse
 from datetime import timedelta
@@ -56,6 +57,8 @@ CORS(app, resources={
 
 # Register blueprints
 init_routes(app)
+
+app.register_blueprint(restore_api, url_prefix='/api')
 
 # Initialize database
 @app.before_first_request
