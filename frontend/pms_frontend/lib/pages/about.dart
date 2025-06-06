@@ -19,121 +19,99 @@ class AboutUs extends StatelessWidget {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(40.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                "About Us",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: ThemeColor.secondaryColor,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: ThemeColor.white2,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2),
+                  spreadRadius: 3,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "About Us",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColor.secondaryColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40),
-              
-              // System Description
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: ThemeColor.white2,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 3,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
+                const SizedBox(height: 40),
+                
+                // System Description
+                const Text(
+                  "Project Management System",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColor.secondaryColor,
+                  ),
                 ),
-                child: Column(
+                const SizedBox(height: 20),
+                const Text(
+                  "Version 1.0.0",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "We are a team compose of three third-year CS students working on a comprehensive production management system for Straw Innovations Ltd. We're delighted to see this idea come to life since we share a passion for technology and issue solving. Our solution strives to streamline production processes, increase efficiency, and deliver important insights targeted to Straw Innovations' individual needs. We hope to develop a solution that supports the company's growth and sustainability goals by leveraging our understanding of software engineering, machine learning, and data management.",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 40),
+                const Divider(),
+                const SizedBox(height: 40),
+                
+                // Team Members Section
+                const Text(
+                  "Our Team",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColor.secondaryColor,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                Wrap(
+                  spacing: 40,
+                  runSpacing: 40,
+                  alignment: WrapAlignment.center,
                   children: [
-                    const Text(
-                      "Project Management System",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: ThemeColor.secondaryColor,
-                      ),
+                    _buildTeamMember(
+                      "Dylan Yoshiya L. Arevalo",
+                      "Leader/Lead Developer",
+                      "lib/assets/images/dylan.jpg",
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Version 1.0.0",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                    _buildTeamMember(
+                      "Randi Phyliz Gail A. Abelar",
+                      "Member/Assistant Developer",
+                      "lib/assets/images/randi.jpg",
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      "We are a team compose of three third-year CS students working on a comprehensive production management system for Straw Innovations Ltd. We're delighted to see this idea come to life since we share a passion for technology and issue solving. Our solution strives to streamline production processes, increase efficiency, and deliver important insights targeted to Straw Innovations' individual needs. We hope to develop a solution that supports the company's growth and sustainability goals by leveraging our understanding of software engineering, machine learning, and data management. ",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[700],
-                      ),
-                      textAlign: TextAlign.center,
+                    _buildTeamMember(
+                      "Rainier Franz A. Dejoras",
+                      "Member/Assistant Developer",
+                      "lib/assets/images/rainier.jpg",
                     ),
                   ],
                 ),
-              ),
-              
-              const SizedBox(height: 40),
-              
-              // Team Members
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: ThemeColor.white2,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 3,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      "Our Team",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: ThemeColor.secondaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    Wrap(
-                      spacing: 40,
-                      runSpacing: 40,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        _buildTeamMember(
-                          "Dylan Yoshiya L. Arevalo",
-                          "Leader/Lead Developer",
-                          "lib/assets/images/dylan.jpg",
-                        ),
-                        _buildTeamMember(
-                          "Randi Phyliz Gail A. Abelar",
-                          "Member/Assistant Developer",
-                          "lib/assets/images/randi.jpg",
-                        ),
-                        _buildTeamMember(
-                          "Rainier Franz A. Dejoras",
-                          "Member/Assistant Developer",
-                          "lib/assets/images/rainier.jpg",
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
