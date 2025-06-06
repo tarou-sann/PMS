@@ -10,6 +10,7 @@ import '../pages/signup.dart';
 import '../services/api_service.dart';
 import '../services/user_service.dart';
 import '../theme/colors.dart';
+import '../pages/about.dart'; // Import the AboutUs page
 
 class EndDraw extends StatelessWidget {
   const EndDraw({super.key});
@@ -120,6 +121,15 @@ class EndDraw extends StatelessWidget {
           _buildPaddedListTile(
             title: 'About',
             style: listTileTextStyle,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AboutUs(),
+                ),
+              );
+              print("moving to about");
+            },
           ),
           _buildPaddedListTile(
             title: 'Logout',

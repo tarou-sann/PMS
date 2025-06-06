@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../services/user_service.dart';
 import '../pages/register.dart';
+import '../pages/about.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({Key? key}) : super(key: key);
@@ -128,8 +129,16 @@ class _NavbarState extends State<Navbar> {
             const ListTile(
               title: Text('Help', style: listTileTextStyle),
             ),
-            const ListTile(
-              title: Text('About', style: listTileTextStyle),
+            ListTile(
+              title: const Text('About', style: listTileTextStyle),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AboutUs(),
+                  ),
+                );
+              },
             ),
             const ListTile(
               title: Text('Logout', style: listTileTextStyle),

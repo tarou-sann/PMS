@@ -1,5 +1,5 @@
-# orm/collections.py
-# Copyright (C) 2005-2023 the SQLAlchemy authors and contributors
+# orm/mapped_collection.py
+# Copyright (C) 2005-2025 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -23,23 +23,24 @@ from typing import Union
 
 from . import base
 from .collections import collection
+from .collections import collection_adapter
 from .. import exc as sa_exc
 from .. import util
 from ..sql import coercions
 from ..sql import expression
 from ..sql import roles
+from ..util.langhelpers import Missing
+from ..util.langhelpers import MissingOr
 from ..util.typing import Literal
 
 if TYPE_CHECKING:
-
     from . import AttributeEventToken
     from . import Mapper
+    from .collections import CollectionAdapter
     from ..sql.elements import ColumnElement
 
 _KT = TypeVar("_KT", bound=Any)
 _VT = TypeVar("_VT", bound=Any)
-
-_F = TypeVar("_F", bound=Callable[[Any], Any])
 
 
 class _PlainColumnGetter(Generic[_KT]):
@@ -69,7 +70,7 @@ class _PlainColumnGetter(Generic[_KT]):
     def _cols(self, mapper: Mapper[_KT]) -> Sequence[ColumnElement[_KT]]:
         return self.cols
 
-    def __call__(self, value: _KT) -> Union[_KT, Tuple[_KT, ...]]:
+    def __call__(self, value: _KT) -> MissingOr[Union[_KT, Tuple[_KT, ...]]]:
         state = base.instance_state(value)
         m = base._state_mapper(state)
 
@@ -82,7 +83,7 @@ class _PlainColumnGetter(Generic[_KT]):
         else:
             obj = key[0]
             if obj is None:
-                return _UNMAPPED_AMBIGUOUS_NONE
+                return Missing
             else:
                 return obj
 
@@ -116,9 +117,7 @@ class _SerializableColumnGetterV2(_PlainColumnGetter[_KT]):
         return self.__class__, (self.colkeys,)
 
     @classmethod
-    def _reduce_from_cols(
-        cls, cols: Sequence[ColumnElement[_KT]]
-    ) -> Tuple[
+    def _reduce_from_cols(cls, cols: Sequence[ColumnElement[_KT]]) -> Tuple[
         Type[_SerializableColumnGetterV2[_KT]],
         Tuple[Sequence[Tuple[Optional[str], Optional[str]]]],
     ]:
@@ -134,7 +133,7 @@ class _SerializableColumnGetterV2(_PlainColumnGetter[_KT]):
     def _cols(self, mapper: Mapper[_KT]) -> Sequence[ColumnElement[_KT]]:
         cols: List[ColumnElement[_KT]] = []
         metadata = getattr(mapper.local_table, "metadata", None)
-        for (ckey, tkey) in self.colkeys:
+        for ckey, tkey in self.colkeys:
             if tkey is None or metadata is None or tkey not in metadata:
                 cols.append(mapper.local_table.c[ckey])  # type: ignore
             else:
@@ -199,9 +198,6 @@ def column_keyed_dict(
     )
 
 
-_UNMAPPED_AMBIGUOUS_NONE = object()
-
-
 class _AttrGetter:
     __slots__ = ("attr_name", "getter")
 
@@ -218,9 +214,9 @@ class _AttrGetter:
                 dict_ = state.dict
                 obj = dict_.get(self.attr_name, base.NO_VALUE)
                 if obj is None:
-                    return _UNMAPPED_AMBIGUOUS_NONE
+                    return Missing
             else:
-                return _UNMAPPED_AMBIGUOUS_NONE
+                return Missing
 
         return obj
 
@@ -230,7 +226,7 @@ class _AttrGetter:
 
 def attribute_keyed_dict(
     attr_name: str, *, ignore_unpopulated_attribute: bool = False
-) -> Type[KeyFuncDict[_KT, _KT]]:
+) -> Type[KeyFuncDict[Any, Any]]:
     """A dictionary-based collection type with attribute-based keying.
 
     .. versionchanged:: 2.0 Renamed :data:`.attribute_mapped_collection` to
@@ -278,7 +274,7 @@ def attribute_keyed_dict(
 
 
 def keyfunc_mapping(
-    keyfunc: _F,
+    keyfunc: Callable[[Any], Any],
     *,
     ignore_unpopulated_attribute: bool = False,
 ) -> Type[KeyFuncDict[_KT, Any]]:
@@ -354,7 +350,7 @@ class KeyFuncDict(Dict[_KT, _VT]):
 
     def __init__(
         self,
-        keyfunc: _F,
+        keyfunc: Callable[[Any], Any],
         *dict_args: Any,
         ignore_unpopulated_attribute: bool = False,
     ) -> None:
@@ -377,19 +373,31 @@ class KeyFuncDict(Dict[_KT, _VT]):
 
     @classmethod
     def _unreduce(
-        cls, keyfunc: _F, values: Dict[_KT, _KT]
+        cls,
+        keyfunc: Callable[[Any], Any],
+        values: Dict[_KT, _KT],
+        adapter: Optional[CollectionAdapter] = None,
     ) -> "KeyFuncDict[_KT, _KT]":
         mp: KeyFuncDict[_KT, _KT] = KeyFuncDict(keyfunc)
         mp.update(values)
+        # note that the adapter sets itself up onto this collection
+        # when its `__setstate__` method is called
         return mp
 
     def __reduce__(
         self,
     ) -> Tuple[
         Callable[[_KT, _KT], KeyFuncDict[_KT, _KT]],
-        Tuple[Any, Union[Dict[_KT, _KT], Dict[_KT, _KT]]],
+        Tuple[Any, Union[Dict[_KT, _KT], Dict[_KT, _KT]], CollectionAdapter],
     ]:
-        return (KeyFuncDict._unreduce, (self.keyfunc, dict(self)))
+        return (
+            KeyFuncDict._unreduce,
+            (
+                self.keyfunc,
+                dict(self),
+                collection_adapter(self),
+            ),
+        )
 
     @util.preload_module("sqlalchemy.orm.attributes")
     def _raise_for_unpopulated(
@@ -453,7 +461,7 @@ class KeyFuncDict(Dict[_KT, _VT]):
                 )
             else:
                 return
-        elif key is _UNMAPPED_AMBIGUOUS_NONE:
+        elif key is Missing:
             if not self.ignore_unpopulated_attribute:
                 self._raise_for_unpopulated(
                     value, _sa_initiator, warn_only=True
@@ -481,7 +489,7 @@ class KeyFuncDict(Dict[_KT, _VT]):
                     value, _sa_initiator, warn_only=False
                 )
             return
-        elif key is _UNMAPPED_AMBIGUOUS_NONE:
+        elif key is Missing:
             if not self.ignore_unpopulated_attribute:
                 self._raise_for_unpopulated(
                     value, _sa_initiator, warn_only=True
@@ -503,7 +511,7 @@ class KeyFuncDict(Dict[_KT, _VT]):
 
 
 def _mapped_collection_cls(
-    keyfunc: _F, ignore_unpopulated_attribute: bool
+    keyfunc: Callable[[Any], Any], ignore_unpopulated_attribute: bool
 ) -> Type[KeyFuncDict[_KT, _KT]]:
     class _MKeyfuncMapped(KeyFuncDict[_KT, _KT]):
         def __init__(self, *dict_args: Any) -> None:

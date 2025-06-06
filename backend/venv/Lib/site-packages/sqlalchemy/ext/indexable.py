@@ -1,5 +1,5 @@
-# ext/index.py
-# Copyright (C) 2005-2023 the SQLAlchemy authors and contributors
+# ext/indexable.py
+# Copyright (C) 2005-2025 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -22,9 +22,6 @@ The :mod:`~sqlalchemy.ext.indexable` extension provides
 :class:`_types.Indexable` typed column. In simple cases, it can be
 treated as a :class:`_schema.Column` - mapped attribute.
 
-
-.. versionadded:: 1.1
-
 Synopsis
 ========
 
@@ -39,19 +36,19 @@ as a dedicated attribute which behaves like a standalone column::
 
     Base = declarative_base()
 
+
     class Person(Base):
-        __tablename__ = 'person'
+        __tablename__ = "person"
 
         id = Column(Integer, primary_key=True)
         data = Column(JSON)
 
-        name = index_property('data', 'name')
-
+        name = index_property("data", "name")
 
 Above, the ``name`` attribute now behaves like a mapped column.   We
 can compose a new ``Person`` and set the value of ``name``::
 
-    >>> person = Person(name='Alchemist')
+    >>> person = Person(name="Alchemist")
 
 The value is now accessible::
 
@@ -62,11 +59,11 @@ Behind the scenes, the JSON field was initialized to a new blank dictionary
 and the field was set::
 
     >>> person.data
-    {"name": "Alchemist'}
+    {'name': 'Alchemist'}
 
 The field is mutable in place::
 
-    >>> person.name = 'Renamed'
+    >>> person.name = "Renamed"
     >>> person.name
     'Renamed'
     >>> person.data
@@ -90,18 +87,17 @@ A missing key will produce ``AttributeError``::
 
     >>> person = Person()
     >>> person.name
-    ...
     AttributeError: 'name'
 
 Unless you set a default value::
 
     >>> class Person(Base):
-    >>>     __tablename__ = 'person'
-    >>>
-    >>>     id = Column(Integer, primary_key=True)
-    >>>     data = Column(JSON)
-    >>>
-    >>>     name = index_property('data', 'name', default=None)  # See default
+    ...     __tablename__ = "person"
+    ...
+    ...     id = Column(Integer, primary_key=True)
+    ...     data = Column(JSON)
+    ...
+    ...     name = index_property("data", "name", default=None)  # See default
 
     >>> person = Person()
     >>> print(person.name)
@@ -114,11 +110,11 @@ an indexed SQL criteria::
 
     >>> from sqlalchemy.orm import Session
     >>> session = Session()
-    >>> query = session.query(Person).filter(Person.name == 'Alchemist')
+    >>> query = session.query(Person).filter(Person.name == "Alchemist")
 
 The above query is equivalent to::
 
-    >>> query = session.query(Person).filter(Person.data['name'] == 'Alchemist')
+    >>> query = session.query(Person).filter(Person.data["name"] == "Alchemist")
 
 Multiple :class:`.index_property` objects can be chained to produce
 multiple levels of indexing::
@@ -129,22 +125,25 @@ multiple levels of indexing::
 
     Base = declarative_base()
 
+
     class Person(Base):
-        __tablename__ = 'person'
+        __tablename__ = "person"
 
         id = Column(Integer, primary_key=True)
         data = Column(JSON)
 
-        birthday = index_property('data', 'birthday')
-        year = index_property('birthday', 'year')
-        month = index_property('birthday', 'month')
-        day = index_property('birthday', 'day')
+        birthday = index_property("data", "birthday")
+        year = index_property("birthday", "year")
+        month = index_property("birthday", "month")
+        day = index_property("birthday", "day")
 
 Above, a query such as::
 
-    q = session.query(Person).filter(Person.year == '1980')
+    q = session.query(Person).filter(Person.year == "1980")
 
-On a PostgreSQL backend, the above query will render as::
+On a PostgreSQL backend, the above query will render as:
+
+.. sourcecode:: sql
 
     SELECT person.id, person.data
     FROM person
@@ -201,13 +200,14 @@ version of :class:`_postgresql.JSON`::
 
     Base = declarative_base()
 
+
     class Person(Base):
-        __tablename__ = 'person'
+        __tablename__ = "person"
 
         id = Column(Integer, primary_key=True)
         data = Column(JSON)
 
-        age = pg_json_property('data', 'age', Integer)
+        age = pg_json_property("data", "age", Integer)
 
 The ``age`` attribute at the instance level works as before; however
 when rendering SQL, PostgreSQL's ``->>`` operator will be used
@@ -215,7 +215,8 @@ for indexed access, instead of the usual index operator of ``->``::
 
     >>> query = session.query(Person).filter(Person.age < 20)
 
-The above query will render::
+The above query will render:
+.. sourcecode:: sql
 
     SELECT person.id, person.data
     FROM person
@@ -234,8 +235,6 @@ class index_property(hybrid_property):  # noqa
     """A property generator. The generated property describes an object
     attribute that corresponds to an :class:`_types.Indexable`
     column.
-
-    .. versionadded:: 1.1
 
     .. seealso::
 

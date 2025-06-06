@@ -57,6 +57,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
+
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
@@ -66,10 +67,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
+    - lib/assets/images/
     - lib/assets/images/Straw_innovations_small2.png
-    - lib/assets/images/Straw_innovation_logo.jpg  # Add this line
+    - lib/assets/images/Straw_innovation_logo.jpg
+    - lib/assets/images/dylan.jpg
+    - lib/assets/images/randi.jpg
+    - lib/assets/images/rainier.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,5 +1,5 @@
-# mysql/asyncmy.py
-# Copyright (C) 2005-2023 the SQLAlchemy authors and contributors <see AUTHORS
+# dialects/mysql/asyncmy.py
+# Copyright (C) 2005-2025 the SQLAlchemy authors and contributors <see AUTHORS
 # file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -13,10 +13,6 @@ r"""
     :connectstring: mysql+asyncmy://user:password@host:port/dbname[?key=value&key=value...]
     :url: https://github.com/long2ice/asyncmy
 
-.. note:: The asyncmy dialect as of September, 2021 was added to provide
-   MySQL/MariaDB asyncio compatibility given that the :ref:`aiomysql` database
-   driver has become unmaintained, however asyncmy is itself very new.
-
 Using a special asyncio mediation layer, the asyncmy dialect is usable
 as the backend for the :ref:`SQLAlchemy asyncio <asyncio_toplevel>`
 extension package.
@@ -25,11 +21,13 @@ This dialect should normally be used only with the
 :func:`_asyncio.create_async_engine` engine creation function::
 
     from sqlalchemy.ext.asyncio import create_async_engine
-    engine = create_async_engine("mysql+asyncmy://user:pass@hostname/dbname?charset=utf8mb4")
 
+    engine = create_async_engine(
+        "mysql+asyncmy://user:pass@hostname/dbname?charset=utf8mb4"
+    )
 
 """  # noqa
-
+from collections import deque
 from contextlib import asynccontextmanager
 
 from .pymysql import MySQLDialect_pymysql
@@ -42,6 +40,8 @@ from ...util.concurrency import await_only
 
 
 class AsyncAdapt_asyncmy_cursor:
+    # TODO: base on connectors/asyncio.py
+    # see #10415
     server_side = False
     __slots__ = (
         "_adapt_connection",
@@ -59,7 +59,7 @@ class AsyncAdapt_asyncmy_cursor:
         cursor = self._connection.cursor()
 
         self._cursor = self.await_(cursor.__aenter__())
-        self._rows = []
+        self._rows = deque()
 
     @property
     def description(self):
@@ -89,7 +89,7 @@ class AsyncAdapt_asyncmy_cursor:
         # exhausting rows, which we already have done for sync cursor.
         # another option would be to emulate aiosqlite dialect and assign
         # cursor only if we are doing server side cursor operation.
-        self._rows[:] = []
+        self._rows.clear()
 
     def execute(self, operation, parameters=None):
         return self.await_(self._execute_async(operation, parameters))
@@ -111,7 +111,7 @@ class AsyncAdapt_asyncmy_cursor:
                 # of that here since our default result is not async.
                 # we could just as easily grab "_rows" here and be done with it
                 # but this is safer.
-                self._rows = list(await self._cursor.fetchall())
+                self._rows = deque(await self._cursor.fetchall())
             return result
 
     async def _executemany_async(self, operation, seq_of_parameters):
@@ -123,11 +123,11 @@ class AsyncAdapt_asyncmy_cursor:
 
     def __iter__(self):
         while self._rows:
-            yield self._rows.pop(0)
+            yield self._rows.popleft()
 
     def fetchone(self):
         if self._rows:
-            return self._rows.pop(0)
+            return self._rows.popleft()
         else:
             return None
 
@@ -135,17 +135,18 @@ class AsyncAdapt_asyncmy_cursor:
         if size is None:
             size = self.arraysize
 
-        retval = self._rows[0:size]
-        self._rows[:] = self._rows[size:]
-        return retval
+        rr = self._rows
+        return [rr.popleft() for _ in range(min(size, len(rr)))]
 
     def fetchall(self):
-        retval = self._rows[:]
-        self._rows[:] = []
+        retval = list(self._rows)
+        self._rows.clear()
         return retval
 
 
 class AsyncAdapt_asyncmy_ss_cursor(AsyncAdapt_asyncmy_cursor):
+    # TODO: base on connectors/asyncio.py
+    # see #10415
     __slots__ = ()
     server_side = True
 
@@ -176,6 +177,8 @@ class AsyncAdapt_asyncmy_ss_cursor(AsyncAdapt_asyncmy_cursor):
 
 
 class AsyncAdapt_asyncmy_connection(AdaptedConnection):
+    # TODO: base on connectors/asyncio.py
+    # see #10415
     await_ = staticmethod(await_only)
     __slots__ = ("dbapi", "_execute_mutex")
 
@@ -220,9 +223,12 @@ class AsyncAdapt_asyncmy_connection(AdaptedConnection):
     def commit(self):
         self.await_(self._connection.commit())
 
-    def close(self):
+    def terminate(self):
         # it's not awaitable.
         self._connection.close()
+
+    def close(self) -> None:
+        self.await_(self._connection.ensure_closed())
 
 
 class AsyncAdaptFallback_asyncmy_connection(AsyncAdapt_asyncmy_connection):
@@ -267,16 +273,17 @@ class AsyncAdapt_asyncmy_dbapi:
 
     def connect(self, *arg, **kw):
         async_fallback = kw.pop("async_fallback", False)
+        creator_fn = kw.pop("async_creator_fn", self.asyncmy.connect)
 
         if util.asbool(async_fallback):
             return AsyncAdaptFallback_asyncmy_connection(
                 self,
-                await_fallback(self.asyncmy.connect(*arg, **kw)),
+                await_fallback(creator_fn(*arg, **kw)),
             )
         else:
             return AsyncAdapt_asyncmy_connection(
                 self,
-                await_only(self.asyncmy.connect(*arg, **kw)),
+                await_only(creator_fn(*arg, **kw)),
             )
 
 
@@ -288,6 +295,7 @@ class MySQLDialect_asyncmy(MySQLDialect_pymysql):
     _sscursor = AsyncAdapt_asyncmy_ss_cursor
 
     is_async = True
+    has_terminate = True
 
     @classmethod
     def import_dbapi(cls):
@@ -295,13 +303,15 @@ class MySQLDialect_asyncmy(MySQLDialect_pymysql):
 
     @classmethod
     def get_pool_class(cls, url):
-
         async_fallback = url.query.get("async_fallback", False)
 
         if util.asbool(async_fallback):
             return pool.FallbackAsyncAdaptedQueuePool
         else:
             return pool.AsyncAdaptedQueuePool
+
+    def do_terminate(self, dbapi_connection) -> None:
+        dbapi_connection.terminate()
 
     def create_connect_args(self, url):
         return super().create_connect_args(

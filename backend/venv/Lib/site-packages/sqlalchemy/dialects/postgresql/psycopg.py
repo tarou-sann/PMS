@@ -1,5 +1,5 @@
-# postgresql/psycopg2.py
-# Copyright (C) 2005-2023 the SQLAlchemy authors and contributors
+# dialects/postgresql/psycopg.py
+# Copyright (C) 2005-2025 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -29,26 +29,29 @@ selected depending on how the engine is created:
   automatically select the sync version, e.g.::
 
     from sqlalchemy import create_engine
-    sync_engine = create_engine("postgresql+psycopg://scott:tiger@localhost/test")
+
+    sync_engine = create_engine(
+        "postgresql+psycopg://scott:tiger@localhost/test"
+    )
 
 * calling :func:`_asyncio.create_async_engine` with
   ``postgresql+psycopg://...`` will automatically select the async version,
   e.g.::
 
     from sqlalchemy.ext.asyncio import create_async_engine
-    asyncio_engine = create_async_engine("postgresql+psycopg://scott:tiger@localhost/test")
+
+    asyncio_engine = create_async_engine(
+        "postgresql+psycopg://scott:tiger@localhost/test"
+    )
 
 The asyncio version of the dialect may also be specified explicitly using the
 ``psycopg_async`` suffix, as::
 
     from sqlalchemy.ext.asyncio import create_async_engine
-    asyncio_engine = create_async_engine("postgresql+psycopg_async://scott:tiger@localhost/test")
 
-The ``psycopg`` dialect has the same API features as that of ``psycopg2``,
-with the exception of the "fast executemany" helpers.   The "fast executemany"
-helpers are expected to be generalized and ported to ``psycopg`` before the final
-release of SQLAlchemy 2.0, however.
-
+    asyncio_engine = create_async_engine(
+        "postgresql+psycopg_async://scott:tiger@localhost/test"
+    )
 
 .. seealso::
 
@@ -56,9 +59,42 @@ release of SQLAlchemy 2.0, however.
     dialect shares most of its behavior with the ``psycopg2`` dialect.
     Further documentation is available there.
 
+Using a different Cursor class
+------------------------------
+
+One of the differences between ``psycopg`` and the older ``psycopg2``
+is how bound parameters are handled: ``psycopg2`` would bind them
+client side, while ``psycopg`` by default will bind them server side.
+
+It's possible to configure ``psycopg`` to do client side binding by
+specifying the ``cursor_factory`` to be ``ClientCursor`` when creating
+the engine::
+
+    from psycopg import ClientCursor
+
+    client_side_engine = create_engine(
+        "postgresql+psycopg://...",
+        connect_args={"cursor_factory": ClientCursor},
+    )
+
+Similarly when using an async engine the ``AsyncClientCursor`` can be
+specified::
+
+    from psycopg import AsyncClientCursor
+
+    client_side_engine = create_async_engine(
+        "postgresql+psycopg://...",
+        connect_args={"cursor_factory": AsyncClientCursor},
+    )
+
+.. seealso::
+
+    `Client-side-binding cursors <https://www.psycopg.org/psycopg3/docs/advanced/cursors.html#client-side-binding-cursors>`_
+
 """  # noqa
 from __future__ import annotations
 
+from collections import deque
 import logging
 import re
 from typing import cast
@@ -74,6 +110,7 @@ from .base import REGCONFIG
 from .json import JSON
 from .json import JSONB
 from .json import JSONPathType
+from .types import CITEXT
 from ... import pool
 from ... import util
 from ...engine import AdaptedConnection
@@ -83,6 +120,8 @@ from ...util.concurrency import await_only
 
 if TYPE_CHECKING:
     from typing import Iterable
+
+    from psycopg import AsyncConnection
 
 logger = logging.getLogger("sqlalchemy.dialects.postgresql")
 
@@ -96,8 +135,6 @@ class _PGREGCONFIG(REGCONFIG):
 
 
 class _PGJSON(JSON):
-    render_bind_cast = True
-
     def bind_processor(self, dialect):
         return self._make_bind_processor(None, dialect._psycopg_Json)
 
@@ -106,8 +143,6 @@ class _PGJSON(JSON):
 
 
 class _PGJSONB(JSONB):
-    render_bind_cast = True
-
     def bind_processor(self, dialect):
         return self._make_bind_processor(None, dialect._psycopg_Jsonb)
 
@@ -167,7 +202,7 @@ class _PGBoolean(sqltypes.Boolean):
     render_bind_cast = True
 
 
-class _PsycopgRange(ranges.AbstractRangeImpl):
+class _PsycopgRange(ranges.AbstractSingleRangeImpl):
     def bind_processor(self, dialect):
         psycopg_Range = cast(PGDialect_psycopg, dialect)._psycopg_Range
 
@@ -223,8 +258,10 @@ class _PsycopgMultiRange(ranges.AbstractMultiRangeImpl):
 
     def result_processor(self, dialect, coltype):
         def to_range(value):
-            if value is not None:
-                value = [
+            if value is None:
+                return None
+            else:
+                return ranges.MultiRange(
                     ranges.Range(
                         elem._lower,
                         elem._upper,
@@ -232,9 +269,7 @@ class _PsycopgMultiRange(ranges.AbstractMultiRangeImpl):
                         empty=not elem._bounds,
                     )
                     for elem in value
-                ]
-
-            return value
+                )
 
         return to_range
 
@@ -277,6 +312,7 @@ class PGDialect_psycopg(_PGDialect_common_psycopg):
             sqltypes.String: _PGString,
             REGCONFIG: _PGREGCONFIG,
             JSON: _PGJSON,
+            CITEXT: CITEXT,
             sqltypes.JSON: _PGJSON,
             JSONB: _PGJSONB,
             sqltypes.JSON.JSONPathType: _PGJSONPathType,
@@ -290,7 +326,7 @@ class PGDialect_psycopg(_PGDialect_common_psycopg):
             sqltypes.Integer: _PGInteger,
             sqltypes.SmallInteger: _PGSmallInteger,
             sqltypes.BigInteger: _PGBigInteger,
-            ranges.AbstractRange: _PsycopgRange,
+            ranges.AbstractSingleRange: _PsycopgRange,
             ranges.AbstractMultiRange: _PsycopgMultiRange,
         },
     )
@@ -315,6 +351,16 @@ class PGDialect_psycopg(_PGDialect_common_psycopg):
             self._psycopg_adapters_map = adapters_map = AdaptersMap(
                 self.dbapi.adapters
             )
+
+            if self._native_inet_types is False:
+                import psycopg.types.string
+
+                adapters_map.register_loader(
+                    "inet", psycopg.types.string.TextLoader
+                )
+                adapters_map.register_loader(
+                    "cidr", psycopg.types.string.TextLoader
+                )
 
             if self._json_deserializer:
                 from psycopg.types.json import set_json_loads
@@ -360,10 +406,12 @@ class PGDialect_psycopg(_PGDialect_common_psycopg):
 
                 # register the adapter for connections made subsequent to
                 # this one
+                assert self._psycopg_adapters_map
                 register_hstore(info, self._psycopg_adapters_map)
 
                 # register the adapter for this connection
-                register_hstore(info, connection.connection)
+                assert connection.connection
+                register_hstore(info, connection.connection.driver_connection)
 
     @classmethod
     def import_dbapi(cls):
@@ -524,7 +572,7 @@ class AsyncAdapt_psycopg_cursor:
     def __init__(self, cursor, await_) -> None:
         self._cursor = cursor
         self.await_ = await_
-        self._rows = []
+        self._rows = deque()
 
     def __getattr__(self, name):
         return getattr(self._cursor, name)
@@ -551,24 +599,19 @@ class AsyncAdapt_psycopg_cursor:
         # eq/ne
         if res and res.status == self._psycopg_ExecStatus.TUPLES_OK:
             rows = self.await_(self._cursor.fetchall())
-            if not isinstance(rows, list):
-                self._rows = list(rows)
-            else:
-                self._rows = rows
+            self._rows = deque(rows)
         return result
 
     def executemany(self, query, params_seq):
         return self.await_(self._cursor.executemany(query, params_seq))
 
     def __iter__(self):
-        # TODO: try to avoid pop(0) on a list
         while self._rows:
-            yield self._rows.pop(0)
+            yield self._rows.popleft()
 
     def fetchone(self):
         if self._rows:
-            # TODO: try to avoid pop(0) on a list
-            return self._rows.pop(0)
+            return self._rows.popleft()
         else:
             return None
 
@@ -576,13 +619,12 @@ class AsyncAdapt_psycopg_cursor:
         if size is None:
             size = self._cursor.arraysize
 
-        retval = self._rows[0:size]
-        self._rows = self._rows[size:]
-        return retval
+        rr = self._rows
+        return [rr.popleft() for _ in range(min(size, len(rr)))]
 
     def fetchall(self):
-        retval = self._rows
-        self._rows = []
+        retval = list(self._rows)
+        self._rows.clear()
         return retval
 
 
@@ -613,6 +655,7 @@ class AsyncAdapt_psycopg_ss_cursor(AsyncAdapt_psycopg_cursor):
 
 
 class AsyncAdapt_psycopg_connection(AdaptedConnection):
+    _connection: AsyncConnection
     __slots__ = ()
     await_ = staticmethod(await_only)
 
@@ -678,15 +721,16 @@ class PsycopgAdaptDBAPI:
 
     def connect(self, *arg, **kw):
         async_fallback = kw.pop("async_fallback", False)
+        creator_fn = kw.pop(
+            "async_creator_fn", self.psycopg.AsyncConnection.connect
+        )
         if util.asbool(async_fallback):
             return AsyncAdaptFallback_psycopg_connection(
-                await_fallback(
-                    self.psycopg.AsyncConnection.connect(*arg, **kw)
-                )
+                await_fallback(creator_fn(*arg, **kw))
             )
         else:
             return AsyncAdapt_psycopg_connection(
-                await_only(self.psycopg.AsyncConnection.connect(*arg, **kw))
+                await_only(creator_fn(*arg, **kw))
             )
 
 
@@ -705,7 +749,6 @@ class PGDialectAsync_psycopg(PGDialect_psycopg):
 
     @classmethod
     def get_pool_class(cls, url):
-
         async_fallback = url.query.get("async_fallback", False)
 
         if util.asbool(async_fallback):
