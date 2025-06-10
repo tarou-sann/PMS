@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
-import '../services/user_service.dart';
-import '../pages/register.dart';
+
 import '../pages/about.dart';
+import '../pages/register.dart';
+import '../services/user_service.dart';
+import '../theme/colors.dart';
 
 class Navbar extends StatefulWidget {
-  const Navbar({Key? key}) : super(key: key);
+  const Navbar({super.key});
 
   @override
   _NavbarState createState() => _NavbarState();
@@ -14,13 +15,13 @@ class Navbar extends StatefulWidget {
 class _NavbarState extends State<Navbar> {
   final UserService _userService = UserService();
   String _username = "";
-  
+
   @override
   void initState() {
     super.initState();
     _loadUsername();
   }
-  
+
   Future<void> _loadUsername() async {
     final username = await _userService.getUsername();
     if (mounted) {
@@ -106,12 +107,12 @@ class _NavbarState extends State<Navbar> {
             ListTile(
               title: const Text('Registration', style: listTileTextStyle),
               onTap: () {
-                 Navigator.push(
-                        context,
-                         MaterialPageRoute(
-                          builder: (context) => const RegisterBase(), // Fix the misplaced closing parenthesis
-                             ),
-                            );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RegisterBase(), // Fix the misplaced closing parenthesis
+                  ),
+                );
               },
             ),
             const ListTile(

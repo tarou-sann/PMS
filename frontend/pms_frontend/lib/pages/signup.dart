@@ -1,8 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:pms_frontend/pages/passwordrecovery.dart';
-import 'package:pms_frontend/pages/register.dart';
 import 'package:pms_frontend/services/api_service.dart';
+
 import '../theme/colors.dart';
 import 'dashboard.dart'; // Add this import
 
@@ -113,22 +113,27 @@ class _SignUpFormState extends State<SignUpForm> {
                   width: 635,
                   height: 75,
                   child: TextField(
+                    cursorColor: ThemeColor.primaryColor,
                     controller: _usernameController,
                     style: const TextStyle(
                       color: ThemeColor.primaryColor,
                       fontSize: 20,
                     ),
                     decoration: InputDecoration(
-                      hintText: "Username",
+                      hintText: 'Username',
                       hintStyle: const TextStyle(
                         color: ThemeColor.grey,
                       ),
-                      border: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: ThemeColor.grey,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 10,
                       ),
                     ),
                   ),
@@ -140,6 +145,7 @@ class _SignUpFormState extends State<SignUpForm> {
                   width: 635,
                   height: 75,
                   child: TextField(
+                    cursorColor: ThemeColor.primaryColor,
                     controller: _passwordController,
                     obscureText: true,
                     style: const TextStyle(
@@ -147,16 +153,20 @@ class _SignUpFormState extends State<SignUpForm> {
                       fontSize: 20,
                     ),
                     decoration: InputDecoration(
-                      hintText: "Password",
+                      hintText: 'Password',
                       hintStyle: const TextStyle(
                         color: ThemeColor.grey,
                       ),
-                      border: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: ThemeColor.grey,
-                          width: 1,
-                        ),
-                        borderRadius: BorderRadius.circular(9),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 10,
                       ),
                     ),
                   ),

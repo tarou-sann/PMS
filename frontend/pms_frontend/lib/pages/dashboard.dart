@@ -1,17 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 
+import '../services/api_service.dart'; // Add this import
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
-import '../widget/navbar.dart';
-import 'register.dart';
-import 'repair.dart';
-import 'reports.dart';
-import 'search.dart';
-import '../services/api_service.dart';  // Add this import
-import 'package:shared_preferences/shared_preferences.dart';  // Add this import
 
 class DashboardNav extends StatefulWidget {
   const DashboardNav({super.key});
@@ -35,7 +31,7 @@ class _DashboardNavState extends State<DashboardNav> {
   Future<void> _loadUsername() async {
     final prefs = await SharedPreferences.getInstance();
     final username = prefs.getString('username') ?? "";
-    
+
     if (username.isEmpty) {
       // If not found in shared preferences, try to get from API
       try {
@@ -44,7 +40,7 @@ class _DashboardNavState extends State<DashboardNav> {
           setState(() {
             _username = userInfo['username'];
           });
-          
+
           // Save for future use
           await prefs.setString('username', _username);
         }
@@ -62,14 +58,14 @@ class _DashboardNavState extends State<DashboardNav> {
   Widget build(BuildContext context) {
     const TextStyle listTileTextStyle = TextStyle(
       fontSize: 20,
-      color: Colors.black,
+      color: ThemeColor.primaryColor,
     );
 
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: ThemeColor.white,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(150),
+        preferredSize: const Size.fromHeight(150),
         child: CustomNavbar(username: _username), // Pass username to custom navbar
       ),
       endDrawer: const EndDraw(),
@@ -93,43 +89,41 @@ class _DashboardNavState extends State<DashboardNav> {
   }
 
   Widget _buildDashboardContent() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: StaggeredGrid.count(
-            crossAxisCount: 2,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            children: [
-              // System Time panel
-              StaggeredGridTile.fit(
-                crossAxisCellCount: 1,
-                child: _buildTimePanel(),
-              ),
-              
-              // Production Overview panel
-              StaggeredGridTile.fit(
-                crossAxisCellCount: 1,
-                child: _buildOverviewPanel(),
-              ),
-              
-              // Recently Used Machines panel (spans full width)
-              StaggeredGridTile.fit(
-                crossAxisCellCount: 2,
-                child: _buildMachinesPanel(),
-              ),
-            ],
-          ),
-        );
-      }
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        child: StaggeredGrid.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          children: [
+            // System Time panel
+            StaggeredGridTile.fit(
+              crossAxisCellCount: 1,
+              child: _buildTimePanel(),
+            ),
+
+            // Production Overview panel
+            StaggeredGridTile.fit(
+              crossAxisCellCount: 1,
+              child: _buildOverviewPanel(),
+            ),
+
+            // Recently Used Machines panel (spans full width)
+            StaggeredGridTile.fit(
+              crossAxisCellCount: 2,
+              child: _buildMachinesPanel(),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildTimePanel() {
     return Container(
       height: 280, // Fixed height
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeColor.white2,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -149,7 +143,7 @@ class _DashboardNavState extends State<DashboardNav> {
     return Container(
       height: 280,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeColor.white2,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -161,7 +155,7 @@ class _DashboardNavState extends State<DashboardNav> {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -172,11 +166,12 @@ class _DashboardNavState extends State<DashboardNav> {
               color: ThemeColor.secondaryColor,
             ),
           ),
-          const SizedBox(height: 16),
-          Expanded( // Use Expanded to fill remaining space
-            child: Container(
+          SizedBox(height: 16),
+          Expanded(
+            // Use Expanded to fill remaining space
+            child: SizedBox(
               width: double.infinity,
-              child: const Center(
+              child: Center(
                 child: Text(
                   'No production data available',
                   style: TextStyle(
@@ -196,7 +191,7 @@ class _DashboardNavState extends State<DashboardNav> {
     // For machines panel
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeColor.white2,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -208,7 +203,7 @@ class _DashboardNavState extends State<DashboardNav> {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -219,12 +214,12 @@ class _DashboardNavState extends State<DashboardNav> {
               color: ThemeColor.secondaryColor,
             ),
           ),
-          const SizedBox(height: 16),
-          Container(
+          SizedBox(height: 16),
+          SizedBox(
             height: 200,
             width: double.infinity,
             // This would be replaced with actual machine data
-            child: const Center(
+            child: Center(
               child: Text(
                 'No recent machine usage data',
                 style: TextStyle(
@@ -243,9 +238,9 @@ class _DashboardNavState extends State<DashboardNav> {
 // Create a custom Navbar that receives the username
 class CustomNavbar extends StatelessWidget {
   final String username;
-  
-  const CustomNavbar({Key? key, required this.username}) : super(key: key);
-  
+
+  const CustomNavbar({super.key, required this.username});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -257,9 +252,9 @@ class CustomNavbar extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,      // Reduced from 100 to 1
-            blurRadius: 5,        // Added some blur for a more natural shadow
-            offset: const Offset(0, 3),  // Shadow appears below the navbar
+            spreadRadius: 1, // Reduced from 100 to 1
+            blurRadius: 5, // Added some blur for a more natural shadow
+            offset: const Offset(0, 3), // Shadow appears below the navbar
           ),
         ],
       ),
@@ -275,7 +270,7 @@ class CustomNavbar extends StatelessWidget {
             const Spacer(),
             Text(
               'Hello, ${username.isNotEmpty ? username : "Guest"}',
-              style: TextStyle(color: Colors.black, fontSize: 24),
+              style: const TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
@@ -300,14 +295,14 @@ class _DashboardPanel extends StatelessWidget {
   const _DashboardPanel({
     required this.title,
     required this.child,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeColor.white2,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -324,7 +319,7 @@ class _DashboardPanel extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: ThemeColor.primaryColor,
@@ -369,11 +364,10 @@ class _SystemTimeDisplayState extends State<_SystemTimeDisplay> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-  
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               'System Time',
               style: TextStyle(
                 fontSize: 20,
@@ -385,7 +379,7 @@ class _SystemTimeDisplayState extends State<_SystemTimeDisplay> {
               DateFormat('MMMM d, yyyy').format(_currentTime),
               style: const TextStyle(
                 fontSize: 18,
-                color: Colors.black,
+                color: ThemeColor.primaryColor,
               ),
             ),
           ],
@@ -398,7 +392,7 @@ class _SystemTimeDisplayState extends State<_SystemTimeDisplay> {
             style: const TextStyle(
               fontSize: 72,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: ThemeColor.primaryColor,
             ),
           ),
         ),

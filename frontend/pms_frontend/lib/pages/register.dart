@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/user_activity_service.dart';
 import '../theme/colors.dart';
+import '../widget/calendar.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 
@@ -346,12 +347,12 @@ class _RegisterUserState extends State<RegisterUser> {
                       padding: const EdgeInsets.all(8),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: ThemeColor.green.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         _successMessage,
-                        style: const TextStyle(color: Colors.green),
+                        style: const TextStyle(color: ThemeColor.green),
                       ),
                     ),
 
@@ -388,6 +389,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                   ),
                                   const SizedBox(height: 8),
                                   TextFormField(
+                                    cursorColor: ThemeColor.primaryColor,
                                     controller: _usernameController,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -431,6 +433,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                   ),
                                   const SizedBox(height: 8),
                                   TextFormField(
+                                    cursorColor: ThemeColor.primaryColor,
                                     controller: _passwordController,
                                     obscureText: true,
                                     validator: (value) {
@@ -475,6 +478,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                   ),
                                   const SizedBox(height: 8),
                                   TextFormField(
+                                    cursorColor: ThemeColor.primaryColor,
                                     controller: _confirmPasswordController,
                                     obscureText: true,
                                     validator: (value) {
@@ -526,7 +530,6 @@ class _RegisterUserState extends State<RegisterUser> {
                                       color: ThemeColor.primaryColor,
                                       fontWeight: FontWeight.w400,
                                       fontSize: 16,
-                                      
                                     ),
                                     decoration: InputDecoration(
                                       border: const OutlineInputBorder(),
@@ -563,7 +566,6 @@ class _RegisterUserState extends State<RegisterUser> {
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w400,
                                             fontSize: 14,
-                                            
                                             color: ThemeColor.primaryColor,
                                           ),
                                         ),
@@ -640,7 +642,6 @@ class _RegisterUserState extends State<RegisterUser> {
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w400,
                                             fontSize: 14,
-                                            
                                             color: ThemeColor.primaryColor,
                                           ),
                                         ),
@@ -670,6 +671,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                   ),
                                   const SizedBox(height: 8),
                                   TextFormField(
+                                    cursorColor: ThemeColor.primaryColor,
                                     controller: _securityAnswerController,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -913,7 +915,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       padding: const EdgeInsets.only(top: 10),
                       child: Text(
                         _successMessage,
-                        style: const TextStyle(color: Colors.green),
+                        style: const TextStyle(color: ThemeColor.green),
                       ),
                     ),
 
@@ -934,18 +936,28 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
-                    controller: _machineNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter machine name';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Enter machine name",
-                    ),
-                  ),
+                      cursorColor: ThemeColor.primaryColor,
+                      controller: _machineNameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter machine name';
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Machine Name',
+                        border: OutlineInputBorder(),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 10,
+                        ),
+                      )),
                   const SizedBox(height: 30),
 
                   // Mobility
@@ -1098,11 +1110,12 @@ class _RegisterRiceState extends State<RegisterRice> {
 
   // Date picker method
   Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? picked = await CalendarTheme.showCustomDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      helpText: 'Select Date',
     );
 
     if (picked != null) {
@@ -1293,18 +1306,28 @@ class _RegisterRiceState extends State<RegisterRice> {
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
-                    controller: _varietyNameController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter rice variety name';
-                      }
-                      return null;
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Enter rice variety name",
-                    ),
-                  ),
+                      cursorColor: ThemeColor.primaryColor,
+                      controller: _varietyNameController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter rice variety name';
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        hintText: 'Rice Variety Name',
+                        border: OutlineInputBorder(),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 10,
+                        ),
+                      )),
                   const SizedBox(height: 30),
 
                   // Quality Grade
@@ -1351,7 +1374,6 @@ class _RegisterRiceState extends State<RegisterRice> {
                             style: const TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 14,
-    
                               color: ThemeColor.primaryColor,
                             ),
                           ),
@@ -1368,14 +1390,25 @@ class _RegisterRiceState extends State<RegisterRice> {
                   ),
                   const SizedBox(height: 10),
                   TextFormField(
+                    cursorColor: ThemeColor.primaryColor,
                     controller: _productionDateController,
                     readOnly: true,
                     onTap: () {
                       _selectDate(context, _productionDateController);
                     },
                     decoration: InputDecoration(
-                      border: const OutlineInputBorder(),
                       hintText: "Select Production Date",
+                      border: const OutlineInputBorder(),
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 10,
+                      ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.calendar_today),
                         onPressed: () {
@@ -1399,12 +1432,22 @@ class _RegisterRiceState extends State<RegisterRice> {
                       _selectDate(context, _expirationDateController);
                     },
                     decoration: InputDecoration(
+                      hintText: "Select Expiry Date",
                       border: const OutlineInputBorder(),
-                      hintText: "Select Expiration Date",
+                      enabledBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 10,
+                      ),
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.calendar_today),
                         onPressed: () {
-                          _selectDate(context, _expirationDateController);
+                          _selectDate(context, _productionDateController);
                         },
                       ),
                     ),

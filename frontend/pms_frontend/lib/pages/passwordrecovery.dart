@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // Add this import for kDebugMode
+import 'package:flutter/material.dart';
+
+import '../services/api_service.dart';
 import '../theme/colors.dart';
 import 'signup.dart';
-import '../services/api_service.dart';
 
 class PasswordrecoveryForm extends StatefulWidget {
   const PasswordrecoveryForm({super.key});
@@ -39,13 +40,13 @@ class _PasswordrecoveryFormState extends State<PasswordrecoveryForm> {
 
     try {
       final securityQuestion = await _apiService.getSecurityQuestion(_usernameController.text);
-      
+
       if (securityQuestion != null) {
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          
+
           // Navigate to security module with the question
           Navigator.push(
             context,
@@ -124,7 +125,7 @@ class _PasswordrecoveryFormState extends State<PasswordrecoveryForm> {
                     child: Text(
                       _errorMessage,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: ThemeColor.red,
                         fontSize: 16,
                       ),
                     ),
@@ -136,22 +137,27 @@ class _PasswordrecoveryFormState extends State<PasswordrecoveryForm> {
                       width: 635,
                       height: 75,
                       child: TextField(
+                        cursorColor: ThemeColor.primaryColor,
                         controller: _usernameController,
                         style: const TextStyle(
                           color: ThemeColor.primaryColor,
                           fontSize: 20,
                         ),
-                        decoration: InputDecoration(
-                          hintText: "Username",
-                          hintStyle: const TextStyle(
+                        decoration: const InputDecoration(
+                          hintText: 'Username',
+                          hintStyle: TextStyle(
                             color: ThemeColor.grey,
                           ),
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: ThemeColor.grey,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(9),
+                          border: OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 10,
                           ),
                         ),
                       ),
@@ -205,7 +211,7 @@ class _PasswordrecoveryFormState extends State<PasswordrecoveryForm> {
 class SecurityModule extends StatefulWidget {
   final String username;
   final String securityQuestion;
-  
+
   const SecurityModule({
     super.key,
     required this.username,
@@ -248,12 +254,12 @@ class _SecurityModuleState extends State<SecurityModule> {
         widget.username,
         _answerController.text,
       );
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
-        
+
         if (kDebugMode) {
           print('Navigating to reset form with token (length: ${resetToken.length})');
         }
@@ -340,20 +346,13 @@ class _SecurityModuleState extends State<SecurityModule> {
                         height: 60,
                         alignment: Alignment.centerLeft,
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: ThemeColor.grey,
-                            width: 1.0
-                          ),
-                          borderRadius: BorderRadius.circular(9)
-                        ),
+                            border: Border.all(color: ThemeColor.grey, width: 1.0),
+                            borderRadius: BorderRadius.circular(5)),
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
                           child: Text(
                             widget.securityQuestion,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              color: ThemeColor.primaryColor
-                            ),
+                            style: const TextStyle(fontSize: 20, color: ThemeColor.grey),
                           ),
                         ),
                       ),
@@ -362,22 +361,23 @@ class _SecurityModuleState extends State<SecurityModule> {
                       width: 635,
                       height: 75,
                       child: TextField(
+                        cursorColor: ThemeColor.primaryColor,
                         controller: _answerController,
                         style: const TextStyle(
                           color: ThemeColor.primaryColor,
                           fontSize: 20,
                         ),
-                        decoration: InputDecoration(
-                          hintText: "Answer",
-                          hintStyle: const TextStyle(
-                            color: ThemeColor.grey,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
                           ),
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: ThemeColor.grey,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(9),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 10,
                           ),
                         ),
                       ),
@@ -430,7 +430,7 @@ class _SecurityModuleState extends State<SecurityModule> {
 
 class PasswordResetForm extends StatefulWidget {
   final String resetToken;
-  
+
   const PasswordResetForm({
     super.key,
     required this.resetToken,
@@ -483,14 +483,14 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
         widget.resetToken,
         _passwordController.text,
       );
-      
+
       if (success) {
         if (mounted) {
           setState(() {
             _isLoading = false;
             _successMessage = 'Password reset successful! Redirecting to login...';
           });
-          
+
           // Wait a moment and then navigate to login
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) {
@@ -552,7 +552,7 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
                     child: Text(
                       _errorMessage,
                       style: const TextStyle(
-                        color: Colors.red,
+                        color: ThemeColor.red,
                         fontSize: 16,
                       ),
                     ),
@@ -563,7 +563,7 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
                     child: Text(
                       _successMessage,
                       style: const TextStyle(
-                        color: Colors.green,
+                        color: ThemeColor.green,
                         fontSize: 16,
                       ),
                     ),
@@ -581,17 +581,21 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
                           color: ThemeColor.primaryColor,
                           fontSize: 20,
                         ),
-                        decoration: InputDecoration(
-                          hintText: "New Password",
-                          hintStyle: const TextStyle(
+                        decoration: const InputDecoration(
+                          hintText: 'New Password',
+                          hintStyle: TextStyle(
                             color: ThemeColor.grey,
                           ),
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: ThemeColor.grey,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(9),
+                          border: OutlineInputBorder(),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 10,
                           ),
                         ),
                       ),

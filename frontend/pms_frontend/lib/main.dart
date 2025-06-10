@@ -1,12 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:pms_frontend/pages/machinespage.dart';
-import 'package:pms_frontend/pages/register.dart';
-import 'package:pms_frontend/pages/search.dart';
-import 'package:pms_frontend/pages/signup.dart';
-import 'package:pms_frontend/pages/dashboard.dart'; // Add this import
-import 'package:pms_frontend/services/api_service.dart';
 import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:pms_frontend/pages/signup.dart';
+import 'package:pms_frontend/services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Important for async operations in main
@@ -19,10 +16,10 @@ void main() async {
   } else {
     ApiService.baseUrl = 'http://localhost:5000/api';
   }
-  
+
   // Try auto-configuring the base URL
   await ApiService().autoConfigureBaseUrl();
-  
+
   // Test if backend is accessible
   final connectionTest = await ApiService().checkBackendConnection();
   if (kDebugMode) {
@@ -32,7 +29,7 @@ void main() async {
       print('Error type: ${connectionTest['error_type']}');
     }
   }
-  
+
   runApp(const MyApp());
 }
 
