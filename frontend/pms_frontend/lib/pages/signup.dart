@@ -4,6 +4,7 @@ import 'package:pms_frontend/pages/passwordrecovery.dart';
 import 'package:pms_frontend/services/api_service.dart';
 
 import '../theme/colors.dart';
+import '../widget/textfield.dart';
 import 'dashboard.dart'; // Add this import
 
 class SignUpForm extends StatefulWidget {
@@ -112,30 +113,9 @@ class _SignUpFormState extends State<SignUpForm> {
                 child: SizedBox(
                   width: 635,
                   height: 75,
-                  child: TextField(
-                    cursorColor: ThemeColor.primaryColor,
+                  child: ThemedTextFormField(
                     controller: _usernameController,
-                    style: const TextStyle(
-                      color: ThemeColor.primaryColor,
-                      fontSize: 20,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Username',
-                      hintStyle: const TextStyle(
-                        color: ThemeColor.grey,
-                      ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 10,
-                      ),
-                    ),
+                    hintText: 'Username',
                   ),
                 ),
               ),
@@ -144,31 +124,10 @@ class _SignUpFormState extends State<SignUpForm> {
                 child: SizedBox(
                   width: 635,
                   height: 75,
-                  child: TextField(
-                    cursorColor: ThemeColor.primaryColor,
+                  child: ThemedTextFormField(
                     controller: _passwordController,
+                    hintText: 'Password',
                     obscureText: true,
-                    style: const TextStyle(
-                      color: ThemeColor.primaryColor,
-                      fontSize: 20,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Password',
-                      hintStyle: const TextStyle(
-                        color: ThemeColor.grey,
-                      ),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 10,
-                      ),
-                    ),
                   ),
                 ),
               ),

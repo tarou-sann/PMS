@@ -1,8 +1,9 @@
-import 'package:flutter/foundation.dart'; // Add this import for kDebugMode
+import 'package:flutter/foundation.dart'; // Import for kDebugMode
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../theme/colors.dart';
+import '../widget/textfield.dart';
 import 'signup.dart';
 
 class PasswordrecoveryForm extends StatefulWidget {
@@ -136,30 +137,9 @@ class _PasswordrecoveryFormState extends State<PasswordrecoveryForm> {
                     SizedBox(
                       width: 635,
                       height: 75,
-                      child: TextField(
-                        cursorColor: ThemeColor.primaryColor,
+                      child: ThemedTextFormField(
                         controller: _usernameController,
-                        style: const TextStyle(
-                          color: ThemeColor.primaryColor,
-                          fontSize: 20,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Username',
-                          hintStyle: TextStyle(
-                            color: ThemeColor.grey,
-                          ),
-                          border: OutlineInputBorder(),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 10,
-                          ),
-                        ),
+                        hintText: 'Username',
                       ),
                     ),
                     TextButton(
@@ -360,26 +340,9 @@ class _SecurityModuleState extends State<SecurityModule> {
                     SizedBox(
                       width: 635,
                       height: 75,
-                      child: TextField(
-                        cursorColor: ThemeColor.primaryColor,
+                      child: ThemedTextFormField(
                         controller: _answerController,
-                        style: const TextStyle(
-                          color: ThemeColor.primaryColor,
-                          fontSize: 20,
-                        ),
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 10,
-                          ),
-                        ),
+                        hintText: 'Security Answer',
                       ),
                     ),
                     TextButton(
@@ -574,56 +537,18 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
                     SizedBox(
                       width: 635,
                       height: 75,
-                      child: TextField(
+                      child: ThemedTextFormField(
                         controller: _passwordController,
-                        obscureText: true,
-                        style: const TextStyle(
-                          color: ThemeColor.primaryColor,
-                          fontSize: 20,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'New Password',
-                          hintStyle: TextStyle(
-                            color: ThemeColor.grey,
-                          ),
-                          border: OutlineInputBorder(),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 16,
-                            horizontal: 10,
-                          ),
-                        ),
+                        hintText: 'New Password',
                       ),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: 635,
                       height: 75,
-                      child: TextField(
+                      child: ThemedTextFormField(
                         controller: _confirmPasswordController,
-                        obscureText: true,
-                        style: const TextStyle(
-                          color: ThemeColor.primaryColor,
-                          fontSize: 20,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: "Confirm New Password",
-                          hintStyle: const TextStyle(
-                            color: ThemeColor.grey,
-                          ),
-                          border: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: ThemeColor.grey,
-                              width: 1,
-                            ),
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                        ),
+                        hintText: "Confirm New Password",
                       ),
                     ),
                     const SizedBox(height: 20),

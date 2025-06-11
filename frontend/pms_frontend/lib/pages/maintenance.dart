@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart' show DateFormat;
-import '../theme/colors.dart';
-import '../widget/navbar.dart';
-import '../widget/enddrawer.dart';
-import 'backup.dart';
+
 import '../services/api_service.dart';
 import '../services/user_activity_service.dart';
+import '../theme/colors.dart';
+import '../widget/enddrawer.dart';
+import '../widget/navbar.dart';
+import '../widget/textfield.dart';
+import 'backup.dart';
 
 class MaintenanceNav extends StatelessWidget {
-  const MaintenanceNav ({super.key});
+  const MaintenanceNav({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +50,7 @@ class MaintenanceNav extends StatelessWidget {
                       color: ThemeColor.white2,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: ThemeColor.grey.withOpacity(0.2),
                           spreadRadius: 3,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
@@ -92,7 +93,7 @@ class MaintenanceNav extends StatelessWidget {
                       color: ThemeColor.white2,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: ThemeColor.grey.withOpacity(0.2),
                           spreadRadius: 3,
                           blurRadius: 10,
                           offset: const Offset(0, 4),
@@ -123,9 +124,7 @@ class MaintenanceNav extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const BackUpNav()
-                      ),
+                      MaterialPageRoute(builder: (context) => const BackUpNav()),
                     );
                   },
                   child: Container(
@@ -214,289 +213,277 @@ class _EditMachineryState extends State<EditMachinery> {
   }
 
   Future<void> _showEditMachineDialog(BuildContext context, Map<String, dynamic> machine) async {
-    final _formKey = GlobalKey<FormState>();
-    final _machineNameController = TextEditingController(text: machine['machine_name']);
-    String _mobility = machine['is_mobile'] ? 'Mobile' : 'Static';
-    String _status = machine['is_active'] ? 'Active' : 'Inactive';
-    bool _isLoading = false;
-    String _errorMessage = '';
+    final formKey = GlobalKey<FormState>();
+    final machineNameController = TextEditingController(text: machine['machine_name']);
+    String mobility = machine['is_mobile'] ? 'Mobile' : 'Static';
+    String status = machine['is_active'] ? 'Active' : 'Inactive';
+    bool isLoading = false;
+    String errorMessage = '';
 
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text(
-                'Edit Machine Details',
-                style: TextStyle(
-                  color: ThemeColor.secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Edit Machine Details',
+              style: TextStyle(
+                color: ThemeColor.secondaryColor,
+                fontWeight: FontWeight.w600,
               ),
-              content: SizedBox(
-                width: 500,
-                child: Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_errorMessage.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              _errorMessage,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        const Text(
-                          'Machine Name',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
+            ),
+            content: SizedBox(
+              width: 500,
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (errorMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            errorMessage,
+                            style: const TextStyle(color: Colors.red),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _machineNameController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter machine name';
-                            }
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter machine name",
+                      const Text(
+                        'Machine Name',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: machineNameController,
+                        hintText: 'Enter machine name',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter machine name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Mobility',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Radio<String>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: 'Mobile',
+                            groupValue: mobility,
+                            onChanged: (value) {
+                              setState(() {
+                                mobility = value!;
+                              });
+                            },
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        const Text(
-                          'Mobility',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
+                          const Text('Mobile'),
+                          const SizedBox(width: 20),
+                          Radio<String>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: 'Static',
+                            groupValue: mobility,
+                            onChanged: (value) {
+                              setState(() {
+                                mobility = value!;
+                              });
+                            },
                           ),
+                          const Text('Static'),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Harvest Status',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
                         ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Radio<String>(
-                              activeColor: ThemeColor.secondaryColor,
-                              value: 'Mobile',
-                              groupValue: _mobility,
-                              onChanged: (value) {
-                                setState(() {
-                                  _mobility = value!;
-                                });
-                              },
-                            ),
-                            const Text('Mobile'),
-                            const SizedBox(width: 20),
-                            Radio<String>(
-                              activeColor: ThemeColor.secondaryColor,
-                              value: 'Static',
-                              groupValue: _mobility,
-                              onChanged: (value) {
-                                setState(() {
-                                  _mobility = value!;
-                                });
-                              },
-                            ),
-                            const Text('Static'),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        const Text(
-                          'Harvest Status',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Radio<String>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: 'Active',
+                            groupValue: status,
+                            onChanged: (value) {
+                              setState(() {
+                                status = value!;
+                              });
+                            },
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Radio<String>(
-                              activeColor: ThemeColor.secondaryColor,
-                              value: 'Active',
-                              groupValue: _status,
-                              onChanged: (value) {
-                                setState(() {
-                                  _status = value!;
-                                });
-                              },
-                            ),
-                            const Text('Active'),
-                            const SizedBox(width: 20),
-                            Radio<String>(
-                              activeColor: ThemeColor.secondaryColor,
-                              value: 'Inactive',
-                              groupValue: _status,
-                              onChanged: (value) {
-                                setState(() {
-                                  _status = value!;
-                                });
-                              },
-                            ),
-                            const Text('Inactive'),
-                          ],
-                        ),
-                      ],
-                    ),
+                          const Text('Active'),
+                          const SizedBox(width: 20),
+                          Radio<String>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: 'Inactive',
+                            groupValue: status,
+                            onChanged: (value) {
+                              setState(() {
+                                status = value!;
+                              });
+                            },
+                          ),
+                          const Text('Inactive'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all(Colors.grey),
-                  ),
-                  child: const Text('Cancel'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(Colors.grey),
                 ),
-                _isLoading
+                child: const Text('Cancel'),
+              ),
+              isLoading
                   ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeColor.secondaryColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
                     )
                   : TextButton(
                       onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
+                        if (formKey.currentState!.validate()) {
                           setState(() {
-                            _isLoading = true;
-                            _errorMessage = '';
+                            isLoading = true;
+                            errorMessage = '';
                           });
 
                           try {
-                            final isMobile = _mobility == 'Mobile';
-                            final isActive = _status == 'Active';
-                            
+                            final isMobile = mobility == 'Mobile';
+                            final isActive = status == 'Active';
+
                             // Prepare update data
                             final machineryData = {
-                              'machine_name': _machineNameController.text,
+                              'machine_name': machineNameController.text,
                               'is_mobile': isMobile,
                               'is_active': isActive,
                             };
-                            
+
                             // Call API to update machinery
-                            final result = await _apiService.updateMachinery(
-                              machine['id'], 
-                              machineryData
-                            );
-                            
+                            final result = await _apiService.updateMachinery(machine['id'], machineryData);
+
                             if (result != null) {
                               await UserActivityService().logActivity(
                                 'Edit Machinery',
-                                'Updated machinery: ${_machineNameController.text}',
+                                'Updated machinery: ${machineNameController.text}',
                                 target: 'Machinery Management',
                               );
                               // Close the dialog and reload the machinery list
                               Navigator.of(dialogContext).pop();
-                              this._loadMachinery();
-                              this._successMessage = 'Machine updated successfully';
+                              _loadMachinery();
+                              _successMessage = 'Machine updated successfully';
                             } else {
                               setState(() {
-                                _isLoading = false;
-                                _errorMessage = 'Failed to update machinery';
+                                isLoading = false;
+                                errorMessage = 'Failed to update machinery';
                               });
                             }
                           } catch (e) {
                             setState(() {
-                              _isLoading = false;
-                              _errorMessage = 'Error: $e';
+                              isLoading = false;
+                              errorMessage = 'Error: $e';
                             });
                           }
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: MaterialStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
                       ),
                       child: const Text('Update'),
                     ),
-              ],
-            );
-          }
-        );
+            ],
+          );
+        });
       },
     );
   }
 
   Future<void> _showDeleteConfirmationDialog(BuildContext context, Map<String, dynamic> machine) async {
-    bool _isDeleting = false;
-    String _errorMessage = '';
+    bool isDeleting = false;
+    String errorMessage = '';
 
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text(
-                'Confirm Deletion',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Confirm Deletion',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        _errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: Colors.red),
                     ),
-                  Text(
-                    'Are you sure you want to delete the machine "${machine['machine_name']}"?',
-                    style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'This action cannot be undone and will also delete all related repair records.',
-                    style: TextStyle(fontSize: 14, color: Colors.red),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all(Colors.grey),
-                  ),
-                  child: const Text('Cancel'),
+                Text(
+                  'Are you sure you want to delete the machine "${machine['machine_name']}"?',
+                  style: const TextStyle(fontSize: 16),
                 ),
-                _isDeleting
+                const SizedBox(height: 16),
+                const Text(
+                  'This action cannot be undone and will also delete all related repair records.',
+                  style: TextStyle(fontSize: 14, color: Colors.red),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                ),
+                child: const Text('Cancel'),
+              ),
+              isDeleting
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                     )
                   : TextButton(
                       onPressed: () async {
                         setState(() {
-                          _isDeleting = true;
-                          _errorMessage = '';
+                          isDeleting = true;
+                          errorMessage = '';
                         });
 
                         try {
                           // Call API to delete machinery
                           final success = await _apiService.deleteMachinery(machine['id']);
-                          
+
                           if (success) {
                             await UserActivityService().logActivity(
                               'Delete Machinery',
@@ -505,31 +492,30 @@ class _EditMachineryState extends State<EditMachinery> {
                             );
                             // Close the dialog and reload the machinery list
                             Navigator.of(dialogContext).pop();
-                            this._loadMachinery();
-                            this._successMessage = 'Machine deleted successfully';
+                            _loadMachinery();
+                            _successMessage = 'Machine deleted successfully';
                           } else {
                             setState(() {
-                              _isDeleting = false;
-                              _errorMessage = 'Failed to delete machinery';
+                              isDeleting = false;
+                              errorMessage = 'Failed to delete machinery';
                             });
                           }
                         } catch (e) {
                           setState(() {
-                            _isDeleting = false;
-                            _errorMessage = 'Error: $e';
+                            isDeleting = false;
+                            errorMessage = 'Error: $e';
                           });
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.red),
-                        foregroundColor: MaterialStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(Colors.red),
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
                       ),
                       child: const Text('Delete'),
                     ),
-              ],
-            );
-          }
-        );
+            ],
+          );
+        });
       },
     );
   }
@@ -584,7 +570,7 @@ class _EditMachineryState extends State<EditMachinery> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Success or error messages
             if (_errorMessage.isNotEmpty)
               Padding(
@@ -602,7 +588,7 @@ class _EditMachineryState extends State<EditMachinery> {
                   style: const TextStyle(color: Colors.green),
                 ),
               ),
-              
+
             // Refresh button
             Align(
               alignment: Alignment.centerRight,
@@ -615,7 +601,7 @@ class _EditMachineryState extends State<EditMachinery> {
                 tooltip: 'Refresh data',
               ),
             ),
-            
+
             // Table content
             Expanded(
               child: _isLoading
@@ -624,7 +610,7 @@ class _EditMachineryState extends State<EditMachinery> {
                       ? Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: ThemeColor.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -642,7 +628,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: ThemeColor.grey.withOpacity(0.2),
                                     spreadRadius: 1,
                                     blurRadius: 5,
                                     offset: const Offset(0, 3),
@@ -706,7 +692,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                       ],
                                     ),
                                   ),
-                                  
+
                                   // Machine List
                                   Expanded(
                                     child: ListView.builder(
@@ -718,7 +704,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                           decoration: BoxDecoration(
                                             border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
+                                                color: ThemeColor.grey.withOpacity(0.2),
                                               ),
                                             ),
                                           ),
@@ -737,13 +723,14 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Machine Name
                                               Expanded(
                                                 flex: 3,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.agriculture, color: ThemeColor.primaryColor, size: 20),
+                                                    const Icon(Icons.agriculture,
+                                                        color: ThemeColor.primaryColor, size: 20),
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: Text(
@@ -757,7 +744,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Mobility
                                               Expanded(
                                                 flex: 2,
@@ -767,7 +754,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                     vertical: 4,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: machine['is_mobile'] 
+                                                    color: machine['is_mobile']
                                                         ? ThemeColor.primaryColor.withOpacity(0.2)
                                                         : ThemeColor.secondaryColor.withOpacity(0.2),
                                                     borderRadius: BorderRadius.circular(12),
@@ -785,7 +772,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   ),
                                                 ),
                                               ),
-                                              
+
                                               // Status
                                               Expanded(
                                                 flex: 2,
@@ -795,17 +782,16 @@ class _EditMachineryState extends State<EditMachinery> {
                                                     vertical: 4,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: machine['is_active'] 
+                                                    color: machine['is_active']
                                                         ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : Colors.red.withOpacity(0.2),
+                                                        : ThemeColor.red.withOpacity(0.2),
                                                     borderRadius: BorderRadius.circular(12),
                                                   ),
                                                   child: Text(
                                                     machine['is_active'] ? 'Active' : 'Inactive',
                                                     style: TextStyle(
-                                                      color: machine['is_active']
-                                                          ? ThemeColor.primaryColor
-                                                          : Colors.red,
+                                                      color:
+                                                          machine['is_active'] ? ThemeColor.primaryColor : Colors.red,
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 12,
                                                     ),
@@ -813,7 +799,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   ),
                                                 ),
                                               ),
-                                              
+
                                               // Actions
                                               Expanded(
                                                 flex: 2,
@@ -905,16 +891,16 @@ class _EditRiceState extends State<EditRice> {
   }
 
   Future<void> _showEditRiceDialog(BuildContext context, Map<String, dynamic> rice) async {
-    final _formKey = GlobalKey<FormState>();
-    final _varietyNameController = TextEditingController(text: rice['variety_name']);
-    final _productionDateController = TextEditingController(text: rice['production_date']);
-    final _expirationDateController = TextEditingController(text: rice['expiration_date']);
-    String _qualityGrade = rice['quality_grade'] ?? 'Shatter';
-    bool _isLoading = false;
-    String _errorMessage = '';
+    final formKey = GlobalKey<FormState>();
+    final varietyNameController = TextEditingController(text: rice['variety_name']);
+    final productionDateController = TextEditingController(text: rice['production_date']);
+    final expirationDateController = TextEditingController(text: rice['expiration_date']);
+    String qualityGrade = rice['quality_grade'] ?? 'Shatter';
+    bool isLoading = false;
+    String errorMessage = '';
 
     // Date picker method
-    Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+    Future<void> selectDate(BuildContext context, TextEditingController controller) async {
       final DateTime? picked = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
@@ -925,7 +911,8 @@ class _EditRiceState extends State<EditRice> {
       if (picked != null) {
         setState(() {
           // Format date as YYYY-MM-DD for API compatibility
-          controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+          controller.text =
+              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
         });
       }
     }
@@ -933,298 +920,268 @@ class _EditRiceState extends State<EditRice> {
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text(
-                'Edit Rice Variety',
-                style: TextStyle(
-                  color: ThemeColor.secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Edit Rice Variety',
+              style: TextStyle(
+                color: ThemeColor.secondaryColor,
+                fontWeight: FontWeight.w600,
               ),
-              content: SizedBox(
-                width: 500,
-                child: Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_errorMessage.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              _errorMessage,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        const Text(
-                          'Variety Name',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
+            ),
+            content: SizedBox(
+              width: 500,
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (errorMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            errorMessage,
+                            style: const TextStyle(color: Colors.red),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _varietyNameController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter variety name';
-                            }
-                            return null;
+                      const Text(
+                        'Variety Name',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: varietyNameController,
+                        hintText: 'Enter rice variety name',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter variety name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Quality Grade',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: ThemeColor.grey),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: DropdownButton<String>(
+                          value: qualityGrade,
+                          isExpanded: true,
+                          underline: Container(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              qualityGrade = newValue!;
+                            });
                           },
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter rice variety name",
-                          ),
+                          items: <String>['Shatter', 'Non-Shattering'].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
                         ),
-                        const SizedBox(height: 16),
-                        
-                        const Text(
-                          'Quality Grade',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
-                          ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Production Date',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
                         ),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 15,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: DropdownButton<String>(
-                            value: _qualityGrade,
-                            isExpanded: true,
-                            underline: Container(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                _qualityGrade = newValue!;
-                              });
-                            },
-                            items: <String>[
-                              'Shatter',
-                              'Non-Shattering'
-                            ].map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: productionDateController,
+                        hintText: 'Select Production Date',
+                        readOnly: true,
+                        onTap: () => selectDate(context, productionDateController),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () => selectDate(context, productionDateController),
                         ),
-                        const SizedBox(height: 16),
-                        
-                        const Text(
-                          'Production Date',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
-                          ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Expiration Date',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
                         ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _productionDateController,
-                          readOnly: true,
-                          onTap: () {
-                            _selectDate(context, _productionDateController);
-                          },
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: "Select Production Date",
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.calendar_today),
-                              onPressed: () {
-                                _selectDate(context, _productionDateController);
-                              },
-                            ),
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: expirationDateController,
+                        hintText: 'Select Expiration Date',
+                        readOnly: true,
+                        onTap: () => selectDate(context, expirationDateController),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () => selectDate(context, expirationDateController),
                         ),
-                        const SizedBox(height: 16),
-                        
-                        const Text(
-                          'Expiration Date',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _expirationDateController,
-                          readOnly: true,
-                          onTap: () {
-                            _selectDate(context, _expirationDateController);
-                          },
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: "Select Expiration Date",
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.calendar_today),
-                              onPressed: () {
-                                _selectDate(context, _expirationDateController);
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all(Colors.grey),
-                  ),
-                  child: const Text('Cancel'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(Colors.grey),
                 ),
-                _isLoading
+                child: const Text('Cancel'),
+              ),
+              isLoading
                   ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeColor.secondaryColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
                     )
                   : TextButton(
                       onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
+                        if (formKey.currentState!.validate()) {
                           setState(() {
-                            _isLoading = true;
-                            _errorMessage = '';
+                            isLoading = true;
+                            errorMessage = '';
                           });
 
                           try {
                             // Prepare update data
                             final riceData = {
-                              'variety_name': _varietyNameController.text,
-                              'quality_grade': _qualityGrade,
-                              'production_date': _productionDateController.text,
-                              'expiration_date': _expirationDateController.text,
+                              'variety_name': varietyNameController.text,
+                              'quality_grade': qualityGrade,
+                              'production_date': productionDateController.text,
+                              'expiration_date': expirationDateController.text,
                             };
-                            
+
                             // Call API to update rice variety
-                            final result = await _apiService.updateRiceVariety(
-                              rice['id'], 
-                              riceData
-                            );
-                            
+                            final result = await _apiService.updateRiceVariety(rice['id'], riceData);
+
                             if (result != null) {
                               await UserActivityService().logActivity(
                                 'Edit Rice Variety',
-                                'Updated rice variety: ${_varietyNameController.text}',
+                                'Updated rice variety: ${varietyNameController.text}',
                                 target: 'Rice Management',
                               );
                               // Close the dialog and reload the rice varieties list
                               Navigator.of(dialogContext).pop();
-                              this._loadRiceVarieties();
-                              this._successMessage = 'Rice variety updated successfully';
+                              _loadRiceVarieties();
+                              _successMessage = 'Rice variety updated successfully';
                             } else {
                               setState(() {
-                                _isLoading = false;
-                                _errorMessage = 'Failed to update rice variety';
+                                isLoading = false;
+                                errorMessage = 'Failed to update rice variety';
                               });
                             }
                           } catch (e) {
                             setState(() {
-                              _isLoading = false;
-                              _errorMessage = 'Error: $e';
+                              isLoading = false;
+                              errorMessage = 'Error: $e';
                             });
                           }
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: MaterialStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
                       ),
                       child: const Text('Update'),
                     ),
-              ],
-            );
-          }
-        );
+            ],
+          );
+        });
       },
     );
   }
 
   Future<void> _showDeleteConfirmationDialog(BuildContext context, Map<String, dynamic> rice) async {
-    bool _isDeleting = false;
-    String _errorMessage = '';
+    bool isDeleting = false;
+    String errorMessage = '';
 
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text(
-                'Confirm Deletion',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Confirm Deletion',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        _errorMessage,
-                        style: const TextStyle(color: Colors.red),
-                      ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: Colors.red),
                     ),
-                  Text(
-                    'Are you sure you want to delete the rice variety "${rice['variety_name']}"?',
-                    style: const TextStyle(fontSize: 16),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'This action cannot be undone and will also delete all related records.',
-                    style: TextStyle(fontSize: 14, color: Colors.red),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all(Colors.grey),
-                  ),
-                  child: const Text('Cancel'),
+                Text(
+                  'Are you sure you want to delete the rice variety "${rice['variety_name']}"?',
+                  style: const TextStyle(fontSize: 16),
                 ),
-                _isDeleting
+                const SizedBox(height: 16),
+                const Text(
+                  'This action cannot be undone and will also delete all related records.',
+                  style: TextStyle(fontSize: 14, color: Colors.red),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                ),
+                child: const Text('Cancel'),
+              ),
+              isDeleting
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
                     )
                   : TextButton(
                       onPressed: () async {
                         setState(() {
-                          _isDeleting = true;
-                          _errorMessage = '';
+                          isDeleting = true;
+                          errorMessage = '';
                         });
 
                         try {
                           // Call API to delete rice variety
                           final success = await _apiService.deleteRiceVariety(rice['id']);
-                          
+
                           if (success) {
                             await UserActivityService().logActivity(
                               'Delete Rice Variety',
@@ -1233,31 +1190,30 @@ class _EditRiceState extends State<EditRice> {
                             );
                             // Close the dialog and reload the rice varieties list
                             Navigator.of(dialogContext).pop();
-                            this._loadRiceVarieties();
-                            this._successMessage = 'Rice variety deleted successfully';
+                            _loadRiceVarieties();
+                            _successMessage = 'Rice variety deleted successfully';
                           } else {
                             setState(() {
-                              _isDeleting = false;
-                              _errorMessage = 'Failed to delete rice variety';
+                              isDeleting = false;
+                              errorMessage = 'Failed to delete rice variety';
                             });
                           }
                         } catch (e) {
                           setState(() {
-                            _isDeleting = false;
-                            _errorMessage = 'Error: $e';
+                            isDeleting = false;
+                            errorMessage = 'Error: $e';
                           });
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.red),
-                        foregroundColor: MaterialStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(Colors.red),
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
                       ),
                       child: const Text('Delete'),
                     ),
-              ],
-            );
-          }
-        );
+            ],
+          );
+        });
       },
     );
   }
@@ -1312,7 +1268,7 @@ class _EditRiceState extends State<EditRice> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Success or error messages
             if (_errorMessage.isNotEmpty)
               Padding(
@@ -1330,7 +1286,7 @@ class _EditRiceState extends State<EditRice> {
                   style: const TextStyle(color: Colors.green),
                 ),
               ),
-              
+
             // Refresh button
             Align(
               alignment: Alignment.centerRight,
@@ -1343,7 +1299,7 @@ class _EditRiceState extends State<EditRice> {
                 tooltip: 'Refresh data',
               ),
             ),
-            
+
             // Table content
             Expanded(
               child: _isLoading
@@ -1352,12 +1308,12 @@ class _EditRiceState extends State<EditRice> {
                       ? Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: ThemeColor.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             _errorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: ThemeColor.red),
                           ),
                         )
                       : _riceVarieties.isEmpty
@@ -1370,7 +1326,7 @@ class _EditRiceState extends State<EditRice> {
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: ThemeColor.grey.withOpacity(0.2),
                                     spreadRadius: 1,
                                     blurRadius: 5,
                                     offset: const Offset(0, 3),
@@ -1444,7 +1400,7 @@ class _EditRiceState extends State<EditRice> {
                                       ],
                                     ),
                                   ),
-                                  
+
                                   // Rice Varieties List
                                   Expanded(
                                     child: ListView.builder(
@@ -1456,7 +1412,7 @@ class _EditRiceState extends State<EditRice> {
                                           decoration: BoxDecoration(
                                             border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
+                                                color: ThemeColor.grey.withOpacity(0.2),
                                               ),
                                             ),
                                           ),
@@ -1487,7 +1443,7 @@ class _EditRiceState extends State<EditRice> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Variety Name
                                               Expanded(
                                                 flex: 3,
@@ -1507,7 +1463,7 @@ class _EditRiceState extends State<EditRice> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Quality Grade
                                               Expanded(
                                                 flex: 2,
@@ -1531,13 +1487,14 @@ class _EditRiceState extends State<EditRice> {
                                                   ),
                                                 ),
                                               ),
-                                              
+
                                               // Expiration Date
                                               Expanded(
                                                 flex: 2,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
+                                                    const Icon(Icons.calendar_today,
+                                                        color: ThemeColor.secondaryColor, size: 16),
                                                     const SizedBox(width: 8),
                                                     Text(
                                                       rice['expiration_date'] ?? 'N/A',
@@ -1550,7 +1507,7 @@ class _EditRiceState extends State<EditRice> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Actions
                                               Expanded(
                                                 flex: 2,
@@ -1594,7 +1551,7 @@ class _EditRiceState extends State<EditRice> {
       ),
     );
   }
-  
+
   // Helper method to determine quality grade color
   Color _getQualityColor(String? grade) {
     switch (grade) {

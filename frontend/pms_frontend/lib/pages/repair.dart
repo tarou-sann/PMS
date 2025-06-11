@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:pms_frontend/pages/machinerymanagement.dart';
 
+import '../services/api_service.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
-import '../services/api_service.dart';
 import '../widget/navbar.dart';
-import 'register.dart';
-import 'reports.dart';
-import 'search.dart';
+import '../widget/textfield.dart';
 import 'repairstatus.dart';
 
 class RepairNav extends StatelessWidget {
@@ -87,9 +85,7 @@ class RepairNav extends StatelessWidget {
                     padding: const EdgeInsets.all(15.0),
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(context, 
-                        MaterialPageRoute(builder: 
-                        (context) => const CreateRepairOrder()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateRepairOrder()));
                       },
                       child: Container(
                         width: 450,
@@ -144,7 +140,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
   // Form controllers
   final _formKey = GlobalKey<FormState>();
   final _issueController = TextEditingController();
-  
+
   // State variables
   int? _selectedMachineryId;
   String _status = 'pending';
@@ -155,22 +151,22 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
   String _successMessage = '';
   List<Map<String, dynamic>> _machinery = [];
   String _partsConcerned = 'Engine';
-  
+
   // Services
   final ApiService _apiService = ApiService();
-  
+
   @override
   void initState() {
     super.initState();
     _loadMachinery();
   }
-  
+
   @override
   void dispose() {
     _issueController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _loadMachinery() async {
     try {
       final machinery = await _apiService.getMachinery();
@@ -193,25 +189,25 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
       });
     }
   }
-  
+
   Future<void> _createRepair() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     if (_selectedMachineryId == null) {
       setState(() {
         _errorMessage = 'Please select a machinery';
       });
       return;
     }
-    
+
     setState(() {
       _isLoading = true;
       _errorMessage = '';
       _successMessage = '';
     });
-    
+
     try {
       final repairData = {
         'machinery_id': _selectedMachineryId,
@@ -220,9 +216,9 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
         'notes': _partsConcerned,
         'is_urgent': _isUrgent,
       };
-      
+
       final result = await _apiService.createRepair(repairData);
-      
+
       setState(() {
         _isLoading = false;
         if (result != null) {
@@ -251,7 +247,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
       fontWeight: FontWeight.w500,
       color: ThemeColor.secondaryColor,
     );
-    
+
     return Scaffold(
       key: GlobalKey<ScaffoldState>(),
       backgroundColor: ThemeColor.white,
@@ -290,8 +286,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       children: [
                         IconButton(
                           onPressed: () {
-                            Navigator.pop(context, 
-                              MaterialPageRoute(builder: (context) => const RepairNav()));
+                            Navigator.pop(context, MaterialPageRoute(builder: (context) => const RepairNav()));
                           },
                           icon: const Icon(
                             Icons.arrow_back_ios,
@@ -310,7 +305,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Messages
                     if (_errorMessage.isNotEmpty)
                       Padding(
@@ -328,7 +323,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           style: const TextStyle(color: Colors.green),
                         ),
                       ),
-                    
+
                     // Machinery Selection
                     RichText(
                       text: const TextSpan(
@@ -348,8 +343,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                     _isLoadingMachinery
                         ? const Center(
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  ThemeColor.secondaryColor),
+                              valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
                             ),
                           )
                         : _machinery.isEmpty
@@ -371,13 +365,12 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                                 },
                                 decoration: const InputDecoration(
                                   border: OutlineInputBorder(),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: BorderSide(color: ThemeColor.primaryColor)
-                                  ),
+                                  focusedBorder:
+                                      OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor)),
                                 ),
                               ),
                     const SizedBox(height: 20),
-                    
+
                     // Issue Description
                     RichText(
                       text: const TextSpan(
@@ -394,22 +387,19 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    TextFormField(
+                    ThemedTextFormField(
                       controller: _issueController,
+                      hintText: 'Describe the issue with the machinery',
+                      maxLines: 3,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter issue description';
                         }
                         return null;
                       },
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: "Describe the issue with the machinery",
-                      ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Parts Concerned dropdown (replacing the Additional Notes field)
                     const Text(
                       'Parts Concerned',
@@ -459,13 +449,11 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: ThemeColor.primaryColor)
-                        ),
+                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor)),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Status
                     const Text(
                       'Status',
@@ -499,13 +487,11 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: ThemeColor.primaryColor)
-                        ),
+                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor)),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Urgent Checkbox
                     CheckboxListTile(
                       title: const Text('Mark as Urgent', style: labelStyle),
@@ -518,25 +504,21 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       },
                       controlAffinity: ListTileControlAffinity.leading,
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // Submit Button
                     Center(
                       child: _isLoading
                           ? const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  ThemeColor.secondaryColor),
+                              valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
                             )
                           : TextButton(
                               onPressed: _createRepair,
                               style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(
-                                    ThemeColor.secondaryColor),
-                                foregroundColor:
-                                    WidgetStateProperty.all(ThemeColor.white),
-                                minimumSize: WidgetStateProperty.all(
-                                    const Size(213, 65)),
+                                backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                                foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                                minimumSize: WidgetStateProperty.all(const Size(213, 65)),
                                 shape: WidgetStateProperty.all(
                                   RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(9),

@@ -6,6 +6,7 @@ import '../widget/calendar.dart';
 import '../widget/enddrawer.dart';
 import '../services/api_service.dart';
 import '../services/user_activity_service.dart';
+import '../widget/textfield.dart';
 
 class ProductionTrackingNav extends StatefulWidget {
   const ProductionTrackingNav({super.key});
@@ -87,204 +88,171 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text(
-                'Add Production Record',
-                style: TextStyle(
-                  color: ThemeColor.secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Add Production Record',
+              style: TextStyle(
+                color: ThemeColor.secondaryColor,
+                fontWeight: FontWeight.w600,
               ),
-              content: SizedBox(
-                width: 500,
-                child: Form(
-                  key: formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (errorMessage.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Text(
-                              errorMessage,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        
-                        // Rice Variety Dropdown
-                        const Text(
-                          'Rice Variety',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
+            ),
+            content: SizedBox(
+              width: 500,
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (errorMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            errorMessage,
+                            style: const TextStyle(color: Colors.red),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<int>(
-                          value: selectedRiceVarietyId,
-                          validator: (value) {
-                            if (value == null) {
-                              return 'Please select a rice variety';
-                            }
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Select rice variety",
-                          ),
-                          items: _riceVarieties.map((variety) {
-                            return DropdownMenuItem<int>(
-                              value: variety['id'],
-                              child: Text(variety['variety_name']),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            selectedRiceVarietyId = value;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Hectares
-                        const Text(
-                          'Hectares',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: hectaresController,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter hectares';
-                            }
-                            final hectares = double.tryParse(value);
-                            if (hectares == null || hectares <= 0) {
-                              return 'Please enter a valid number greater than 0';
-                            }
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter hectares (e.g., 5.5)",
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Quantity Harvested
-                        const Text(
-                          'Quantity Harvested (kg)',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: quantityController,
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter quantity harvested';
-                            }
-                            final quantity = double.tryParse(value);
-                            if (quantity == null || quantity <= 0) {
-                              return 'Please enter a valid number greater than 0';
-                            }
-                            return null;
-                          },
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: "Enter quantity in kilograms",
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Harvest Date
-                        const Text(
-                          'Harvest Date',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: ThemeColor.secondaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: harvestDateController,
-                          readOnly: true,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please select harvest date';
-                            }
-                            return null;
-                          },
-                          onTap: () async {
-                            final DateTime? picked = await CalendarTheme.showCustomDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime.now(),
-                              helpText: 'Select Harvest Date',
-                            );
 
-                            if (picked != null) {
-                              setState(() {
-                                harvestDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                              });
-                            }
-                          },
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: "Select harvest date",
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.calendar_today),
-                              onPressed: () async {
-                                final DateTime? picked = await CalendarTheme.showCustomDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2020),
-                                  lastDate: DateTime.now(),
-                                  helpText: 'Select Harvest Date',
-                                );
-
-                                if (picked != null) {
-                                  setState(() {
-                                    harvestDateController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-                                  });
-                                }
-                              },
-                            ),
-                          ),
+                      // Rice Variety Dropdown
+                      const Text(
+                        'Rice Variety',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<int>(
+                        value: selectedRiceVarietyId,
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Please select a rice variety';
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: "Select rice variety",
+                        ),
+                        items: _riceVarieties.map((variety) {
+                          return DropdownMenuItem<int>(
+                            value: variety['id'],
+                            child: Text(variety['variety_name']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          selectedRiceVarietyId = value;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Hectares
+                      const Text(
+                        'Hectares',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: hectaresController,
+                        hintText: 'Enter hectares (e.g., 5.5)',
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter hectares';
+                          }
+                          final hectares = double.tryParse(value);
+                          if (hectares == null || hectares <= 0) {
+                            return 'Please enter a valid number greater than 0';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Quantity Harvested
+                      const Text(
+                        'Quantity Harvested (kg)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: quantityController,
+                        hintText: 'Enter quantity in kilograms',
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter quantity harvested';
+                          }
+                          final quantity = double.tryParse(value);
+                          if (quantity == null || quantity <= 0) {
+                            return 'Please enter a valid number greater than 0';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Harvest Date
+                      const Text(
+                        'Harvest Date',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: harvestDateController,
+                        hintText: 'Select harvest date',
+                        readOnly: true,
+                        onTap: () async {
+                          final DateTime? picked = await CalendarTheme.showCustomDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2020),
+                            lastDate: DateTime(2030),
+                            helpText: 'Select Harvest Date',
+                          );
+
+                          if (picked != null) {
+                            setState(() {
+                              harvestDateController.text =
+                                  "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                            });
+                          }
+                        },
+                        suffixIcon: const Icon(Icons.calendar_today),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  style: ButtonStyle(
-                    foregroundColor: MaterialStateProperty.all(Colors.grey),
-                  ),
-                  child: const Text('Cancel'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(Colors.grey),
                 ),
-                isLoading
+                child: const Text('Cancel'),
+              ),
+              isLoading
                   ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeColor.secondaryColor),
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
                     )
                   : TextButton(
                       onPressed: () async {
@@ -301,24 +269,24 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                               'quantity_harvested': double.parse(quantityController.text),
                               'harvest_date': harvestDateController.text,
                             };
-                            
+
                             final result = await _apiService.createProductionRecord(productionData);
-                            
+
                             if (result != null) {
                               final riceVariety = _riceVarieties.firstWhere(
                                 (variety) => variety['id'] == selectedRiceVarietyId,
                                 orElse: () => {'variety_name': 'Unknown'},
                               );
-                              
+
                               await UserActivityService().logActivity(
                                 'Add Production Record',
                                 'Added production record for ${riceVariety['variety_name']}: ${hectaresController.text} hectares, ${quantityController.text} kg',
                                 target: 'Production Tracking',
                               );
-                              
+
                               Navigator.of(dialogContext).pop();
-                              this._loadProductionRecords();
-                              this._successMessage = 'Production record added successfully';
+                              _loadProductionRecords();
+                              _successMessage = 'Production record added successfully';
                             } else {
                               setState(() {
                                 isLoading = false;
@@ -334,15 +302,14 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: MaterialStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: WidgetStateProperty.all(Colors.white),
                       ),
                       child: const Text('Add Record'),
                     ),
-              ],
-            );
-          }
-        );
+            ],
+          );
+        });
       },
     );
   }
@@ -410,7 +377,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Error/Success Messages
             if (_errorMessage.isNotEmpty)
               Padding(
@@ -428,7 +395,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                   style: const TextStyle(color: Colors.green),
                 ),
               ),
-            
+
             // Table Content
             Expanded(
               child: _isLoading
@@ -530,7 +497,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                       ],
                                     ),
                                   ),
-                                  
+
                                   // Production Records List
                                   Expanded(
                                     child: ListView.builder(
@@ -561,7 +528,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Rice Variety
                                               Expanded(
                                                 flex: 3,
@@ -581,13 +548,14 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Hectares
                                               Expanded(
                                                 flex: 2,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.landscape, color: ThemeColor.secondaryColor, size: 16),
+                                                    const Icon(Icons.landscape,
+                                                        color: ThemeColor.secondaryColor, size: 16),
                                                     const SizedBox(width: 8),
                                                     Text(
                                                       '${record['hectares']} ha',
@@ -599,7 +567,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Quantity
                                               Expanded(
                                                 flex: 2,
@@ -617,7 +585,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                   ],
                                                 ),
                                               ),
-                                              
+
                                               // Yield per Hectare
                                               Expanded(
                                                 flex: 2,
@@ -641,13 +609,14 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                   ),
                                                 ),
                                               ),
-                                              
+
                                               // Harvest Date
                                               Expanded(
                                                 flex: 2,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
+                                                    const Icon(Icons.calendar_today,
+                                                        color: ThemeColor.secondaryColor, size: 16),
                                                     const SizedBox(width: 8),
                                                     Text(
                                                       record['harvest_date'] ?? 'N/A',
@@ -669,7 +638,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                 ],
                               ),
                             ),
-                          ),
+            ),
           ],
         ),
       ),

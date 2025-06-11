@@ -6,6 +6,7 @@ import '../theme/colors.dart';
 import '../widget/calendar.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
+import '../widget/textfield.dart';
 
 class RegisterBase extends StatelessWidget {
   const RegisterBase({super.key});
@@ -388,28 +389,15 @@ class _RegisterUserState extends State<RegisterUser> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  TextFormField(
-                                    cursorColor: ThemeColor.primaryColor,
+                                  ThemedTextFormField(
                                     controller: _usernameController,
+                                    hintText: 'Username',
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter username';
                                       }
                                       return null;
                                     },
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 16,
-                                        horizontal: 10,
-                                      ),
-                                    ),
                                   ),
                                   const SizedBox(height: 16),
 
@@ -432,9 +420,9 @@ class _RegisterUserState extends State<RegisterUser> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  TextFormField(
-                                    cursorColor: ThemeColor.primaryColor,
+                                  ThemedTextFormField(
                                     controller: _passwordController,
+                                    hintText: 'Password',
                                     obscureText: true,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -442,19 +430,6 @@ class _RegisterUserState extends State<RegisterUser> {
                                       }
                                       return null;
                                     },
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 16,
-                                        horizontal: 10,
-                                      ),
-                                    ),
                                   ),
                                   const SizedBox(height: 16),
 
@@ -477,9 +452,9 @@ class _RegisterUserState extends State<RegisterUser> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  TextFormField(
-                                    cursorColor: ThemeColor.primaryColor,
+                                  ThemedTextFormField(
                                     controller: _confirmPasswordController,
+                                    hintText: 'Confirm Password',
                                     obscureText: true,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -489,19 +464,6 @@ class _RegisterUserState extends State<RegisterUser> {
                                       }
                                       return null;
                                     },
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 16,
-                                        horizontal: 10,
-                                      ),
-                                    ),
                                   ),
                                   const SizedBox(height: 16),
 
@@ -670,28 +632,15 @@ class _RegisterUserState extends State<RegisterUser> {
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  TextFormField(
-                                    cursorColor: ThemeColor.primaryColor,
+                                  ThemedTextFormField(
                                     controller: _securityAnswerController,
+                                    hintText: 'Security Answer',
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter security answer';
                                       }
                                       return null;
                                     },
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(color: Colors.grey),
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 16,
-                                        horizontal: 10,
-                                      ),
-                                    ),
                                   ),
                                 ],
                               ),
@@ -935,29 +884,16 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
-                      cursorColor: ThemeColor.primaryColor,
-                      controller: _machineNameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter machine name';
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        hintText: 'Machine Name',
-                        border: OutlineInputBorder(),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 10,
-                        ),
-                      )),
+                  ThemedTextFormField(
+                    controller: _machineNameController,
+                    hintText: 'Machine Name',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter machine name';
+                      }
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 30),
 
                   // Mobility
@@ -1305,29 +1241,16 @@ class _RegisterRiceState extends State<RegisterRice> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
-                      cursorColor: ThemeColor.primaryColor,
-                      controller: _varietyNameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter rice variety name';
-                        }
-                        return null;
-                      },
-                      decoration: const InputDecoration(
-                        hintText: 'Rice Variety Name',
-                        border: OutlineInputBorder(),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 16,
-                          horizontal: 10,
-                        ),
-                      )),
+                  ThemedTextFormField(
+                    controller: _varietyNameController,
+                    hintText: 'Rice Variety Name',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter rice variety name';
+                      }
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 30),
 
                   // Quality Grade
@@ -1389,32 +1312,14 @@ class _RegisterRiceState extends State<RegisterRice> {
                     style: labelStyle,
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
-                    cursorColor: ThemeColor.primaryColor,
+                  ThemedTextFormField(
                     controller: _productionDateController,
+                    hintText: 'Select Production Date',
                     readOnly: true,
-                    onTap: () {
-                      _selectDate(context, _productionDateController);
-                    },
-                    decoration: InputDecoration(
-                      hintText: "Select Production Date",
-                      border: const OutlineInputBorder(),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 10,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () {
-                          _selectDate(context, _productionDateController);
-                        },
-                      ),
+                    onTap: () => _selectDate(context, _productionDateController),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context, _productionDateController),
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -1425,31 +1330,14 @@ class _RegisterRiceState extends State<RegisterRice> {
                     style: labelStyle,
                   ),
                   const SizedBox(height: 10),
-                  TextFormField(
+                  ThemedTextFormField(
                     controller: _expirationDateController,
+                    hintText: 'Select Expiration Date',
                     readOnly: true,
-                    onTap: () {
-                      _selectDate(context, _expirationDateController);
-                    },
-                    decoration: InputDecoration(
-                      hintText: "Select Expiry Date",
-                      border: const OutlineInputBorder(),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 10,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () {
-                          _selectDate(context, _productionDateController);
-                        },
-                      ),
+                    onTap: () => _selectDate(context, _expirationDateController),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () => _selectDate(context, _expirationDateController),
                     ),
                   ),
                   const SizedBox(height: 30),
