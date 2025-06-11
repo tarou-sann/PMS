@@ -150,3 +150,27 @@ def delete_rice_variety(rice_id):
     except Exception as e:
         db_session.rollback()
         return jsonify({'message': f'Error deleting rice variety: {str(e)}'}), 500
+    
+@api.route('/rice/search', methods=['GET'])
+@jwt_required()
+def search_rice_varieties():
+    """
+    Search rice varieties by quality grade
+    """
+    quality_grade = request.args.get('quality_grade', '').strip()
+    
+    if not quality_grade:
+        return jsonify({'message': 'Quality grade parameter is required'}), 400
+    
+    try:
+        # Search for rice varieties with matching quality grade
+        rice_varieties = RiceVariety.query.filter(
+            RiceVariety.quality_grade.ilike(f'%{quality_grade}%')
+        ).all()
+        
+        return jsonify({
+            'rice_varieties': [variety.to_dict() for variety in rice_varieties]
+        }), 200
+    
+    except Exception as e:
+        return jsonify({'message': f'Error searching rice varieties: {str(e)}'}), 500

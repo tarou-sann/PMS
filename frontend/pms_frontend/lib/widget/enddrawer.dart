@@ -10,7 +10,9 @@ import '../pages/signup.dart';
 import '../services/api_service.dart';
 import '../services/user_service.dart';
 import '../theme/colors.dart';
-import '../pages/about.dart'; // Import the AboutUs page
+import '../pages/about.dart';
+import '../pages/productiontracking.dart';
+
 
 class EndDraw extends StatelessWidget {
   const EndDraw({super.key});
@@ -70,6 +72,15 @@ class EndDraw extends StatelessWidget {
           _buildPaddedListTile(
             title: 'Production Tracking',
             style: listTileTextStyle,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProductionTrackingNav(),
+                ),
+              );
+              print("moving to machinerymanagement");
+            },
           ),
           _buildPaddedListTile(
             title: 'Forecasting',

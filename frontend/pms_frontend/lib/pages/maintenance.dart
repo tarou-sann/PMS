@@ -616,58 +616,17 @@ class _EditMachineryState extends State<EditMachinery> {
               ),
             ),
             
-            // Table header
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                color: ThemeColor.primaryColor.withOpacity(0.1),
-                border: Border.all(color: ThemeColor.primaryColor),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 16.0),
-                      child: Text('ID', style: tableHeaderStyle),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text('Machine Name', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Mobility', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Harvest Status', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Actions', style: tableHeaderStyle),
-                  ),
-                ],
-              ),
-            ),
-            
             // Table content
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeColor.secondaryColor,
-                        ),
-                      ),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : _errorMessage.isNotEmpty && _machinery.isEmpty
-                      ? Center(
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: Text(
                             _errorMessage,
                             style: const TextStyle(color: Colors.red),
@@ -679,122 +638,217 @@ class _EditMachineryState extends State<EditMachinery> {
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: ThemeColor.primaryColor,
-                                ),
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(8),
-                                  bottomRight: Radius.circular(8),
-                                ),
+                                color: ThemeColor.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              child: ListView.builder(
-                                itemCount: _machinery.length,
-                                itemBuilder: (context, index) {
-                                  final machine = _machinery[index];
-                                  return Container(
+                              child: Column(
+                                children: [
+                                  // Header
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: index % 2 == 0
-                                          ? Colors.white
-                                          : Colors.grey.withOpacity(0.1),
-                                      border: index < _machinery.length - 1
-                                          ? const Border(
+                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Machine Name',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Mobility',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Harvest Status',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Actions',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Machine List
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: _machinery.length,
+                                      itemBuilder: (context, index) {
+                                        final machine = _machinery[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.5,
+                                                color: Colors.grey.withOpacity(0.2),
                                               ),
-                                            )
-                                          : null,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          // ID
-                                          Expanded(
-                                            flex: 1,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 16.0,
-                                              ),
-                                              child: Text(
-                                                machine['id'].toString(),
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              // ID
+                                              Expanded(
+                                                flex: 1,
+                                                child: Row(
+                                                  children: [
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      machine['id'].toString(),
+                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          // Machine Name
-                                          Expanded(
-                                            flex: 3,
-                                            child: Text(
-                                              machine['machine_name'],
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w400,
+                                              
+                                              // Machine Name
+                                              Expanded(
+                                                flex: 3,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.agriculture, color: ThemeColor.primaryColor, size: 20),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        machine['machine_name'],
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          // Mobility
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              machine['is_mobile'] ? 'Mobile' : 'Static',
-                                              style: TextStyle(
-                                                color: machine['is_mobile']
-                                                    ? Colors.blue
-                                                    : Colors.purple,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                          // Status
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              machine['is_active'] ? 'Active' : 'Inactive',
-                                              style: TextStyle(
-                                                color: machine['is_active']
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                          // Actions
-                                          Expanded(
-                                            flex: 2,
-                                            child: Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.edit,
-                                                    color: ThemeColor.secondaryColor,
+                                              
+                                              // Mobility
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
                                                   ),
-                                                  onPressed: () {
-                                                    _showEditMachineDialog(context, machine);
-                                                  },
-                                                  tooltip: 'Edit',
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
+                                                  decoration: BoxDecoration(
+                                                    color: machine['is_mobile'] 
+                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
+                                                        : ThemeColor.secondaryColor.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
                                                   ),
-                                                  onPressed: () {
-                                                    _showDeleteConfirmationDialog(context, machine);
-                                                  },
-                                                  tooltip: 'Delete',
+                                                  child: Text(
+                                                    machine['is_mobile'] ? 'Mobile' : 'Static',
+                                                    style: TextStyle(
+                                                      color: machine['is_mobile']
+                                                          ? ThemeColor.primaryColor
+                                                          : ThemeColor.secondaryColor,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                              
+                                              // Status
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: machine['is_active'] 
+                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
+                                                        : Colors.red.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    machine['is_active'] ? 'Active' : 'Inactive',
+                                                    style: TextStyle(
+                                                      color: machine['is_active']
+                                                          ? ThemeColor.primaryColor
+                                                          : Colors.red,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              
+                                              // Actions
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.edit,
+                                                        color: ThemeColor.secondaryColor,
+                                                      ),
+                                                      onPressed: () {
+                                                        _showEditMachineDialog(context, machine);
+                                                      },
+                                                      tooltip: 'Edit',
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.delete,
+                                                        color: Colors.red,
+                                                      ),
+                                                      onPressed: () {
+                                                        _showDeleteConfirmationDialog(context, machine);
+                                                      },
+                                                      tooltip: 'Delete',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
                             ),
             ),
@@ -1290,58 +1344,17 @@ class _EditRiceState extends State<EditRice> {
               ),
             ),
             
-            // Table header
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                color: ThemeColor.primaryColor.withOpacity(0.1),
-                border: Border.all(color: ThemeColor.primaryColor),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 16.0),
-                      child: Text('ID', style: tableHeaderStyle),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text('Variety Name', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Quality Grade', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Expiration Date', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Actions', style: tableHeaderStyle),
-                  ),
-                ],
-              ),
-            ),
-            
             // Table content
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeColor.secondaryColor,
-                        ),
-                      ),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : _errorMessage.isNotEmpty && _riceVarieties.isEmpty
-                      ? Center(
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: Text(
                             _errorMessage,
                             style: const TextStyle(color: Colors.red),
@@ -1353,117 +1366,226 @@ class _EditRiceState extends State<EditRice> {
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: ThemeColor.primaryColor,
-                                ),
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(8),
-                                  bottomRight: Radius.circular(8),
-                                ),
+                                color: ThemeColor.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              child: ListView.builder(
-                                itemCount: _riceVarieties.length,
-                                itemBuilder: (context, index) {
-                                  final rice = _riceVarieties[index];
-                                  return Container(
+                              child: Column(
+                                children: [
+                                  // Header
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: index % 2 == 0
-                                          ? Colors.white
-                                          : Colors.grey.withOpacity(0.1),
-                                      border: index < _riceVarieties.length - 1
-                                          ? const Border(
+                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'ID',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Variety Name',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Quality Grade',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Expiration Date',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Actions',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Rice Varieties List
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: _riceVarieties.length,
+                                      itemBuilder: (context, index) {
+                                        final rice = _riceVarieties[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.5,
+                                                color: Colors.grey.withOpacity(0.2),
                                               ),
-                                            )
-                                          : null,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          // ID
-                                          Expanded(
-                                            flex: 1,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 16.0,
-                                              ),
-                                              child: Text(
-                                                rice['id'].toString(),
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              // ID
+                                              Expanded(
+                                                flex: 1,
+                                                child: Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 16,
+                                                      backgroundColor: ThemeColor.secondaryColor,
+                                                      child: Text(
+                                                        rice['id'].toString(),
+                                                        style: const TextStyle(
+                                                          color: ThemeColor.white,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      rice['id'].toString(),
+                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          // Variety Name
-                                          Expanded(
-                                            flex: 3,
-                                            child: Text(
-                                              rice['variety_name'],
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w400,
+                                              
+                                              // Variety Name
+                                              Expanded(
+                                                flex: 3,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.grass, color: ThemeColor.primaryColor, size: 20),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        rice['variety_name'],
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          // Quality Grade
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              rice['quality_grade'] ?? 'N/A',
-                                              style: TextStyle(
-                                                color: _getQualityColor(rice['quality_grade']),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                          // Expiration Date
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              rice['expiration_date'] ?? 'N/A',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                          // Actions
-                                          Expanded(
-                                            flex: 2,
-                                            child: Row(
-                                              children: [
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.edit,
-                                                    color: ThemeColor.secondaryColor,
+                                              
+                                              // Quality Grade
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
                                                   ),
-                                                  onPressed: () {
-                                                    _showEditRiceDialog(context, rice);
-                                                  },
-                                                  tooltip: 'Edit',
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(
-                                                    Icons.delete,
-                                                    color: Colors.red,
+                                                  decoration: BoxDecoration(
+                                                    color: _getQualityColor(rice['quality_grade']).withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
                                                   ),
-                                                  onPressed: () {
-                                                    _showDeleteConfirmationDialog(context, rice);
-                                                  },
-                                                  tooltip: 'Delete',
+                                                  child: Text(
+                                                    rice['quality_grade'],
+                                                    style: TextStyle(
+                                                      color: _getQualityColor(rice['quality_grade']),
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
                                                 ),
-                                              ],
-                                            ),
+                                              ),
+                                              
+                                              // Expiration Date
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      rice['expiration_date'] ?? 'N/A',
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: ThemeColor.secondaryColor,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              
+                                              // Actions
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.edit,
+                                                        color: ThemeColor.secondaryColor,
+                                                      ),
+                                                      onPressed: () {
+                                                        _showEditRiceDialog(context, rice);
+                                                      },
+                                                      tooltip: 'Edit',
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.delete,
+                                                        color: Colors.red,
+                                                      ),
+                                                      onPressed: () {
+                                                        _showDeleteConfirmationDialog(context, rice);
+                                                      },
+                                                      tooltip: 'Delete',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
                             ),
             ),

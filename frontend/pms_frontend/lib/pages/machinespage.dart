@@ -121,54 +121,17 @@ class _MachinesNavState extends State<MachinesNav> {
               ),
             ),
             
-            // Table header
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              decoration: BoxDecoration(
-                color: ThemeColor.primaryColor.withOpacity(0.1),
-                border: Border.all(color: ThemeColor.primaryColor),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: const Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 16.0),
-                      child: Text('ID', style: tableHeaderStyle),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 3,
-                    child: Text('Machine Name', style: tableHeaderStyle),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Is Mobile?', style: tableHeaderStyle),  // Changed from "Mobility" to "Is Mobile?"
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Text('Harvest Status', style: tableHeaderStyle),
-                  ),
-                ],
-              ),
-            ),
-            
             // Table content
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          ThemeColor.secondaryColor,
-                        ),
-                      ),
-                    )
+                  ? const Center(child: CircularProgressIndicator())
                   : _errorMessage.isNotEmpty
-                      ? Center(
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: Text(
                             _errorMessage,
                             style: const TextStyle(color: Colors.red),
@@ -176,98 +139,187 @@ class _MachinesNavState extends State<MachinesNav> {
                         )
                       : _machinery.isEmpty
                           ? const Center(
-                              child: Text('No machinery found'),
+                              child: Text(
+                                'No machinery found',
+                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                              ),
                             )
                           : Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: ThemeColor.primaryColor,
-                                ),
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(8),
-                                  bottomRight: Radius.circular(8),
-                                ),
+                                color: ThemeColor.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
                               ),
-                              child: ListView.builder(
-                                itemCount: _machinery.length,
-                                itemBuilder: (context, index) {
-                                  final machine = _machinery[index];
-                                  return Container(
+                              child: Column(
+                                children: [
+                                  // Header
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: index % 2 == 0
-                                          ? Colors.white
-                                          : Colors.grey.withOpacity(0.1),
-                                      border: index < _machinery.length - 1
-                                          ? const Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey,
-                                                width: 0.5,
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12.0,
+                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
                                       ),
-                                      child: Row(
-                                        children: [
-                                          // ID
-                                          Expanded(
-                                            flex: 1,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 16.0,
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Machine Name',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Is Mobile?',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Harvest Status',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Machine List
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: _machinery.length,
+                                      itemBuilder: (context, index) {
+                                        final machine = _machinery[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey.withOpacity(0.2),
                                               ),
-                                              child: Text(
-                                                machine['id'].toString(),
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              // ID
+                                              Expanded(
+                                                flex: 1,
+                                                child: Row(
+                                                  children: [
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      machine['id'].toString(),
+                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          // Machine Name
-                                          Expanded(
-                                            flex: 3,
-                                            child: Text(
-                                              machine['machine_name'],
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w400,
+                                              
+                                              // Machine Name
+                                              Expanded(
+                                                flex: 3,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.agriculture, color: ThemeColor.primaryColor, size: 20),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        machine['machine_name'],
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          // Is Mobile?
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              machine['is_mobile'] ? 'Yes' : 'No',  // Changed from "Mobile"/"Static" to "Yes"/"No"
-                                              style: TextStyle(
-                                                color: machine['is_mobile']
-                                                    ? Colors.blue
-                                                    : Colors.purple,
-                                                fontWeight: FontWeight.w500,
+                                              
+                                              // Mobility
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: machine['is_mobile'] 
+                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
+                                                        : ThemeColor.secondaryColor.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    machine['is_mobile'] ? 'Mobile' : 'Static',
+                                                    style: TextStyle(
+                                                      color: machine['is_mobile']
+                                                          ? ThemeColor.primaryColor
+                                                          : ThemeColor.secondaryColor,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                          // Status
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              machine['is_active'] ? 'Active' : 'Inactive',
-                                              style: TextStyle(
-                                                color: machine['is_active']
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                                fontWeight: FontWeight.w500,
+                                              
+                                              SizedBox(width: 100),
+                                              // Status
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: machine['is_active'] 
+                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
+                                                        : Colors.red.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    machine['is_active'] ? 'Active' : 'Inactive',
+                                                    style: TextStyle(
+                                                      color: machine['is_active']
+                                                          ? ThemeColor.primaryColor
+                                                          : Colors.red,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
                             ),
             ),

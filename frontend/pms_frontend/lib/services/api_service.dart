@@ -1117,4 +1117,78 @@ class ApiService {
       return null;
     }
   }
+
+    Future<Map<String, dynamic>?> createProductionRecord(Map<String, dynamic> productionData) async {
+    try {
+      final result = await post('/production', productionData);
+      return result['production_record'];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Create production record error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>?> getProductionRecords() async {
+    try {
+      final result = await get('/production');
+      final List<dynamic> productionData = result['production_records'];
+      return productionData.map((record) => record as Map<String, dynamic>).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get production records error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getProductionRecordById(int recordId) async {
+    try {
+      final result = await get('/production/$recordId');
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get production record by ID error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> updateProductionRecord(int recordId, Map<String, dynamic> productionData) async {
+    try {
+      final result = await put('/production/$recordId', productionData);
+      return result['production_record'];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Update production record error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<bool> deleteProductionRecord(int recordId) async {
+    try {
+      await delete('/production/$recordId');
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Delete production record error: $e');
+      }
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>?> searchRiceVarietiesByGrade(String qualityGrade) async {
+  try {
+    final result = await get('/rice/search?quality_grade=$qualityGrade');
+    final List<dynamic> riceData = result['rice_varieties'];
+    return riceData.map((rice) => rice as Map<String, dynamic>).toList();
+  } catch (e) {
+    if (kDebugMode) {
+      print('Search rice varieties by grade error: $e');
+    }
+    return null;
+  }
+}
 }

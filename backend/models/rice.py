@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from models import Base
 from datetime import date
@@ -13,6 +14,8 @@ class RiceVariety(Base):
     expiration_date = Column(Date, nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    production_records = relationship("ProductionTracking", back_populates="rice_variety", cascade="all, delete-orphan")
 
     def __init__(self, variety_name, quality_grade, production_date, expiration_date):
         self.variety_name = variety_name

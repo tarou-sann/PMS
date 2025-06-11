@@ -39,5 +39,5 @@ class Repair(Base):
             'completed_date': self.completed_date.isoformat() if self.completed_date else None,
             'notes': self.notes,
             'is_urgent': self.is_urgent,
-            'machinery_name': self.machinery.machine_name if self.machinery else None
+            'machine_name': self.machinery.machine_name if self.machinery else None
         }

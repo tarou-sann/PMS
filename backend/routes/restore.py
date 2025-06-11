@@ -29,26 +29,38 @@ def restore_full_backup():
         from models.rice import RiceVariety
         from models.user import User
         
-        # Restore machinery
+        # Clear existing data first (except admin user)
+        try:
+            # Delete in reverse order of dependencies
+            db_session.query(RiceVariety).delete()
+            db_session.query(Machinery).delete()
+            db_session.query(User).filter(User.username != 'admin').delete()
+            db_session.commit()
+            logging.info("Cleared existing data before restore")
+        except Exception as clear_error:
+            db_session.rollback()
+            logging.warning(f"Could not clear existing data: {clear_error}")
+        
+        # Restore machinery first (usually no dependencies)
         if 'machinery' in backup_data:
             for machinery_data in backup_data['machinery']:
-                # Check if machinery already exists
-                existing = Machinery.query.filter_by(machine_name=machinery_data.get('machine_name')).first()
-                if not existing:
+                try:
                     machinery = Machinery(
                         machine_name=machinery_data.get('machine_name'),
                         is_mobile=machinery_data.get('is_mobile', True),
                         is_active=machinery_data.get('is_active', True)
                     )
                     db_session.add(machinery)
+                    db_session.flush()  # Flush to get ID without committing
                     restored_counts['machinery'] += 1
+                except Exception as e:
+                    logging.warning(f"Failed to restore machinery {machinery_data.get('machine_name')}: {e}")
+                    continue
         
         # Restore rice varieties
         if 'rice_varieties' in backup_data:
             for rice_data in backup_data['rice_varieties']:
-                # Check if rice variety already exists
-                existing = RiceVariety.query.filter_by(variety_name=rice_data.get('variety_name')).first()
-                if not existing:
+                try:
                     rice_variety = RiceVariety(
                         variety_name=rice_data.get('variety_name'),
                         quality_grade=rice_data.get('quality_grade'),
@@ -56,26 +68,33 @@ def restore_full_backup():
                         expiration_date=rice_data.get('expiration_date')
                     )
                     db_session.add(rice_variety)
+                    db_session.flush()
                     restored_counts['rice_varieties'] += 1
+                except Exception as e:
+                    logging.warning(f"Failed to restore rice variety {rice_data.get('variety_name')}: {e}")
+                    continue
         
         # Restore users (excluding admin)
         if 'users' in backup_data:
             for user_data in backup_data['users']:
-                username = user_data.get('username')
-                if username and username != 'admin':  # Don't restore admin user
-                    # Check if user already exists
-                    existing = User.query.filter_by(username=username).first()
-                    if not existing:
+                try:
+                    username = user_data.get('username')
+                    if username and username != 'admin':
                         user = User(
                             username=username,
-                            password='default123',  # Set a default password - user should change it
-                            security_question=user_data.get('security_question', 'Default question?'),
-                            security_answer=user_data.get('security_answer', 'default'),
+                            password='default123',  # Set a default password
+                            security_question=user_data.get('security_question', 'What is your favorite color?'),
+                            security_answer=user_data.get('security_answer', 'blue'),
                             is_admin=user_data.get('is_admin', False)
                         )
                         db_session.add(user)
+                        db_session.flush()
                         restored_counts['users'] += 1
+                except Exception as e:
+                    logging.warning(f"Failed to restore user {user_data.get('username')}: {e}")
+                    continue
         
+        # Commit all changes
         db_session.commit()
         
         return jsonify({

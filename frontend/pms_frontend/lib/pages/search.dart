@@ -82,7 +82,10 @@ class SearchNav extends StatelessWidget {
                       padding: const EdgeInsets.all(15.0),
                       child: GestureDetector(
                         onTap: () {
-                        
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RiceVarietySearch()),
+                          );
                         },
                         child: Container(
                           width: 450,
@@ -489,6 +492,419 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                         child: Center(
                           child: Text(
                             "Enter a part name to search for repairs",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class RiceVarietySearch extends StatefulWidget {
+  const RiceVarietySearch({super.key});
+
+  @override
+  State<RiceVarietySearch> createState() => _RiceVarietySearchState();
+}
+
+class _RiceVarietySearchState extends State<RiceVarietySearch> {
+  final ApiService _apiService = ApiService();
+  List<Map<String, dynamic>> _searchResults = [];
+  bool _isLoading = false;
+  bool _hasSearched = false;
+  String _errorMessage = '';
+  String _selectedGrade = 'Shatter';
+
+  Future<void> _searchRiceVarieties() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final results = await _apiService.searchRiceVarietiesByGrade(_selectedGrade);
+      setState(() {
+        _isLoading = false;
+        _hasSearched = true;
+        if (results != null) {
+          _searchResults = results;
+        } else {
+          _errorMessage = 'Failed to retrieve search results';
+          _searchResults = [];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _hasSearched = true;
+        _errorMessage = 'Error: $e';
+        _searchResults = [];
+      });
+    }
+  }
+
+  // Helper function to get quality grade color
+  Color _getQualityColor(String grade) {
+    switch(grade.toLowerCase()) {
+      case 'shatter':
+        return Colors.purple;
+      case 'non-shattering':
+        return ThemeColor.primaryColor;
+      default:
+        return ThemeColor.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const TextStyle tableHeaderStyle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      color: ThemeColor.secondaryColor,
+    );
+
+    return Scaffold(
+      key: GlobalKey<ScaffoldState>(),
+      backgroundColor: ThemeColor.white,
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(150),
+        child: Navbar(),
+      ),
+      endDrawer: const EndDraw(),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            // Back arrow and title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.pop(context, 
+                    MaterialPageRoute(builder: (context) => const SearchNav()));
+                  },
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: ThemeColor.secondaryColor,
+                    size: 30,
+                  ),
+                ),
+                const Text(
+                  "Rice Variety Search",
+                  style: TextStyle(
+                    color: ThemeColor.secondaryColor,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // Search dropdown and button
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: DropdownButton<String>(
+                      value: _selectedGrade,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      hint: const Text("Select Quality Grade"),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Shatter',
+                          child: Text("Shatter"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Non-Shattering',
+                          child: Text("Non-Shattering"),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedGrade = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                TextButton(
+                  onPressed: _searchRiceVarieties,
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                    foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                    padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    ),
+                  ),
+                  child: const Text("Search"),
+                ),
+              ],
+            ),
+            
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text(
+                  _errorMessage,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
+              
+            _isLoading
+                ? const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
+                      ),
+                    ),
+                  )
+                : _hasSearched
+                    ? _searchResults.isEmpty
+                        ? const Expanded(
+                            child: Center(
+                              child: Text(
+                                "No rice varieties found matching your search",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          )
+                        : Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: ThemeColor.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  // Search results count
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Text(
+                                      "Found ${_searchResults.length} rice varieties with grade: $_selectedGrade",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  
+                                  // Header
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'ID',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Variety Name',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Quality Grade',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Production Date',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Expiration Date',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  // Rice Varieties List
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: _searchResults.length,
+                                      itemBuilder: (context, index) {
+                                        final rice = _searchResults[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.grey.withOpacity(0.2),
+                                              ),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              // ID
+                                              Expanded(
+                                                flex: 1,
+                                                child: CircleAvatar(
+                                                  radius: 16,
+                                                  backgroundColor: ThemeColor.secondaryColor,
+                                                  child: Text(
+                                                    rice['id'].toString(),
+                                                    style: const TextStyle(
+                                                      color: ThemeColor.white,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              
+                                              // Variety Name
+                                              Expanded(
+                                                flex: 3,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.grass, color: ThemeColor.primaryColor, size: 20),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        rice['variety_name'] ?? 'Unknown',
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              
+                                              // Quality Grade
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: _getQualityColor(rice['quality_grade'] ?? '').withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    rice['quality_grade'] ?? 'N/A',
+                                                    style: TextStyle(
+                                                      color: _getQualityColor(rice['quality_grade'] ?? ''),
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+                                              
+                                              // Production Date
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      rice['production_date'] ?? 'N/A',
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: ThemeColor.secondaryColor,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              
+                                              // Expiration Date
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.event_busy, color: Colors.red, size: 16),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      rice['expiration_date'] ?? 'N/A',
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors.red,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                    : const Expanded(
+                        child: Center(
+                          child: Text(
+                            "Select a quality grade and click search",
                             style: TextStyle(fontSize: 16),
                           ),
                         ),
