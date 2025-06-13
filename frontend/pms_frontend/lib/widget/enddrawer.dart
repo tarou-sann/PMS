@@ -12,7 +12,7 @@ import '../services/user_service.dart';
 import '../theme/colors.dart';
 import '../pages/about.dart';
 import '../pages/productiontracking.dart';
-
+import '../pages/forecasting.dart';
 
 class EndDraw extends StatelessWidget {
   const EndDraw({super.key});
@@ -85,6 +85,15 @@ class EndDraw extends StatelessWidget {
           _buildPaddedListTile(
             title: 'Forecasting',
             style: listTileTextStyle,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ForecastingPage(),
+                ),
+              );
+              print("moving to machinerymanagement");
+            },
           ),
           _buildPaddedListTile(
             title: 'Search',

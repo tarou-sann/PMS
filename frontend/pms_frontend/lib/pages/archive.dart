@@ -81,7 +81,7 @@ class _ArchivesPageState extends State<ArchivesPage> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: ThemeColor.red),
             child: const Text('Delete'),
           ),
         ],
@@ -267,22 +267,26 @@ class _ArchivesPageState extends State<ArchivesPage> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: ThemeColor.blue.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.blue),
+                  const Icon(Icons.info_outline, color: ThemeColor.blue),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Archives are automatically deleted after 30 days. Total archives: ${_archives.length}',
-                      style: const TextStyle(color: Colors.blue),
+                      style: const TextStyle(color: ThemeColor.blue),
                     ),
                   ),
                   TextButton(
                     onPressed: _cleanExpiredArchives,
                     child: const Text('Clean Expired'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: ThemeColor.blue,
+                      textStyle: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ),
                 ],
               ),
@@ -302,21 +306,21 @@ class _ArchivesPageState extends State<ArchivesPage> {
                               Icon(
                                 Icons.archive_outlined,
                                 size: 64,
-                                color: Colors.grey[400],
+                                color: ThemeColor.grey,
                               ),
                               const SizedBox(height: 16),
                               Text(
                                 'No archives found',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  color: Colors.grey[600],
+                                  color: ThemeColor.grey,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Create a backup to see archives here',
                                 style: TextStyle(
-                                  color: Colors.grey[500],
+                                  color: ThemeColor.grey,
                                 ),
                               ),
                             ],
@@ -331,16 +335,17 @@ class _ArchivesPageState extends State<ArchivesPage> {
 
                             return Card(
                               margin: const EdgeInsets.only(bottom: 12),
+                              color: ThemeColor.white,
                               child: ListTile(
                                 leading: Icon(
                                   Icons.archive,
-                                  color: isExpired ? Colors.red : ThemeColor.secondaryColor,
+                                  color: isExpired ? ThemeColor.red : ThemeColor.secondaryColor,
                                 ),
                                 title: Text(
                                   archive.filename,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    color: isExpired ? Colors.red : null,
+                                    color: isExpired ? ThemeColor.red : null,
                                   ),
                                 ),
                                 subtitle: Column(
@@ -353,7 +358,7 @@ class _ArchivesPageState extends State<ArchivesPage> {
                                           : 'Expires in $daysUntilExpiry days',
                                       style: TextStyle(
                                         color: isExpired 
-                                            ? Colors.red 
+                                            ? ThemeColor.red 
                                             : daysUntilExpiry <= 7 
                                                 ? Colors.orange 
                                                 : ThemeColor.green,
@@ -377,7 +382,7 @@ class _ArchivesPageState extends State<ArchivesPage> {
                                     ),
                                     IconButton(
                                       onPressed: () => _deleteArchive(archive),
-                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      icon: const Icon(Icons.delete, color: ThemeColor.red),
                                       tooltip: 'Delete',
                                     ),
                                   ],

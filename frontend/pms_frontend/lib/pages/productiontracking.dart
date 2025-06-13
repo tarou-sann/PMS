@@ -90,6 +90,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            backgroundColor: ThemeColor.white,
             title: const Text(
               'Add Production Record',
               style: TextStyle(
@@ -111,7 +112,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: Text(
                             errorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: ThemeColor.red),
                           ),
                         ),
 
@@ -246,7 +247,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                   Navigator.of(dialogContext).pop();
                 },
                 style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
                 ),
                 child: const Text('Cancel'),
               ),
@@ -303,7 +304,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                       },
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
                       ),
                       child: const Text('Add Record'),
                     ),
@@ -360,8 +361,8 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: _showAddProductionDialog,
-                      icon: const Icon(Icons.add, color: Colors.white),
-                      label: const Text('Add Record', style: TextStyle(color: Colors.white)),
+                      icon: const Icon(Icons.add, color: ThemeColor.white),
+                      label: const Text('Add Record', style: TextStyle(color: ThemeColor.white)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: ThemeColor.secondaryColor,
                       ),
@@ -384,7 +385,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: ThemeColor.red),
                 ),
               ),
             if (_successMessage.isNotEmpty)
@@ -392,7 +393,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   _successMessage,
-                  style: const TextStyle(color: Colors.green),
+                  style: const TextStyle(color: ThemeColor.green),
                 ),
               ),
 
@@ -410,7 +411,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                       ? Center(
                           child: Text(
                             _errorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: ThemeColor.red),
                           ),
                         )
                       : _productionRecords.isEmpty
@@ -423,7 +424,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: ThemeColor.grey.withOpacity(0.2),
                                     spreadRadius: 1,
                                     blurRadius: 5,
                                     offset: const Offset(0, 3),
@@ -444,6 +445,16 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                     ),
                                     child: const Row(
                                       children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'ID',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
                                         Expanded(
                                           flex: 3,
                                           child: Text(
@@ -509,7 +520,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                           decoration: BoxDecoration(
                                             border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
+                                                color: ThemeColor.grey.withOpacity(0.2),
                                               ),
                                             ),
                                           ),

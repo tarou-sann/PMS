@@ -171,7 +171,16 @@ class _MachinesNavState extends State<MachinesNav> {
                                     ),
                                     child: const Row(
                                       children: [
-                                        
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'ID',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
                                         Expanded(
                                           flex: 3,
                                           child: Text(

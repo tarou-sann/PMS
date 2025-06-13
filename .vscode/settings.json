@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/codes/PMS/frontend/pms_frontend/windows"
+    "cmake.sourceDirectory": "D:/codes/PMS/frontend/pms_frontend/windows",
+    "git.ignoreLimitWarning": true
 }

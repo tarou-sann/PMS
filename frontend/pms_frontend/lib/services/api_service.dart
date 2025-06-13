@@ -1189,6 +1189,47 @@ class ApiService {
       print('Search rice varieties by grade error: $e');
     }
     return null;
+    }
   }
-}
+
+  Future<List<Map<String, dynamic>>?> getForecastData(String riceVariety) async {
+    try {
+      final queryParam = riceVariety == 'All' ? '' : '?variety=$riceVariety';
+      final result = await get('/forecast/sarima$queryParam');
+      if (result['forecast'] != null) {
+        final List<dynamic> forecastData = result['forecast'];
+        return forecastData.map((item) => item as Map<String, dynamic>).toList();
+      }
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get forecast data error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCurrentYieldSummary() async {
+    try {
+      final result = await get('/forecast/current-summary');
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get current yield summary error: $e');
+      }
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> generateForecast(Map<String, dynamic> parameters) async {
+    try {
+      final result = await post('/forecast/generate', parameters);
+      return result;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Generate forecast error: $e');
+      }
+      return null;
+    }
+  }
 }

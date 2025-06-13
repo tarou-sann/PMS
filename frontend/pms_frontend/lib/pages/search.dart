@@ -138,35 +138,28 @@ class PartsNeededSearch extends StatefulWidget {
 }
 
 class _PartsNeededSearchState extends State<PartsNeededSearch> {
-  final TextEditingController _searchController = TextEditingController();
   final ApiService _apiService = ApiService();
   List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
   bool _hasSearched = false;
   String _errorMessage = '';
+  String _selectedPart = 'Engine'; // Changed from TextEditingController to String
 
   @override
   void dispose() {
-    _searchController.dispose();
+    // Removed _searchController.dispose() since we're no longer using it
     super.dispose();
   }
 
   Future<void> _searchParts() async {
-    final query = _searchController.text.trim();
-    if (query.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please enter a part name to search';
-      });
-      return;
-    }
-
+    // Removed the query validation since we're using dropdown selection
     setState(() {
       _isLoading = true;
       _errorMessage = '';
     });
 
     try {
-      final results = await _apiService.searchRepairsByParts(query);
+      final results = await _apiService.searchRepairsByParts(_selectedPart);
       setState(() {
         _isLoading = false;
         _hasSearched = true;
@@ -248,18 +241,72 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
             ),
             const SizedBox(height: 20),
             
-            // Search bar
+            // Search dropdown and button (Changed from search bar to dropdown)
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: "Enter part name (Engine, Transmission, etc.)",
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: ThemeColor.grey),
+                      borderRadius: BorderRadius.circular(4),
                     ),
-                    onSubmitted: (_) => _searchParts(),
+                    child: DropdownButton<String>(
+                      value: _selectedPart,
+                      isExpanded: true,
+                      underline: const SizedBox(),
+                      hint: const Text("Select Part Type"),
+                      dropdownColor: ThemeColor.white, // Set dropdown background color
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'Engine',
+                          child: Text("Engine"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Transmission',
+                          child: Text("Transmission"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Hydraulics',
+                          child: Text("Hydraulics"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Brakes',
+                          child: Text("Brakes"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Tires',
+                          child: Text("Tires"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Battery',
+                          child: Text("Battery"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Filters',
+                          child: Text("Filters"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Belts',
+                          child: Text("Belts"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Hoses',
+                          child: Text("Hoses"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Electrical',
+                          child: Text("Electrical"),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedPart = value;
+                          });
+                        }
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -282,7 +329,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: ThemeColor.red), // Changed to ThemeColor.red
                 ),
               ),
               
@@ -300,7 +347,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                             ? const Center(
                                 child: Text(
                                   "No parts found matching your search",
-                                  style: TextStyle(fontSize: 16),
+                                  style: TextStyle(fontSize: 16, color: ThemeColor.grey), // Added ThemeColor
                                 ),
                               )
                             : Column(
@@ -309,10 +356,11 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                                     child: Text(
-                                      "Found ${_searchResults.length} repair order(s) with matching parts",
+                                      "Found ${_searchResults.length} repair order(s) with part type: $_selectedPart", // Updated message
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
+                                        color: ThemeColor.primaryColor, // Added ThemeColor
                                       ),
                                     ),
                                   ),
@@ -321,8 +369,8 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                                     decoration: BoxDecoration(
-                                      color: ThemeColor.primaryColor.withOpacity(0.1),
-                                      border: Border.all(color: ThemeColor.primaryColor),
+                                      color: ThemeColor.secondaryColor.withOpacity(0.1), // Changed to match other tables
+                                      border: Border.all(color: ThemeColor.secondaryColor), // Changed border color
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(8),
                                         topRight: Radius.circular(8),
@@ -366,7 +414,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         border: Border.all(
-                                          color: ThemeColor.primaryColor,
+                                          color: ThemeColor.secondaryColor, // Changed border color
                                         ),
                                         borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(8),
@@ -380,12 +428,12 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                           return Container(
                                             decoration: BoxDecoration(
                                               color: index % 2 == 0
-                                                  ? Colors.white
-                                                  : Colors.grey.withOpacity(0.1),
+                                                  ? ThemeColor.white
+                                                  : ThemeColor.white2, // Changed to ThemeColor
                                               border: index < _searchResults.length - 1
-                                                  ? const Border(
+                                                  ? Border(
                                                       bottom: BorderSide(
-                                                        color: Colors.grey,
+                                                        color: ThemeColor.grey.withOpacity(0.2), // Changed to ThemeColor
                                                         width: 0.5,
                                                       ),
                                                     )
@@ -408,6 +456,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                         repair['id'].toString(),
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor, // Added ThemeColor
                                                         ),
                                                       ),
                                                     ),
@@ -419,6 +468,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                       repair['machinery_name'] ?? 'Unknown',
                                                       style: const TextStyle(
                                                         fontWeight: FontWeight.w400,
+                                                        color: ThemeColor.primaryColor, // Added ThemeColor
                                                       ),
                                                     ),
                                                   ),
@@ -429,6 +479,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                       repair['notes'] ?? 'Not specified',
                                                       style: const TextStyle(
                                                         fontWeight: FontWeight.w500,
+                                                        color: ThemeColor.primaryColor, // Added ThemeColor
                                                       ),
                                                     ),
                                                   ),
@@ -439,21 +490,22 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                       repair['issue_description'],
                                                       overflow: TextOverflow.ellipsis,
                                                       maxLines: 2,
+                                                      style: const TextStyle(color: ThemeColor.primaryColor), // Added ThemeColor
                                                     ),
                                                   ),
                                                   // Status
                                                   Expanded(
                                                     flex: 2,
                                                     child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.center, // Center the container horizontally
+                                                      mainAxisAlignment: MainAxisAlignment.center,
                                                       children: [
                                                         Container(
                                                           padding: const EdgeInsets.symmetric(
                                                             horizontal: 12,
                                                             vertical: 6,
                                                           ),
-                                                          width: 120, // Fixed width
-                                                          alignment: Alignment.center, // Center text within container
+                                                          width: 120,
+                                                          alignment: Alignment.center,
                                                           decoration: BoxDecoration(
                                                             color: _getStatusColor(repair['status']).withOpacity(0.2),
                                                             borderRadius: BorderRadius.circular(16),
@@ -474,7 +526,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                   Expanded(
                                                     flex: 1,
                                                     child: repair['is_urgent'] 
-                                                      ? const Icon(Icons.warning, color: Colors.red)
+                                                      ? const Icon(Icons.warning, color: ThemeColor.red) // Changed to ThemeColor.red
                                                       : const SizedBox(),
                                                   ),
                                                 ],
@@ -491,8 +543,8 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                     : const Expanded(
                         child: Center(
                           child: Text(
-                            "Enter a part name to search for repairs",
-                            style: TextStyle(fontSize: 16),
+                            "Select a part type and click search", // Updated message
+                            style: TextStyle(fontSize: 16, color: ThemeColor.grey), // Added ThemeColor
                           ),
                         ),
                       ),

@@ -32,13 +32,26 @@ class RepairNav extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const MachineryManagementNav()));
-                },
-                icon: const Icon(Icons.arrow_back),
-                color: ThemeColor.secondaryColor,
-                iconSize: 50,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const MachineryManagementNav()));
+                      },
+                      icon: const Icon(Icons.arrow_back_ios),
+                      color: ThemeColor.secondaryColor,
+                      iconSize: 30,
+                  ),
+                  const Text(
+                    "Repairs",
+                    style: TextStyle(
+                      color: ThemeColor.secondaryColor,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

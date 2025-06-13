@@ -10,7 +10,6 @@ from routes.machinery import *
 from routes.rice import *
 from routes.activity import *
 from routes.production import *
-# Add the import for the new repair routes
 from . import repair
 
 # Initialize the blueprint with all routes

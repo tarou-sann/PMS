@@ -8,3 +8,7 @@ pydantic==1.10.7
 python-dotenv==1.0.0
 Flask-Bcrypt==1.0.1
 flask-cors 
+statsmodels 
+scikit-learn 
+pandas 
+numpy

@@ -6,6 +6,7 @@ from models import db_session, init_db, shutdown_session
 from routes import api, init_routes
 from config import Config
 from routes.restore import restore_api
+from routes.forecast import forecast_bp
 import os
 import argparse
 from datetime import timedelta
@@ -51,7 +52,8 @@ CORS(app, resources={
     r"/api/*": {
         "origins": ["http://localhost:*", "http://127.0.0.1:*", "http://10.0.2.2:*"],
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
     }
 })
 
@@ -59,6 +61,7 @@ CORS(app, resources={
 init_routes(app)
 
 app.register_blueprint(restore_api, url_prefix='/api')
+app.register_blueprint(forecast_bp, url_prefix='/api')
 
 # Initialize database
 @app.before_first_request

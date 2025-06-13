@@ -46,7 +46,7 @@ def setup_virtual_env():
             f.write("Flask==2.0.1\n")
             f.write("Flask-Cors==3.0.10\n")
             f.write("Flask-JWT-Extended==4.2.3\n")
-            f.write("Flask-Bcrypt==1.0.1\n")  # Added bcrypt dependency
+            f.write("Flask-Bcrypt==1.0.1\n")  
             f.write("SQLAlchemy==1.4.23\n")
             f.write("Werkzeug==2.0.1\n")
         print("Created requirements.txt file with basic dependencies")

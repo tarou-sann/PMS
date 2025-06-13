@@ -10,19 +10,19 @@ Base = declarative_base()
 Base.query = db_session.query_property()
 
 def init_db():
-    # import all modules here that might define models
     from models.user import User
     from models.machinery import Machinery
     from models.rice import RiceVariety
+    from models.production import ProductionTracking  
     Base.metadata.create_all(bind=engine)
 
 def shutdown_session(exception=None):
     db_session.remove()
 
-# Export model classes for direct import
+
 from models.user import User
 from models.machinery import Machinery
 from models.rice import RiceVariety
+from models.production import ProductionTracking 
 
-# Make them available when importing from models
-__all__ = ['db_session', 'Base', 'init_db', 'shutdown_session', 'User', 'Machinery', 'RiceVariety']
+__all__ = ['db_session', 'Base', 'init_db', 'shutdown_session', 'User', 'Machinery', 'RiceVariety', 'ProductionTracking']
