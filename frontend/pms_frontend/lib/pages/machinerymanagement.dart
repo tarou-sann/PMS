@@ -26,7 +26,7 @@ class MachineryManagementNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(

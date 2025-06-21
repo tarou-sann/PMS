@@ -329,7 +329,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

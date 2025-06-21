@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PMS Frontend',
       theme: ThemeData(
-        fontFamily: 'Lexend',
+        fontFamily: 'Urbanist',
       ),
       home: const SignUpForm(),
       debugShowCheckedModeBanner: false,

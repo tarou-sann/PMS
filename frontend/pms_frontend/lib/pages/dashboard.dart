@@ -68,7 +68,7 @@ class _DashboardNavState extends State<DashboardNav> {
         preferredSize: const Size.fromHeight(150),
         child: CustomNavbar(username: _username), // Pass username to custom navbar
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const  EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(

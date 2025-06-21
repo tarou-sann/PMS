@@ -229,7 +229,7 @@ class _ForecastingPageState extends State<ForecastingPage> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(

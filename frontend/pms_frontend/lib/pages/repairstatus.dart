@@ -76,7 +76,7 @@ class _RepairstatusNavState extends State<RepairstatusNav> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -729,7 +729,7 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

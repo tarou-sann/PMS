@@ -15,7 +15,7 @@ class AboutUs extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(40.0),

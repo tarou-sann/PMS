@@ -25,7 +25,7 @@ class RegisterBase extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(
@@ -280,7 +280,7 @@ class _RegisterUserState extends State<RegisterUser> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
@@ -801,7 +801,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
@@ -1158,7 +1158,7 @@ class _RegisterRiceState extends State<RegisterRice> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(

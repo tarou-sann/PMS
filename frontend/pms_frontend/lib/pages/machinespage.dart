@@ -72,7 +72,7 @@ class _MachinesNavState extends State<MachinesNav> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(

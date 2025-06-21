@@ -26,7 +26,7 @@ class SearchNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(45),
         child: Center(
@@ -209,7 +209,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -625,7 +625,7 @@ class _RiceVarietySearchState extends State<RiceVarietySearch> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDraw(),
+      endDrawer: const EndDrawer_Admin(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
