@@ -6,7 +6,7 @@ import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/api_service.dart';
-import 'reports.dart';
+import '../utils/formatters.dart';
 
 class ProductionReport extends StatefulWidget {
   const ProductionReport({super.key});
@@ -130,12 +130,14 @@ class _ProductionReportState extends State<ProductionReport> {
               pw.Table(
                 border: pw.TableBorder.all(),
                 columnWidths: {
-                  0: const pw.FlexColumnWidth(1),
-                  1: const pw.FlexColumnWidth(3),
-                  2: const pw.FlexColumnWidth(2),
-                  3: const pw.FlexColumnWidth(2),
-                  4: const pw.FlexColumnWidth(2),
-                  5: const pw.FlexColumnWidth(2),
+                  0: const pw.FlexColumnWidth(1),  // ID
+                  1: const pw.FlexColumnWidth(2),  // Rice Variety
+                  2: const pw.FlexColumnWidth(2),  // Farmer Name
+                  3: const pw.FlexColumnWidth(2),  // Municipality
+                  4: const pw.FlexColumnWidth(1),  // Hectares
+                  5: const pw.FlexColumnWidth(2),  // Quantity
+                  6: const pw.FlexColumnWidth(2),  // Yield/Hectare
+                  7: const pw.FlexColumnWidth(2),  // Harvest Date
                 },
                 children: [
                   // Header row
@@ -149,6 +151,14 @@ class _ProductionReportState extends State<ProductionReport> {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
                         child: pw.Text('Rice Variety', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Farmer Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Municipality', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
@@ -173,11 +183,19 @@ class _ProductionReportState extends State<ProductionReport> {
                     children: [
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(record['id']?.toString() ?? 'N/A'),
+                        child: pw.Text(Formatters.formatId(record['id'])),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
                         child: pw.Text(record['rice_variety_name'] ?? 'Unknown'),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(record['farmer_name'] ?? 'Unknown'),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(record['municipality'] ?? 'Unknown'),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
@@ -235,7 +253,7 @@ class _ProductionReportState extends State<ProductionReport> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin()
+      endDrawer: const EndDrawer()
       ,
       body: _isLoading
           ? const Center(
@@ -393,6 +411,28 @@ class _ProductionReportState extends State<ProductionReport> {
                                           ),
                                         ),
                                       ),
+
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Farmer Name',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Municipality',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                          ),
+                                        ),
+                                      ),
+
                                       Expanded(
                                         flex: 2,
                                         child: Text(
@@ -425,7 +465,7 @@ class _ProductionReportState extends State<ProductionReport> {
                                       ),
                                       Expanded(
                                         flex: 2,
-                                        child: Text(
+                                        child: Text( 
                                           'Harvest Date',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
@@ -461,7 +501,7 @@ class _ProductionReportState extends State<ProductionReport> {
                                                 children: [
                                                   const SizedBox(width: 8),
                                                   Text(
-                                                    record['id'].toString(),
+                                                    Formatters.formatId(record['id']), 
                                                     style: const TextStyle(
                                                       fontWeight: FontWeight.w500,
                                                       color: ThemeColor.primaryColor,
@@ -484,6 +524,46 @@ class _ProductionReportState extends State<ProductionReport> {
                                                       style: const TextStyle(
                                                         fontWeight: FontWeight.w500,
                                                         color: ThemeColor.green,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            
+                                            // Farmer Name - ADD THIS SECTION
+                                            Expanded(
+                                              flex: 2,
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.person, color: ThemeColor.primaryColor, size: 16),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      record['farmer_name'] ?? 'Unknown',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w500,
+                                                        color: ThemeColor.primaryColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            // Municipality - ADD THIS SECTION
+                                            Expanded(
+                                              flex: 2,
+                                              child: Row(
+                                                children: [
+                                                  const Icon(Icons.location_city, color: ThemeColor.secondaryColor, size: 16),
+                                                  const SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      record['municipality'] ?? 'Unknown',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w500,
+                                                        color: ThemeColor.secondaryColor,
                                                       ),
                                                     ),
                                                   ),

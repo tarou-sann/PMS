@@ -223,7 +223,7 @@ class _UserLogsState extends State<UserLogs> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(

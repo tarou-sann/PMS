@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
 from models import Base, db_session  # Import db_session here
 from flask_bcrypt import generate_password_hash, check_password_hash
+from utils.formatters import format_id
 
 class User(Base):
     __tablename__ = 'users'
@@ -77,8 +78,8 @@ class User(Base):
     def to_dict(self):
         return {
             'id': self.id,
+            'formatted_id': format_id(self.id),
             'username': self.username,
-            # 'email': self.email,
             'security_question': self.security_question,
             'is_admin': self.is_admin,
             'created_at': self.created_at.isoformat() if self.created_at else None,

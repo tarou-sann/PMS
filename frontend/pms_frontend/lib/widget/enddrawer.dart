@@ -15,6 +15,31 @@ import '../pages/about.dart';
 import '../pages/productiontracking.dart';
 import '../pages/forecasting.dart';
 
+class EndDrawer extends StatelessWidget {
+  const EndDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: ApiService().getCurrentUser(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Drawer(
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        final userInfo = snapshot.data;
+        final isAdmin = userInfo?['is_admin'] ?? false;
+
+        return isAdmin ? const EndDrawer_Admin() : const EndDrawer_Employee();
+      },
+    );
+  }
+}
+
 class EndDrawer_Admin extends StatelessWidget {
   const EndDrawer_Admin({super.key});
 

@@ -7,6 +7,7 @@ import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/api_service.dart';
 import 'reports.dart';
+import '../utils/formatters.dart';
 
 class MachineStatusReport extends StatefulWidget {
   const MachineStatusReport({super.key});
@@ -128,7 +129,7 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
                     children: [
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(machine['id'].toString()),
+                        child: pw.Text(Formatters.formatId(machine['id'])),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
@@ -175,7 +176,7 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(

@@ -25,7 +25,7 @@ class RegisterBase extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(
@@ -266,7 +266,13 @@ class _RegisterUserState extends State<RegisterUser> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Error: $e';
+        // Handle specific duplicate error messages
+        String errorMsg = e.toString();
+        if (errorMsg.contains('already exists')) {
+          _errorMessage = errorMsg.replaceAll('Exception: ', '');
+        } else {
+          _errorMessage = 'Error: $e';
+        }
       });
     }
   }
@@ -280,7 +286,7 @@ class _RegisterUserState extends State<RegisterUser> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
@@ -772,10 +778,17 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
           _successMessage = '';
         }
       });
+        // In the catch block of _registerMachinery:
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Error: $e';
+        // Handle specific duplicate error messages
+        String errorMsg = e.toString();
+        if (errorMsg.contains('already exists')) {
+          _errorMessage = errorMsg.replaceAll('Exception: ', '');
+        } else {
+          _errorMessage = 'Error: $e';
+        }
         _successMessage = '';
       });
     }
@@ -801,7 +814,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
@@ -1028,8 +1041,8 @@ class _RegisterRiceState extends State<RegisterRice> {
 
   // Form controllers and state variables
   final TextEditingController _varietyNameController = TextEditingController();
-  final TextEditingController _productionDateController = TextEditingController();
-  final TextEditingController _expirationDateController = TextEditingController();
+  // final TextEditingController _productionDateController = TextEditingController();
+  // final TextEditingController _expirationDateController = TextEditingController();
   String _qualityGrade = "Shatter";
 
   bool _isLoading = false;
@@ -1039,8 +1052,8 @@ class _RegisterRiceState extends State<RegisterRice> {
   @override
   void dispose() {
     _varietyNameController.dispose();
-    _productionDateController.dispose();
-    _expirationDateController.dispose();
+    // _productionDateController.dispose();
+    // _expirationDateController.dispose();
     super.dispose();
   }
 
@@ -1070,19 +1083,19 @@ class _RegisterRiceState extends State<RegisterRice> {
     }
 
     // Validate dates
-    if (_productionDateController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Production date is required';
-      });
-      return;
-    }
+    // if (_productionDateController.text.isEmpty) {
+    //   setState(() {
+    //     _errorMessage = 'Production date is required';
+    //   });
+    //   return;
+    // }
 
-    if (_expirationDateController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Expiration date is required';
-      });
-      return;
-    }
+    // if (_expirationDateController.text.isEmpty) {
+    //   setState(() {
+    //     _errorMessage = 'Expiration date is required';
+    //   });
+    //   return;
+    // }
 
     setState(() {
       _isLoading = true;
@@ -1095,8 +1108,8 @@ class _RegisterRiceState extends State<RegisterRice> {
       final riceData = {
         'variety_name': _varietyNameController.text,
         'quality_grade': _qualityGrade,
-        'production_date': _productionDateController.text,
-        'expiration_date': _expirationDateController.text,
+        // 'production_date': _productionDateController.text,
+        // 'expiration_date': _expirationDateController.text,
       };
 
       // Call API to create rice variety
@@ -1124,17 +1137,24 @@ class _RegisterRiceState extends State<RegisterRice> {
 
           // Clear form after successful submission
           _varietyNameController.clear();
-          _productionDateController.clear();
-          _expirationDateController.clear();
+          // _productionDateController.clear();
+          // _expirationDateController.clear();
           _qualityGrade = "Shatter";
         } else {
           _errorMessage = 'Failed to register rice variety';
         }
       });
+        // In the catch block of _registerRiceVariety:
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Error: $e';
+        // Handle specific duplicate error messages
+        String errorMsg = e.toString();
+        if (errorMsg.contains('already exists')) {
+          _errorMessage = errorMsg.replaceAll('Exception: ', '');
+        } else {
+          _errorMessage = 'Error: $e';
+        }
       });
     }
   }
@@ -1158,7 +1178,7 @@ class _RegisterRiceState extends State<RegisterRice> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
@@ -1306,41 +1326,41 @@ class _RegisterRiceState extends State<RegisterRice> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Production Date
-                  const Text(
-                    'Production Date',
-                    style: labelStyle,
-                  ),
-                  const SizedBox(height: 10),
-                  ThemedTextFormField(
-                    controller: _productionDateController,
-                    hintText: 'Select Production Date',
-                    readOnly: true,
-                    onTap: () => _selectDate(context, _productionDateController),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, _productionDateController),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
+                  // // Production Date
+                  // const Text(
+                  //   'Production Date',
+                  //   style: labelStyle,
+                  // ),
+                  // const SizedBox(height: 10),
+                  // ThemedTextFormField(
+                  //   controller: _productionDateController,
+                  //   hintText: 'Select Production Date',
+                  //   readOnly: true,
+                  //   onTap: () => _selectDate(context, _productionDateController),
+                  //   suffixIcon: IconButton(
+                  //     icon: const Icon(Icons.calendar_today),
+                  //     onPressed: () => _selectDate(context, _productionDateController),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 30),
 
-                  // Expiration Date
-                  const Text(
-                    'Expiration Date',
-                    style: labelStyle,
-                  ),
-                  const SizedBox(height: 10),
-                  ThemedTextFormField(
-                    controller: _expirationDateController,
-                    hintText: 'Select Expiration Date',
-                    readOnly: true,
-                    onTap: () => _selectDate(context, _expirationDateController),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, _expirationDateController),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
+                  // // Expiration Date
+                  // const Text(
+                  //   'Expiration Date',
+                  //   style: labelStyle,
+                  // ),
+                  // const SizedBox(height: 10),
+                  // ThemedTextFormField(
+                  //   controller: _expirationDateController,
+                  //   hintText: 'Select Expiration Date',
+                  //   readOnly: true,
+                  //   onTap: () => _selectDate(context, _expirationDateController),
+                  //   suffixIcon: IconButton(
+                  //     icon: const Icon(Icons.calendar_today),
+                  //     onPressed: () => _selectDate(context, _expirationDateController),
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 30),
 
                   // Register Button
                   Align(

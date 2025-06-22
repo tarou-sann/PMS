@@ -166,6 +166,10 @@ def register_user():
         if existing_user:
             return jsonify({'message': 'Username already exists. Please choose a different username.'}), 409
         
+        existing_user = User.query.filter_by(username=data['username']).first()
+        if existing_user:
+            return jsonify({'message': 'Username already exists. Please choose a different username.'}), 400
+        
         # Create new user WITHOUT email parameter
         user = User(
             username=data['username'],
@@ -194,3 +198,20 @@ def reset_session():
         return jsonify({"message": "Session reset"}), 200
     except Exception as e:
         return jsonify({"message": f"Error resetting session: {str(e)}"}), 500
+    
+@api.route('/auth/user', methods=['GET'])
+@jwt_required()
+def get_current_user():
+    """Get current user information"""
+    user_id = get_jwt_identity()
+    user = User.query.filter_by(id=user_id).first()
+    
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'is_admin': user.is_admin,
+        'created_at': user.created_at.isoformat() if user.created_at else None
+    }), 200

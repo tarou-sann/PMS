@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from utils.formatters import format_id
 from models import Base
 
 class Machinery(Base):
@@ -23,6 +24,7 @@ class Machinery(Base):
     def to_dict(self):
         return {
             'id': self.id,
+            'formatted_id': format_id(self.id),
             'machine_name': self.machine_name,
             'is_mobile': self.is_mobile,
             'is_active': self.is_active,

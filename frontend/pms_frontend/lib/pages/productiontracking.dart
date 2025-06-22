@@ -7,6 +7,8 @@ import '../widget/enddrawer.dart';
 import '../services/api_service.dart';
 import '../services/user_activity_service.dart';
 import '../widget/textfield.dart';
+import '../utils/formatters.dart';
+import '../constants/municipalities.dart';
 
 class ProductionTrackingNav extends StatefulWidget {
   const ProductionTrackingNav({super.key});
@@ -48,6 +50,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
       setState(() {
         _isLoading = false;
         if (records != null) {
+          records.sort((a, b) => (a['id'] ?? 0).compareTo(b['id'] ?? 0));
           _productionRecords = records;
         } else {
           _errorMessage = 'Failed to load production records';
@@ -81,7 +84,9 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
     final hectaresController = TextEditingController();
     final quantityController = TextEditingController();
     final harvestDateController = TextEditingController();
+    final farmerNameController = TextEditingController();  // Add this line
     int? selectedRiceVarietyId;
+    String selectedMunicipality = Municipalities.municipalityOptions.first;  // Add this line
     bool isLoading = false;
     String errorMessage = '';
 
@@ -236,6 +241,54 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                         },
                         suffixIcon: const Icon(Icons.calendar_today),
                       ),
+
+                      const SizedBox(height: 16),
+
+                      // Farmer Name
+                      const Text(
+                        'Farmer Name',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: farmerNameController,
+                        hintText: 'Enter farmer name',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter farmer name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Municipality
+                      const Text(
+                        'Municipality',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: selectedMunicipality,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: "Select municipality",
+                        ),
+                        items: Municipalities.getDropdownItems(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            selectedMunicipality = value;
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -269,6 +322,8 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                               'hectares': double.parse(hectaresController.text),
                               'quantity_harvested': double.parse(quantityController.text),
                               'harvest_date': harvestDateController.text,
+                              'farmer_name': farmerNameController.text,  // Add this line
+                              'municipality': selectedMunicipality,  // Add this line
                             };
 
                             final result = await _apiService.createProductionRecord(productionData);
@@ -329,7 +384,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -337,7 +392,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
           children: [
             // Header
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
                   onPressed: () {
@@ -357,27 +412,30 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                     color: ThemeColor.secondaryColor,
                   ),
                 ),
-                Row(
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: _showAddProductionDialog,
-                      icon: const Icon(Icons.add, color: ThemeColor.white),
-                      label: const Text('Add Record', style: TextStyle(color: ThemeColor.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ThemeColor.secondaryColor,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    IconButton(
-                      onPressed: _loadProductionRecords,
-                      icon: const Icon(Icons.refresh),
-                      tooltip: 'Refresh',
-                    ),
-                  ],
-                ),
               ],
             ),
             const SizedBox(height: 20),
+
+            // Buttons row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _showAddProductionDialog,
+                  icon: const Icon(Icons.add, color: ThemeColor.white),
+                  label: const Text('Add Record', style: TextStyle(color: ThemeColor.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeColor.secondaryColor,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  onPressed: _loadProductionRecords,
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh',
+                ),
+              ],
+            ),
 
             // Error/Success Messages
             if (_errorMessage.isNotEmpty)
@@ -456,7 +514,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                           ),
                                         ),
                                         Expanded(
-                                          flex: 3,
+                                          flex: 2,
                                           child: Text(
                                             'Rice Variety',
                                             style: TextStyle(
@@ -467,6 +525,26 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                         ),
                                         Expanded(
                                           flex: 2,
+                                          child: Text(
+                                            'Farmer Name',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Municipality',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 1,
                                           child: Text(
                                             'Hectares',
                                             style: TextStyle(
@@ -533,7 +611,7 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      record['id'].toString(),
+                                                      Formatters.formatId(record['id']), // Change from record['id'].toString()
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -553,6 +631,46 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.w500,
                                                           color: ThemeColor.green,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // Farmer Name - ADD THIS SECTION
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.person, color: ThemeColor.primaryColor, size: 16),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        record['farmer_name'] ?? 'Unknown',
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // Municipality - ADD THIS SECTION
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.location_city, color: ThemeColor.secondaryColor, size: 16),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        record['municipality'] ?? 'Unknown',
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.secondaryColor,
                                                         ),
                                                       ),
                                                     ),

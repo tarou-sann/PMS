@@ -27,7 +27,7 @@ class ReportsNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(

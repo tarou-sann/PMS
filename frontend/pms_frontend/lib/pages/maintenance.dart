@@ -6,6 +6,7 @@ import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../widget/textfield.dart';
+import '../utils/formatters.dart';
 import 'backup.dart';
 
 class MaintenanceNav extends StatelessWidget {
@@ -17,7 +18,7 @@ class MaintenanceNav extends StatelessWidget {
       fontSize: 20,
       color: Colors.black,
     );
-
+ 
     return Scaffold(
       key: GlobalKey<ScaffoldState>(),
       backgroundColor: ThemeColor.white,
@@ -25,7 +26,7 @@ class MaintenanceNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(
@@ -215,8 +216,8 @@ class _EditMachineryState extends State<EditMachinery> {
   Future<void> _showEditMachineDialog(BuildContext context, Map<String, dynamic> machine) async {
     final formKey = GlobalKey<FormState>();
     final machineNameController = TextEditingController(text: machine['machine_name']);
-    String mobility = machine['is_mobile'] ? 'Mobile' : 'Static';
-    String status = machine['is_active'] ? 'Active' : 'Inactive';
+    String mobility = machine['is_mobile'] ? 'Yes' : 'No';
+    String status = machine['is_active'] ? 'Yes' : 'No';
     bool isLoading = false;
     String errorMessage = '';
 
@@ -282,7 +283,7 @@ class _EditMachineryState extends State<EditMachinery> {
                         children: [
                           Radio<String>(
                             activeColor: ThemeColor.secondaryColor,
-                            value: 'Mobile',
+                            value: 'Yes',
                             groupValue: mobility,
                             onChanged: (value) {
                               setState(() {
@@ -290,11 +291,11 @@ class _EditMachineryState extends State<EditMachinery> {
                               });
                             },
                           ),
-                          const Text('Mobile'),
+                          const Text('Yes'),
                           const SizedBox(width: 20),
                           Radio<String>(
                             activeColor: ThemeColor.secondaryColor,
-                            value: 'Static',
+                            value: 'No',
                             groupValue: mobility,
                             onChanged: (value) {
                               setState(() {
@@ -302,7 +303,7 @@ class _EditMachineryState extends State<EditMachinery> {
                               });
                             },
                           ),
-                          const Text('Static'),
+                          const Text('No'),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -319,7 +320,7 @@ class _EditMachineryState extends State<EditMachinery> {
                         children: [
                           Radio<String>(
                             activeColor: ThemeColor.secondaryColor,
-                            value: 'Active',
+                            value: 'Yes',
                             groupValue: status,
                             onChanged: (value) {
                               setState(() {
@@ -327,11 +328,11 @@ class _EditMachineryState extends State<EditMachinery> {
                               });
                             },
                           ),
-                          const Text('Active'),
+                          const Text('Yes'),
                           const SizedBox(width: 20),
                           Radio<String>(
                             activeColor: ThemeColor.secondaryColor,
-                            value: 'Inactive',
+                            value: 'No',
                             groupValue: status,
                             onChanged: (value) {
                               setState(() {
@@ -339,7 +340,7 @@ class _EditMachineryState extends State<EditMachinery> {
                               });
                             },
                           ),
-                          const Text('Inactive'),
+                          const Text('No'),
                         ],
                       ),
                     ],
@@ -370,8 +371,8 @@ class _EditMachineryState extends State<EditMachinery> {
                           });
 
                           try {
-                            final isMobile = mobility == 'Mobile';
-                            final isActive = status == 'Active';
+                            final isMobile = mobility == 'Yes';
+                            final isActive = status == 'Yes';
 
                             // Prepare update data
                             final machineryData = {
@@ -535,7 +536,7 @@ class _EditMachineryState extends State<EditMachinery> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -650,6 +651,16 @@ class _EditMachineryState extends State<EditMachinery> {
                                     child: const Row(
                                       children: [
                                         Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'ID',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
                                           flex: 3,
                                           child: Text(
                                             'Machine Name',
@@ -717,7 +728,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      machine['id'].toString(),
+                                                      Formatters.formatId(machine['id']), // Change from machine['id'].toString()
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -760,7 +771,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                     borderRadius: BorderRadius.circular(12),
                                                   ),
                                                   child: Text(
-                                                    machine['is_mobile'] ? 'Mobile' : 'Static',
+                                                    machine['is_mobile'] ? 'Yes' : 'No',
                                                     style: TextStyle(
                                                       color: machine['is_mobile']
                                                           ? ThemeColor.primaryColor
@@ -788,7 +799,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                     borderRadius: BorderRadius.circular(12),
                                                   ),
                                                   child: Text(
-                                                    machine['is_active'] ? 'Active' : 'Inactive',
+                                                    machine['is_active'] ? 'Yes' : 'No',
                                                     style: TextStyle(
                                                       color:
                                                           machine['is_active'] ? ThemeColor.primaryColor : Colors.red,
@@ -893,35 +904,16 @@ class _EditRiceState extends State<EditRice> {
   Future<void> _showEditRiceDialog(BuildContext context, Map<String, dynamic> rice) async {
     final formKey = GlobalKey<FormState>();
     final varietyNameController = TextEditingController(text: rice['variety_name']);
-    final productionDateController = TextEditingController(text: rice['production_date']);
-    final expirationDateController = TextEditingController(text: rice['expiration_date']);
     String qualityGrade = rice['quality_grade'] ?? 'Shatter';
     bool isLoading = false;
     String errorMessage = '';
-
-    // Date picker method
-    Future<void> selectDate(BuildContext context, TextEditingController controller) async {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2020),
-        lastDate: DateTime(2030),
-      );
-
-      if (picked != null) {
-        setState(() {
-          // Format date as YYYY-MM-DD for API compatibility
-          controller.text =
-              "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-        });
-      }
-    }
 
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            backgroundColor: ThemeColor.white,
             title: const Text(
               'Edit Rice Variety',
               style: TextStyle(
@@ -930,120 +922,73 @@ class _EditRiceState extends State<EditRice> {
               ),
             ),
             content: SizedBox(
-              width: 500,
+              width: 400,
               child: Form(
                 key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (errorMessage.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Text(
-                            errorMessage,
-                            style: const TextStyle(color: Colors.red),
-                          ),
-                        ),
-                      const Text(
-                        'Variety Name',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (errorMessage.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Text(
+                          errorMessage,
+                          style: const TextStyle(color: ThemeColor.red),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      ThemedTextFormField(
-                        controller: varietyNameController,
-                        hintText: 'Enter rice variety name',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter variety name';
-                          }
-                          return null;
-                        },
+
+                    // Variety Name
+                    const Text(
+                      'Variety Name',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: ThemeColor.secondaryColor,
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Quality Grade',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: varietyNameController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: "Enter variety name",
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: ThemeColor.grey),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: DropdownButton<String>(
-                          value: qualityGrade,
-                          isExpanded: true,
-                          underline: Container(),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              qualityGrade = newValue!;
-                            });
-                          },
-                          items: <String>['Shatter', 'Non-Shattering'].map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter variety name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Quality Grade
+                    const Text(
+                      'Quality Grade',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: ThemeColor.secondaryColor,
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Production Date',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: qualityGrade,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                       ),
-                      const SizedBox(height: 8),
-                      ThemedTextFormField(
-                        controller: productionDateController,
-                        hintText: 'Select Production Date',
-                        readOnly: true,
-                        onTap: () => selectDate(context, productionDateController),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today),
-                          onPressed: () => selectDate(context, productionDateController),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Expiration Date',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ThemedTextFormField(
-                        controller: expirationDateController,
-                        hintText: 'Select Expiration Date',
-                        readOnly: true,
-                        onTap: () => selectDate(context, expirationDateController),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today),
-                          onPressed: () => selectDate(context, expirationDateController),
-                        ),
-                      ),
-                    ],
-                  ),
+                      items: const [
+                        DropdownMenuItem(value: "Shatter", child: Text("Shatter")),
+                        DropdownMenuItem(value: "Non-Shattering", child: Text("Non-Shattering")),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          qualityGrade = value;
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1053,7 +998,7 @@ class _EditRiceState extends State<EditRice> {
                   Navigator.of(dialogContext).pop();
                 },
                 style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
                 ),
                 child: const Text('Cancel'),
               ),
@@ -1070,12 +1015,10 @@ class _EditRiceState extends State<EditRice> {
                           });
 
                           try {
-                            // Prepare update data
+                            // Prepare update data - removed dates
                             final riceData = {
                               'variety_name': varietyNameController.text,
                               'quality_grade': qualityGrade,
-                              'production_date': productionDateController.text,
-                              'expiration_date': expirationDateController.text,
                             };
 
                             // Call API to update rice variety
@@ -1107,7 +1050,7 @@ class _EditRiceState extends State<EditRice> {
                       },
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
                       ),
                       child: const Text('Update'),
                     ),
@@ -1233,7 +1176,7 @@ class _EditRiceState extends State<EditRice> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -1349,53 +1292,19 @@ class _EditRiceState extends State<EditRice> {
                                       children: [
                                         Expanded(
                                           flex: 1,
-                                          child: Text(
-                                            'ID',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
+                                          child: Text('ID', style: tableHeaderStyle),
                                         ),
                                         Expanded(
                                           flex: 3,
-                                          child: Text(
-                                            'Variety Name',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
+                                          child: Text('Variety Name', style: tableHeaderStyle),
                                         ),
                                         Expanded(
                                           flex: 2,
-                                          child: Text(
-                                            'Quality Grade',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
+                                          child: Text('Quality Grade', style: tableHeaderStyle),
                                         ),
                                         Expanded(
                                           flex: 2,
-                                          child: Text(
-                                            'Expiration Date',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Actions',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
+                                          child: Text('Actions', style: tableHeaderStyle),
                                         ),
                                       ],
                                     ),
@@ -1423,21 +1332,9 @@ class _EditRiceState extends State<EditRice> {
                                                 flex: 1,
                                                 child: Row(
                                                   children: [
-                                                    CircleAvatar(
-                                                      radius: 16,
-                                                      backgroundColor: ThemeColor.secondaryColor,
-                                                      child: Text(
-                                                        rice['id'].toString(),
-                                                        style: const TextStyle(
-                                                          color: ThemeColor.white,
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                    ),
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      rice['id'].toString(),
+                                                      Formatters.formatId(rice['id']), // Change from rice['id'].toString()
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -1447,20 +1344,12 @@ class _EditRiceState extends State<EditRice> {
                                               // Variety Name
                                               Expanded(
                                                 flex: 3,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.grass, color: ThemeColor.primaryColor, size: 20),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        rice['variety_name'],
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.w500,
-                                                          color: ThemeColor.primaryColor,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
+                                                child: Text(
+                                                  rice['variety_name'],
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w500,
+                                                    color: ThemeColor.primaryColor,
+                                                  ),
                                                 ),
                                               ),
 
@@ -1468,43 +1357,19 @@ class _EditRiceState extends State<EditRice> {
                                               Expanded(
                                                 flex: 2,
                                                 child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                                   decoration: BoxDecoration(
-                                                    color: _getQualityColor(rice['quality_grade']).withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(16),
                                                   ),
                                                   child: Text(
                                                     rice['quality_grade'],
-                                                    style: TextStyle(
-                                                      color: _getQualityColor(rice['quality_grade']),
-                                                      fontWeight: FontWeight.bold,
+                                                    style: const TextStyle(
+                                                      color: ThemeColor.secondaryColor,
+                                                      fontWeight: FontWeight.w500,
                                                       fontSize: 12,
                                                     ),
-                                                    textAlign: TextAlign.center,
                                                   ),
-                                                ),
-                                              ),
-
-                                              // Expiration Date
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.calendar_today,
-                                                        color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      rice['expiration_date'] ?? 'N/A',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: ThemeColor.secondaryColor,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
                                                 ),
                                               ),
 
@@ -1514,23 +1379,13 @@ class _EditRiceState extends State<EditRice> {
                                                 child: Row(
                                                   children: [
                                                     IconButton(
-                                                      icon: const Icon(
-                                                        Icons.edit,
-                                                        color: ThemeColor.secondaryColor,
-                                                      ),
-                                                      onPressed: () {
-                                                        _showEditRiceDialog(context, rice);
-                                                      },
+                                                      onPressed: () => _showEditRiceDialog(context, rice),
+                                                      icon: const Icon(Icons.edit, color: ThemeColor.secondaryColor),
                                                       tooltip: 'Edit',
                                                     ),
                                                     IconButton(
-                                                      icon: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.red,
-                                                      ),
-                                                      onPressed: () {
-                                                        _showDeleteConfirmationDialog(context, rice);
-                                                      },
+                                                      onPressed: () => _showDeleteConfirmationDialog(context, rice),
+                                                      icon: const Icon(Icons.delete, color: ThemeColor.red),
                                                       tooltip: 'Delete',
                                                     ),
                                                   ],

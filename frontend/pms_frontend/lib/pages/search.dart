@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:pms_frontend/pages/machinerymanagement.dart';
 
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/api_service.dart';
-import 'maintenance.dart';
-import 'register.dart';
-import 'reports.dart';
+import '../utils/formatters.dart';
+
 
 class SearchNav extends StatelessWidget {
   const SearchNav({super.key});
@@ -26,7 +24,7 @@ class SearchNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(45),
         child: Center(
@@ -143,7 +141,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
   bool _isLoading = false;
   bool _hasSearched = false;
   String _errorMessage = '';
-  String _selectedPart = 'Engine'; // Changed from TextEditingController to String
+  String _selectedPart = 'Reaper'; // Changed from TextEditingController to String
 
   @override
   void dispose() {
@@ -209,7 +207,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -256,8 +254,33 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                       isExpanded: true,
                       underline: const SizedBox(),
                       hint: const Text("Select Part Type"),
-                      dropdownColor: ThemeColor.white, // Set dropdown background color
+                      dropdownColor: ThemeColor.white,
                       items: const [
+                        // Replace all existing items with these new ones from repair.dart:
+                        DropdownMenuItem(
+                          value: 'Reaper',
+                          child: Text("Reaper"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Crop & Straw Conveyance',
+                          child: Text("Crop & Straw Conveyance"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Threshing',
+                          child: Text("Threshing"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Grain Cleaning',
+                          child: Text("Grain Cleaning"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Grain Storage & Dispensing',
+                          child: Text("Grain Storage & Dispensing"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Straw Dispensing System',
+                          child: Text("Straw Dispensing System"),
+                        ),
                         DropdownMenuItem(
                           value: 'Engine',
                           child: Text("Engine"),
@@ -271,32 +294,32 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                           child: Text("Hydraulics"),
                         ),
                         DropdownMenuItem(
-                          value: 'Brakes',
-                          child: Text("Brakes"),
+                          value: 'Lubrication Systems',
+                          child: Text("Lubrication Systems"),
                         ),
                         DropdownMenuItem(
-                          value: 'Tires',
-                          child: Text("Tires"),
+                          value: 'Chassis',
+                          child: Text("Chassis"),
                         ),
                         DropdownMenuItem(
-                          value: 'Battery',
-                          child: Text("Battery"),
+                          value: 'Control System',
+                          child: Text("Control System"),
                         ),
                         DropdownMenuItem(
-                          value: 'Filters',
-                          child: Text("Filters"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Belts',
-                          child: Text("Belts"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Hoses',
-                          child: Text("Hoses"),
+                          value: 'Tracks',
+                          child: Text("Tracks"),
                         ),
                         DropdownMenuItem(
                           value: 'Electrical',
                           child: Text("Electrical"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'General',
+                          child: Text("General"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Others',
+                          child: Text("Others"),
                         ),
                       ],
                       onChanged: (value) {
@@ -370,7 +393,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                                     decoration: BoxDecoration(
                                       color: ThemeColor.secondaryColor.withOpacity(0.1), // Changed to match other tables
-                                      border: Border.all(color: ThemeColor.secondaryColor), // Changed border color
+                                      border: Border.all(color: ThemeColor.white2), // Changed border color
                                       borderRadius: const BorderRadius.only(
                                         topLeft: Radius.circular(8),
                                         topRight: Radius.circular(8),
@@ -414,7 +437,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                     child: Container(
                                       decoration: BoxDecoration(
                                         border: Border.all(
-                                          color: ThemeColor.secondaryColor, // Changed border color
+                                          color: ThemeColor.white2, // Changed border color
                                         ),
                                         borderRadius: const BorderRadius.only(
                                           bottomLeft: Radius.circular(8),
@@ -453,10 +476,10 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                         left: 16.0,
                                                       ),
                                                       child: Text(
-                                                        repair['id'].toString(),
+                                                        Formatters.formatId(repair['id']),
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.w500,
-                                                          color: ThemeColor.primaryColor, // Added ThemeColor
+                                                          color: ThemeColor.primaryColor,
                                                         ),
                                                       ),
                                                     ),
@@ -468,7 +491,7 @@ class _PartsNeededSearchState extends State<PartsNeededSearch> {
                                                       repair['machinery_name'] ?? 'Unknown',
                                                       style: const TextStyle(
                                                         fontWeight: FontWeight.w400,
-                                                        color: ThemeColor.primaryColor, // Added ThemeColor
+                                                        color: ThemeColor.primaryColor, 
                                                       ),
                                                     ),
                                                   ),
@@ -625,7 +648,7 @@ class _RiceVarietySearchState extends State<RiceVarietySearch> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -804,26 +827,26 @@ class _RiceVarietySearchState extends State<RiceVarietySearch> {
                                             ),
                                           ),
                                         ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Production Date',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Expiration Date',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
+                                        // Expanded(
+                                        //   flex: 2,
+                                        //   child: Text(
+                                        //     'Production Date',
+                                        //     style: TextStyle(
+                                        //       fontWeight: FontWeight.bold,
+                                        //       color: ThemeColor.secondaryColor,
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                        // Expanded(
+                                        //   flex: 2,
+                                        //   child: Text(
+                                        //     'Expiration Date',
+                                        //     style: TextStyle(
+                                        //       fontWeight: FontWeight.bold,
+                                        //       color: ThemeColor.secondaryColor,
+                                        //     ),
+                                        //   ),
+                                        // ),
                                       ],
                                     ),
                                   ),
@@ -852,11 +875,11 @@ class _RiceVarietySearchState extends State<RiceVarietySearch> {
                                                   radius: 16,
                                                   backgroundColor: ThemeColor.secondaryColor,
                                                   child: Text(
-                                                    rice['id'].toString(),
+                                                    Formatters.formatId(rice['id']), // Change from rice['id'].toString()
                                                     style: const TextStyle(
                                                       color: ThemeColor.white,
                                                       fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
+                                                      fontSize: 10, // Smaller font to fit 4 digits
                                                     ),
                                                   ),
                                                 ),
@@ -906,43 +929,43 @@ class _RiceVarietySearchState extends State<RiceVarietySearch> {
                                                 ),
                                               ),
                                               
-                                              // Production Date
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      rice['production_date'] ?? 'N/A',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: ThemeColor.secondaryColor,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
+                                              // // Production Date
+                                              // Expanded(
+                                              //   flex: 2,
+                                              //   child: Row(
+                                              //     children: [
+                                              //       const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
+                                              //       const SizedBox(width: 8),
+                                              //       Text(
+                                              //         rice['production_date'] ?? 'N/A',
+                                              //         style: const TextStyle(
+                                              //           fontSize: 12,
+                                              //           color: ThemeColor.secondaryColor,
+                                              //           fontWeight: FontWeight.w500,
+                                              //         ),
+                                              //       ),
+                                              //     ],
+                                              //   ),
+                                              // ),
                                               
-                                              // Expiration Date
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.event_busy, color: Colors.red, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      rice['expiration_date'] ?? 'N/A',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors.red,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
+                                              // // Expiration Date
+                                              // Expanded(
+                                              //   flex: 2,
+                                              //   child: Row(
+                                              //     children: [
+                                              //       const Icon(Icons.event_busy, color: Colors.red, size: 16),
+                                              //       const SizedBox(width: 8),
+                                              //       Text(
+                                              //         rice['expiration_date'] ?? 'N/A',
+                                              //         style: const TextStyle(
+                                              //           fontSize: 12,
+                                              //           color: Colors.red,
+                                              //           fontWeight: FontWeight.w500,
+                                              //         ),
+                                              //       ),
+                                              //     ],
+                                              //   ),
+                                              // ),
                                             ],
                                           ),
                                         );

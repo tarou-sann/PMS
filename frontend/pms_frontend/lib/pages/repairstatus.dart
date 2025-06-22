@@ -5,6 +5,7 @@ import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/api_service.dart';
 import 'repair.dart';
+import '../utils/formatters.dart';
 
 class RepairstatusNav extends StatefulWidget {
   const RepairstatusNav({super.key});
@@ -76,7 +77,7 @@ class _RepairstatusNavState extends State<RepairstatusNav> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -186,6 +187,16 @@ class _RepairstatusNavState extends State<RepairstatusNav> {
                                     child: const Row(
                                       children: [
                                         Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'ID',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
                                           flex: 2,
                                           child: Text(
                                             'Machine',
@@ -263,7 +274,7 @@ class _RepairstatusNavState extends State<RepairstatusNav> {
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      repair['id'].toString(),
+                                                      Formatters.formatId(repair['id']),
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -729,7 +740,7 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -916,11 +927,10 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
                                                   radius: 16,
                                                   backgroundColor: ThemeColor.secondaryColor,
                                                   child: Text(
-                                                    repair['id'].toString(),
+                                                    Formatters.formatId(repair['id']), // Change from order['id'].toString()
                                                     style: const TextStyle(
-                                                      color: ThemeColor.white,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: ThemeColor.primaryColor,
                                                     ),
                                                   ),
                                                 ),

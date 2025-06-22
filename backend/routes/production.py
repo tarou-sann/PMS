@@ -16,8 +16,8 @@ def create_production_record():
     """
     data = request.get_json()
     
-    # Validate required fields
-    required_fields = ['rice_variety_id', 'hectares', 'quantity_harvested', 'harvest_date']
+    # Update required fields to include farmer_name and municipality
+    required_fields = ['rice_variety_id', 'hectares', 'quantity_harvested', 'harvest_date', 'farmer_name', 'municipality']
     for field in required_fields:
         if field not in data or data[field] is None:
             return jsonify({'message': f'Missing required field: {field}'}), 400
@@ -41,6 +41,18 @@ def create_production_record():
         except (ValueError, TypeError):
             return jsonify({'message': 'Hectares and quantity harvested must be valid numbers'}), 400
         
+        # Validate string fields
+        farmer_name = data['farmer_name'].strip()
+        municipality = data['municipality'].strip()
+        
+        if not farmer_name:
+            return jsonify({'message': 'Farmer name cannot be empty'}), 400
+        
+        # Validate municipality
+        valid_municipalities = ['Pila', 'Sta Cruz', 'Victoria', 'Pagsanjan', 'Nagcarlan', 'Magdalena', 'Calamba']
+        if municipality not in valid_municipalities:
+            return jsonify({'message': 'Invalid municipality'}), 400
+        
         # Parse harvest date
         try:
             harvest_date = datetime.strptime(data['harvest_date'], '%Y-%m-%d').date()
@@ -51,7 +63,9 @@ def create_production_record():
             rice_variety_id=data['rice_variety_id'],
             hectares=hectares,
             quantity_harvested=quantity_harvested,
-            harvest_date=harvest_date
+            harvest_date=harvest_date,
+            farmer_name=farmer_name,  
+            municipality=municipality  
         )
         
         db_session.add(production_record)
@@ -73,13 +87,17 @@ def get_all_production_records():
     Get all production tracking records
     """
     try:
-        production_records = ProductionTracking.query.order_by(ProductionTracking.harvest_date.desc()).all()
+        # Change ORDER BY to use ID instead of harvest_date to match frontend sorting
+        production_records = ProductionTracking.query.order_by(ProductionTracking.id).all()
+        
+        print(f"Retrieved {len(production_records)} production records") # Debug log
         
         return jsonify({
             'production_records': [record.to_dict() for record in production_records]
         }), 200
     
     except Exception as e:
+        print(f"Error fetching production records: {str(e)}") # Debug log
         return jsonify({'message': f'Error fetching production records: {str(e)}'}), 500
 
 @api.route('/production/<int:production_id>', methods=['GET'])

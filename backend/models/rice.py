@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from models import Base
 from datetime import date
+from utils.formatters import format_id
 
 class RiceVariety(Base):
     __tablename__ = 'rice_varieties'
@@ -10,14 +11,14 @@ class RiceVariety(Base):
     id = Column(Integer, primary_key=True)
     variety_name = Column(String(100), nullable=False)
     quality_grade = Column(String(50), nullable=False)
-    production_date = Column(Date, nullable=False)
-    expiration_date = Column(Date, nullable=False)
+    production_date = Column(Date, nullable=True)  # Made optional
+    expiration_date = Column(Date, nullable=True)  # Made optional
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     production_records = relationship("ProductionTracking", back_populates="rice_variety", cascade="all, delete-orphan")
 
-    def __init__(self, variety_name, quality_grade, production_date, expiration_date):
+    def __init__(self, variety_name, quality_grade, production_date=None, expiration_date=None):
         self.variety_name = variety_name
         self.quality_grade = quality_grade
         self.production_date = production_date
@@ -26,6 +27,7 @@ class RiceVariety(Base):
     def to_dict(self):
         return {
             'id': self.id,
+            'formatted_id': format_id(self.id),
             'variety_name': self.variety_name,
             'quality_grade': self.quality_grade,
             'production_date': self.production_date.isoformat() if self.production_date else None,

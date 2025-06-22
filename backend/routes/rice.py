@@ -15,24 +15,39 @@ def create_rice_variety():
     """
     data = request.get_json()
     
-    # Validate required fields
-    required_fields = ['variety_name', 'quality_grade', 'production_date', 'expiration_date']
+    # Validate required fields - removed production_date and expiration_date
+    required_fields = ['variety_name', 'quality_grade']
     for field in required_fields:
         if not data.get(field):
             return jsonify({'message': f'Missing required field: {field}'}), 400
     
     try:
-        # Parse dates
-        try:
-            production_date = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
-            expiration_date = datetime.strptime(data['expiration_date'], '%Y-%m-%d').date()
-            
-            # Validate expiration date is after production date
-            if expiration_date <= production_date:
-                return jsonify({'message': 'Expiration date must be after production date'}), 400
-            
-        except ValueError:
-            return jsonify({'message': 'Invalid date format. Use YYYY-MM-DD'}), 400
+        # Handle optional dates
+        production_date = None
+        expiration_date = None
+        
+        if data.get('production_date'):
+            try:
+                production_date = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'message': 'Invalid production date format. Use YYYY-MM-DD'}), 400
+        
+        if data.get('expiration_date'):
+            try:
+                expiration_date = datetime.strptime(data['expiration_date'], '%Y-%m-%d').date()
+            except ValueError:
+                return jsonify({'message': 'Invalid expiration date format. Use YYYY-MM-DD'}), 400
+        
+        # Validate expiration date is after production date (only if both are provided)
+        if production_date and expiration_date and expiration_date <= production_date:
+            return jsonify({'message': 'Expiration date must be after production date'}), 400
+        
+        existing_variety = RiceVariety.query.filter(
+            RiceVariety.variety_name.ilike(data['variety_name'])
+        ).first()
+
+        if existing_variety:
+            return jsonify({'message': 'Rice variety with this name already exists. Please choose a different name.'}), 400
         
         rice_variety = RiceVariety(
             variety_name=data['variety_name'],
@@ -53,6 +68,7 @@ def create_rice_variety():
         db_session.rollback()
         return jsonify({'message': f'Error creating rice variety: {str(e)}'}), 500
 
+# Keep existing routes unchanged...
 @api.route('/rice', methods=['GET'])
 @jwt_required()
 def get_all_rice_varieties():
@@ -100,20 +116,27 @@ def update_rice_variety(rice_id):
             rice_variety.quality_grade = data['quality_grade']
         
         # Parse and update dates if provided
-        if data.get('production_date'):
-            try:
-                rice_variety.production_date = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
-            except ValueError:
-                return jsonify({'message': 'Invalid production date format. Use YYYY-MM-DD'}), 400
+        if 'production_date' in data:
+            if data['production_date']:
+                try:
+                    rice_variety.production_date = datetime.strptime(data['production_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({'message': 'Invalid production date format. Use YYYY-MM-DD'}), 400
+            else:
+                rice_variety.production_date = None
         
-        if data.get('expiration_date'):
-            try:
-                rice_variety.expiration_date = datetime.strptime(data['expiration_date'], '%Y-%m-%d').date()
-            except ValueError:
-                return jsonify({'message': 'Invalid expiration date format. Use YYYY-MM-DD'}), 400
+        if 'expiration_date' in data:
+            if data['expiration_date']:
+                try:
+                    rice_variety.expiration_date = datetime.strptime(data['expiration_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    return jsonify({'message': 'Invalid expiration date format. Use YYYY-MM-DD'}), 400
+            else:
+                rice_variety.expiration_date = None
         
-        # Validate expiration date is after production date
-        if rice_variety.expiration_date <= rice_variety.production_date:
+        # Validate expiration date is after production date (only if both exist)
+        if (rice_variety.production_date and rice_variety.expiration_date and 
+            rice_variety.expiration_date <= rice_variety.production_date):
             return jsonify({'message': 'Expiration date must be after production date'}), 400
         
         db_session.commit()
@@ -150,7 +173,7 @@ def delete_rice_variety(rice_id):
     except Exception as e:
         db_session.rollback()
         return jsonify({'message': f'Error deleting rice variety: {str(e)}'}), 500
-    
+
 @api.route('/rice/search', methods=['GET'])
 @jwt_required()
 def search_rice_varieties():

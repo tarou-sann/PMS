@@ -7,6 +7,7 @@ import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../widget/textfield.dart';
 import 'repairstatus.dart';
+import '../utils/formatters.dart';
 
 class RepairNav extends StatelessWidget {
   const RepairNav({super.key});
@@ -25,7 +26,7 @@ class RepairNav extends StatelessWidget {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(
@@ -163,7 +164,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
   String _errorMessage = '';
   String _successMessage = '';
   List<Map<String, dynamic>> _machinery = [];
-  String _partsConcerned = 'Engine';
+  String _partsConcerned = '';
 
   // Services
   final ApiService _apiService = ApiService();
@@ -238,7 +239,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
           _successMessage = 'Repair order created successfully!';
           // Clear form
           _issueController.clear();
-          _partsConcerned = 'Engine';
+          _partsConcerned = '';
           _status = 'pending';
           _isUrgent = false;
         } else {
@@ -268,7 +269,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Center(
@@ -325,7 +326,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Text(
                           _errorMessage,
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(color: ThemeColor.red),
                         ),
                       ),
                     if (_successMessage.isNotEmpty)
@@ -346,7 +347,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           TextSpan(
                             text: '*',
                             style: TextStyle(
-                              color: Colors.red,
+                              color: ThemeColor.red,
                             ),
                           ),
                         ],
@@ -368,7 +369,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                                 items: _machinery.map((machinery) {
                                   return DropdownMenuItem<int>(
                                     value: machinery['id'],
-                                    child: Text(machinery['machine_name']),
+                                    child: Text('${Formatters.formatId(machinery['id'])} - ${machinery['machine_name']}'),
                                   );
                                 }).toList(),
                                 onChanged: (value) {
@@ -393,7 +394,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           TextSpan(
                             text: '*',
                             style: TextStyle(
-                              color: Colors.red,
+                              color: ThemeColor.red,
                             ),
                           ),
                         ],
@@ -413,7 +414,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Parts Concerned dropdown (replacing the Additional Notes field)
+                    // Parts Concerned dropdown
                     const Text(
                       'Parts Concerned',
                       style: labelStyle,
@@ -425,6 +426,34 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       focusColor: ThemeColor.white2,
                       items: const [
                         DropdownMenuItem(
+                          value: '',
+                          child: Text("Select Part"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Reaper',
+                          child: Text("Reaper"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Crop & Straw Conveyance',
+                          child: Text("Crop & Straw Conveyance"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Threshing',
+                          child: Text("Threshing"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Grain Cleaning',
+                          child: Text("Grain Cleaning"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Grain Storage & Dispensing',
+                          child: Text("Grain Storage & Dispensing"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Straw Dispensing System',
+                          child: Text("Straw Dispensing System"),
+                        ),
+                        DropdownMenuItem(
                           value: 'Engine',
                           child: Text("Engine"),
                         ),
@@ -433,24 +462,32 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           child: Text("Transmission"),
                         ),
                         DropdownMenuItem(
-                          value: 'Electrical',
-                          child: Text("Electrical"),
+                          value: 'Lubrication Systems',
+                          child: Text("Lubrication Systems"),
                         ),
                         DropdownMenuItem(
-                          value: 'Hydraulics',
-                          child: Text("Hydraulics"),
+                          value: 'Chassis',
+                          child: Text("Chassis"),
                         ),
                         DropdownMenuItem(
-                          value: 'Controls',
-                          child: Text("Controls"),
+                          value: 'Control System',
+                          child: Text("Control System"),
                         ),
                         DropdownMenuItem(
-                          value: 'Structure',
-                          child: Text("Structure"),
+                          value: 'Tracks',
+                          child: Text("Tracks"),
                         ),
                         DropdownMenuItem(
-                          value: 'Other',
-                          child: Text("Other"),
+                          value: 'Electrical ',
+                          child: Text("Electrical "),
+                        ),
+                        DropdownMenuItem(
+                          value: 'General',
+                          child: Text("General"),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Others',
+                          child: Text("Others"),
                         ),
                       ],
                       onChanged: (value) {

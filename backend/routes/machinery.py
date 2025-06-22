@@ -27,6 +27,13 @@ def create_machinery():
         if isinstance(is_active, str):
             is_active = is_active.lower() == 'true'
         
+        existing_machinery = Machinery.query.filter(
+            Machinery.machine_name.ilike(data['machine_name'])
+        ).first()
+
+        if existing_machinery:
+            return jsonify({'message': 'Machinery with this name already exists. Please choose a different name.'}), 400
+        
         machinery = Machinery(
             machine_name=data['machine_name'], 
             is_mobile=is_mobile,

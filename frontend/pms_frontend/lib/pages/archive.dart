@@ -189,7 +189,7 @@ class _ArchivesPageState extends State<ArchivesPage> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-        endDrawer: const EndDrawer_Admin(),
+        endDrawer: const EndDrawer(),
 
       body: Padding(
         padding: const EdgeInsets.all(20),

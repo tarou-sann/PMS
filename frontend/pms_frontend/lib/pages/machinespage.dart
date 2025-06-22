@@ -5,10 +5,7 @@ import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import 'machinerymanagement.dart';
-import 'register.dart';
-import 'repair.dart';
-import 'reports.dart';
-import 'search.dart';
+import '../utils/formatters.dart';
 
 class MachinesNav extends StatefulWidget {
   const MachinesNav({super.key});
@@ -72,7 +69,7 @@ class _MachinesNavState extends State<MachinesNav> {
         preferredSize: Size.fromHeight(150),
         child: Navbar(),
       ),
-      endDrawer: const EndDrawer_Admin(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -239,7 +236,7 @@ class _MachinesNavState extends State<MachinesNav> {
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      machine['id'].toString(),
+                                                      Formatters.formatId(machine['id']), // Change from machine['id'].toString()
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],

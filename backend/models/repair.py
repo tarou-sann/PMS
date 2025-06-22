@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from models import Base
+from utils.formatters import format_id
 
 class Repair(Base):
     __tablename__ = 'repairs'
@@ -31,6 +32,7 @@ class Repair(Base):
     def to_dict(self):
         return {
             'id': self.id,
+            'formatted_id': format_id(self.id),
             'machinery_id': self.machinery_id,
             'issue_description': self.issue_description,
             'repair_date': self.repair_date.isoformat() if self.repair_date else None,
