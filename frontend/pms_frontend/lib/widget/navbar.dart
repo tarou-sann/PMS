@@ -74,10 +74,6 @@ class _NavbarState extends State<Navbar> {
                             width: 250,
                           ),
                           const Spacer(),
-                          Text(
-                            'Hello, ${_username.isNotEmpty ? _username : "Guest"}',
-                            style: const TextStyle(color: Colors.black, fontSize: 24),
-                          ),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
                             child: IconButton(

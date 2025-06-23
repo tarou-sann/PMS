@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+import '../pages/about.dart';
 import '../pages/dashboard.dart';
+import '../pages/forecasting.dart';
+import '../pages/help.dart';
 import '../pages/machinerymanagement.dart';
 import '../pages/maintenance.dart';
+import '../pages/productiontracking.dart';
 import '../pages/register.dart';
 import '../pages/reports.dart';
 import '../pages/search.dart';
@@ -11,9 +15,6 @@ import '../pages/signup.dart';
 import '../services/api_service.dart';
 import '../services/user_service.dart';
 import '../theme/colors.dart';
-import '../pages/about.dart';
-import '../pages/productiontracking.dart';
-import '../pages/forecasting.dart';
 
 class EndDrawer extends StatelessWidget {
   const EndDrawer({super.key});
@@ -101,7 +102,7 @@ class EndDrawer_Admin extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Menu Items
           Expanded(
             child: ListView(
@@ -206,7 +207,14 @@ class EndDrawer_Admin extends StatelessWidget {
                 _buildMenuTile(
                   icon: Symbols.help,
                   title: 'Help',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpModule(),
+                      ),
+                    );
+                  },
                 ),
                 _buildMenuTile(
                   icon: Symbols.info,
@@ -223,7 +231,7 @@ class EndDrawer_Admin extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Logout Button at Bottom
           Container(
             padding: const EdgeInsets.all(20),
@@ -244,10 +252,7 @@ class EndDrawer_Admin extends StatelessWidget {
                 ),
                 child: const Text(
                   'Log Out',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -273,11 +278,7 @@ class EndDrawer_Admin extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
-            color: ThemeColor.primaryColor,
-            fontWeight: FontWeight.w400
-          ),
+          style: const TextStyle(fontSize: 20, color: ThemeColor.primaryColor, fontWeight: FontWeight.w400),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(
@@ -307,18 +308,11 @@ class EndDrawer_Admin extends StatelessWidget {
               elevation: 0,
               title: const Text(
                 'Confirm Logout',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 26,
-                  color: ThemeColor.primaryColor
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 26, color: ThemeColor.primaryColor),
               ),
               content: const Text(
                 'Are you sure you want to logout?',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: ThemeColor.primaryColor
-                ),
+                style: TextStyle(fontSize: 24, color: ThemeColor.primaryColor),
               ),
               actions: <Widget>[
                 TextButton(
@@ -327,10 +321,7 @@ class EndDrawer_Admin extends StatelessWidget {
                   },
                   child: const Text(
                     'Cancel',
-                    style: TextStyle(
-                      color: ThemeColor.primaryColor,
-                      fontSize: 24
-                    ),
+                    style: TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
                   ),
                 ),
                 TextButton(
@@ -348,10 +339,7 @@ class EndDrawer_Admin extends StatelessWidget {
                   },
                   child: const Text(
                     'Logout',
-                    style: TextStyle(
-                      color: ThemeColor.red,
-                      fontSize: 24
-                    ),
+                    style: TextStyle(color: ThemeColor.red, fontSize: 24),
                   ),
                 ),
               ],
@@ -362,7 +350,6 @@ class EndDrawer_Admin extends StatelessWidget {
     );
   }
 }
-
 
 class EndDrawer_Employee extends StatelessWidget {
   const EndDrawer_Employee({super.key});
@@ -425,7 +412,7 @@ class EndDrawer_Employee extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Menu Items
           Expanded(
             child: ListView(
@@ -523,7 +510,7 @@ class EndDrawer_Employee extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Logout Button at Bottom
           Container(
             padding: const EdgeInsets.all(20),
@@ -544,10 +531,7 @@ class EndDrawer_Employee extends StatelessWidget {
                 ),
                 child: const Text(
                   'Log Out',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -573,11 +557,7 @@ class EndDrawer_Employee extends StatelessWidget {
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
-            color: ThemeColor.primaryColor,
-            fontWeight: FontWeight.w400
-          ),
+          style: const TextStyle(fontSize: 20, color: ThemeColor.primaryColor, fontWeight: FontWeight.w400),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(
@@ -587,6 +567,7 @@ class EndDrawer_Employee extends StatelessWidget {
       ),
     );
   }
+
   void showLogoutConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -606,18 +587,11 @@ class EndDrawer_Employee extends StatelessWidget {
               elevation: 0,
               title: const Text(
                 'Confirm Logout',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 26,
-                  color: ThemeColor.primaryColor
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 26, color: ThemeColor.primaryColor),
               ),
               content: const Text(
                 'Are you sure you want to logout?',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: ThemeColor.primaryColor
-                ),
+                style: TextStyle(fontSize: 24, color: ThemeColor.primaryColor),
               ),
               actions: <Widget>[
                 TextButton(
@@ -626,10 +600,7 @@ class EndDrawer_Employee extends StatelessWidget {
                   },
                   child: const Text(
                     'Cancel',
-                    style: TextStyle(
-                      color: ThemeColor.primaryColor,
-                      fontSize: 24
-                    ),
+                    style: TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
                   ),
                 ),
                 TextButton(
@@ -647,10 +618,7 @@ class EndDrawer_Employee extends StatelessWidget {
                   },
                   child: const Text(
                     'Logout',
-                    style: TextStyle(
-                      color: ThemeColor.red,
-                      fontSize: 24
-                    ),
+                    style: TextStyle(color: ThemeColor.red, fontSize: 24),
                   ),
                 ),
               ],
