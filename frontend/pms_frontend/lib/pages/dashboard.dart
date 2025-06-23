@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Add this import
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/api_service.dart'; // Add this import
+import '../services/api_service.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
+import '../widget/navbar.dart';
 
 class DashboardNav extends StatefulWidget {
   const DashboardNav({super.key});
@@ -64,11 +65,11 @@ class _DashboardNavState extends State<DashboardNav> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: ThemeColor.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(150),
-        child: CustomNavbar(username: _username), // Pass username to custom navbar
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(150),
+        child: Navbar(),
       ),
-      endDrawer: const  EndDrawer(),
+      endDrawer: const EndDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(
@@ -168,7 +169,6 @@ class _DashboardNavState extends State<DashboardNav> {
           ),
           SizedBox(height: 16),
           Expanded(
-            // Use Expanded to fill remaining space
             child: SizedBox(
               width: double.infinity,
               child: Center(
@@ -230,59 +230,6 @@ class _DashboardNavState extends State<DashboardNav> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Create a custom Navbar that receives the username
-class CustomNavbar extends StatelessWidget {
-  final String username;
-
-  const CustomNavbar({super.key, required this.username});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      height: 150,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        color: ThemeColor.white2,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1, // Reduced from 100 to 1
-            blurRadius: 5, // Added some blur for a more natural shadow
-            offset: const Offset(0, 3), // Shadow appears below the navbar
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 0, 50, 0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Image.asset(
-              'lib/assets/images/Straw_innovations_small2.png',
-              width: 250,
-            ),
-            const Spacer(),
-            Text(
-              'Hello, ${username.isNotEmpty ? username : "Guest"}',
-              style: const TextStyle(color: ThemeColor.primaryColor, fontSize: 24),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
-              child: IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openEndDrawer();
-                },
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

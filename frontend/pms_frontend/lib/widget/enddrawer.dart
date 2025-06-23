@@ -133,7 +133,7 @@ class EndDrawer_Admin extends StatelessWidget {
                   },
                 ),
                 _buildMenuTile(
-                  icon: Symbols.precision_manufacturing,
+                  icon: Symbols.agriculture,
                   title: 'Machinery Management',
                   onTap: () {
                     Navigator.push(
@@ -431,7 +431,7 @@ class EndDrawer_Employee extends StatelessWidget {
                   },
                 ),
                 _buildMenuTile(
-                  icon: Symbols.precision_manufacturing,
+                  icon: Symbols.agriculture,
                   title: 'Machinery Management',
                   onTap: () {
                     Navigator.push(

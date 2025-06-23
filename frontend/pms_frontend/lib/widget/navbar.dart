@@ -70,7 +70,7 @@ class _NavbarState extends State<Navbar> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Image.asset(
-                            'lib/assets/images/Straw_innovations_small2.png',
+                            'lib/assets/images/Straw_Innovations_Horizontal.png',
                             width: 250,
                           ),
                           const Spacer(),

@@ -83,7 +83,7 @@ class _SignUpFormState extends State<SignUpForm> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                'lib/assets/images/Straw_innovations_small2.png',
+                'lib/assets/images/Straw_Innovations_Horizontal.png',
                 width: 300,
               ),
               const Padding(

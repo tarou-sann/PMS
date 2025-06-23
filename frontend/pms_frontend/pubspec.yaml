@@ -35,7 +35,7 @@ dependencies:
   material_symbols_icons: ^4.2810.1
   hover_menu: ^1.1.2
   provider: ^6.1.1
-  flutter_staggered_grid_view: ^0.7.0  # Add this line
+  flutter_staggered_grid_view: ^0.7.0 # Add this line
   printing: ^5.11.0
   pdf: ^3.10.4
   # The following adds the Cupertino Icons font to your application.
@@ -73,6 +73,7 @@ flutter:
     - lib/assets/images/
     - lib/assets/images/Straw_innovations_small2.png
     - lib/assets/images/Straw_innovation_logo.jpg
+    - lib/assets/images/Straw_Innovations_Horizontal.png
     - lib/assets/images/dylan.jpg
     - lib/assets/images/randi.jpg
     - lib/assets/images/rainier.jpg
