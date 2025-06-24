@@ -36,95 +36,141 @@ class _HelpContentState extends State<HelpContent> {
   final Map<String, List<Map<String, String>>> helpContent = {
     'Registration': [
       {
-        'question': 'How to register users?',
+        'question': 'How do I register new users in the system?',
         'answer':
-            'To register new users, navigate to the Registration page from the main menu. Fill in the required information including username, password, and security details. Click the Register button to create the new user account. Note: Only admins are allowed to register users.'
+            'Navigate to the Registration page from the main menu and select "User Registration". Fill in the required fields: Username, Password, Confirm Password, Security Question, Security Answer, and select admin privileges if needed. Only existing admin users can register new users. Click Register to create the account.'
       },
       {
-        'question': 'What information is required for user registration?',
+        'question': 'What are the requirements for user registration?',
         'answer':
-            'User registration requires: Username, Password, Confirm Password, Security Question, Security Answer, and Admin privileges selection.'
+            'User registration requires: a unique Username, a secure Password, Password confirmation, a Security Question for account recovery, the corresponding Security Answer, and admin privilege selection (Yes/No). All fields are mandatory.'
       },
       {
-        'question': 'How to register rice varieties?',
+        'question': 'How do I register new rice varieties?',
         'answer':
-            'Go to Registration > Rice Variety. Enter the variety name, select quality grade, and set production and expiration dates. Submit the form to add the new rice variety to the system.'
+            'Go to Registration from the main menu and select "Rice Variety Registration". Enter the variety name and select the quality grade (either "Shatter" or "Non-Shattering"). Click Register to add the rice variety to your system catalog.'
+      },
+      {
+        'question': 'How do I register new machinery?',
+        'answer':
+            'Navigate to Registration and select "Machinery Registration". Enter the machine name, select mobility (Yes for mobile, No for static), and set harvest status (Yes if machine can harvest, No if it cannot). Click Register to add the machine to your inventory.'
       },
     ],
     'Machine Management': [
       {
-        'question': 'How to add new machinery?',
+        'question': 'How do I view all registered machines?',
         'answer':
-            'Navigate to Machine Management and click "Add New Machine". Enter the machine name, type, and other relevant details. Save to add the machinery to your inventory.'
+            'Go to Machine Management and select "Machines". You will see a list of all registered machines showing their ID, name, mobility status (Mobile/Static), and harvest status (Active/Inactive). Use the refresh button to update the list.'
       },
       {
-        'question': 'How to edit machine information?',
+        'question': 'How do I edit machine information?',
         'answer':
-            'In the Machine Management section, find the machine you want to edit and click the edit icon. Update the necessary information and save changes.'
+            'In Machine Management, go to "Maintenance" and select "Edit Machine Details". Find the machine you want to edit and click the edit icon. You can update the machine name, mobility (Yes/No), and harvest status (Yes/No). Save changes to update the machine information.'
       },
       {
-        'question': 'How to delete a machine?',
+        'question': 'How do I delete a machine?',
         'answer':
-            'From the Machine Management page, locate the machine and click the delete button. Confirm the deletion when prompted.'
+            'In Machine Management → Maintenance → Edit Machine Details, locate the machine and click the delete icon. Confirm the deletion when prompted. Note: This will also delete all related repair records for that machine.'
+      },
+      {
+        'question': 'How do I report machine repairs?',
+        'answer':
+            'Go to Machine Management and select "Repairs". Choose the machinery from the dropdown, describe the issue, select the parts concerned (Engine, Transmission, Straw Dispensing System, Chassis, Control System, Tracks, Electrical, Lubrication Systems, General, or Others), and submit the repair request.'
+      },
+      {
+        'question': 'How do I check repair status?',
+        'answer':
+            'Navigate to Machine Management → Repairs → Repair Status to view all repair requests. You can see the machine name, reported issues, parts concerned, and current status of each repair request.'
       },
     ],
     'Production Tracking': [
       {
-        'question': 'How to track rice production?',
+        'question': 'How do I record rice production data?',
         'answer':
-            'Use the Production Tracking module to record harvest data including hectares farmed, quantity harvested, rice variety, and harvest date.'
+            'Go to Production Tracking and click "Add Record". Select the rice variety from the dropdown, enter the farmer name, choose the municipality, input hectares farmed, quantity harvested in kilograms, and select the harvest date. Click Add to save the production record.'
       },
       {
-        'question': 'How to view production history?',
+        'question': 'What information is required for production records?',
         'answer':
-            'Access production history through the Production Tracking page where you can see all recorded harvests with details and statistics.'
+            'Production records require: Rice Variety (from registered varieties), Farmer Name, Municipality (from predefined list), Hectares (decimal numbers allowed), Quantity Harvested (in kilograms), and Harvest Date. All fields are mandatory.'
+      },
+      {
+        'question': 'How do I view production history?',
+        'answer':
+            'Access the Production Tracking page to view all recorded harvests. The table shows ID, Rice Variety, Farmer Name, Municipality, Hectares, Quantity, Yield per Hectare (automatically calculated), and Harvest Date. Use the refresh button to update the list.'
+      },
+      {
+        'question': 'How is yield per hectare calculated?',
+        'answer':
+            'Yield per hectare is automatically calculated by the system using the formula: Quantity Harvested (kg) ÷ Hectares. This metric helps evaluate production efficiency across different fields and farmers.'
       },
     ],
     'Forecasting': [
       {
-        'question': 'How does forecasting work?',
+        'question': 'How does the forecasting system work?',
         'answer':
-            'The forecasting module uses historical data to predict future rice production trends and help with planning and resource allocation.'
+            'The forecasting module analyzes your historical production data to predict future yields. It uses SARIMA (Seasonal Autoregressive Integrated Moving Average) algorithm to calculate total yield, average production, and provides accuracy metrics based on past performance data.'
       },
       {
-        'question': 'How to generate forecasting reports?',
+        'question': 'What metrics does forecasting provide?',
         'answer':
-            'Navigate to the Forecasting section and select your parameters. The system will generate predictions based on historical production data.'
-      },
-    ],
-    'Search': [
-      {
-        'question': 'How to search for information?',
-        'answer':
-            'Use the Search functionality to quickly find users, machines, production records, or any other data in the system by entering relevant keywords.'
+            'Forecasting provides: Total Yield predictions, Total Records analyzed, Average Production estimates, and Accuracy percentage. The system validates predictions against historical data to ensure reliability.'
       },
       {
-        'question': 'What can I search for?',
+        'question': 'How accurate are the forecasting predictions?',
         'answer':
-            'You can search for users, machinery, rice varieties, production records, maintenance logs, and other system data.'
+            'The system typically provides forecasting accuracy of around 95% based on historical data validation. Accuracy improves with more complete and consistent production data input over time.'
       },
     ],
-    'Reports': [
+    'Search & Reports': [
       {
-        'question': 'How to generate reports?',
+        'question': 'What can I search for in the system?',
         'answer':
-            'Access the Reports section to generate various reports including production summaries, machine usage, and user activity reports.'
+            'The search functionality allows you to find: Rice varieties and parts needed. Choose an item you want to find in the drop-down list.'
       },
       {
         'question': 'What types of reports are available?',
         'answer':
-            'Available reports include: Production Reports, Machine Maintenance Reports, User Activity Reports, and Custom Reports.'
+            'Available reports include: Production Reports (harvest summaries and statistics), Machine Status Reports (showing active/inactive and mobile/static machines), Production Tracking Reports, and Machine Maintenance Reports. Reports can be generated as PDFs.'
+      },
+      {
+        'question': 'How do I generate a Machine Status Report?',
+        'answer':
+            'Navigate to Reports and select "Machine Status Report". The report shows total machines, active vs inactive counts, mobile vs static counts, and detailed machine information. Click the print/export button to generate a PDF.'
       },
     ],
-    'Maintenance': [
+    'System Maintenance': [
       {
-        'question': 'How to report machine issues?',
+        'question': 'How do I edit rice varieties?',
         'answer':
-            'Use the Maintenance module to report machine problems. Describe the issue and submit the repair request.'
+            'Go to Machine Management → Maintenance → Edit Rice Variety. Find the rice variety you want to edit and click the edit icon. You can update the variety name and quality grade (Shatter/Non-Shattering). Save changes to update the variety information.'
       },
       {
-        'question': 'How to track repair status?',
-        'answer': 'Check the Maintenance section to view the status of reported issues and track repair progress.'
+        'question': 'How do I backup system data?',
+        'answer':
+            'Navigate to Machine Management → Maintenance → Back Up to access the backup functionality. The system can create backups of all your data including machinery, rice varieties, users, and production records. Follow the backup process to secure your data.'
+      },
+      {
+        'question': 'How do I manage user logs and activity?',
+        'answer':
+            'Access user activity logs through the User Logs section. This shows all user activities including registrations, data modifications, and system access. This helps track system usage and maintain security.'
+      },
+      {
+        'question': 'What should I do if I encounter system errors?',
+        'answer':
+            'If you encounter errors, try refreshing the page first. For persistent issues, check your internet connection and try again. Contact your system administrator if problems continue, providing details about the error message and what you were doing when it occurred.'
+      },
+    ],
+    'Password & Security': [
+      {
+        'question': 'How do I recover my password?',
+        'answer':
+            'Use the "Forgot Password" option on the login page. You will be prompted to answer your security question. Upon providing the correct answer, you can reset your password. Contact your administrator if you cannot remember your security question answer.'
+      },
+      {
+        'question': 'How do I change my security settings?',
+        'answer':
+            'Access your user profile to update your password and security question. You will need to provide your current password to make changes. Choose a strong password and a memorable security question for account recovery.'
       },
     ],
   };

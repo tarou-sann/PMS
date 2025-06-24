@@ -238,8 +238,6 @@ class ApiService {
     }
   }
 
-  // Update your login method to save the username
-
   Future<bool> login(String username, String password) async {
     try {
       final response = await _client.post(
@@ -264,6 +262,16 @@ class ApiService {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('username', username);
           
+          // Also get current user data to ensure we have the latest info
+          try {
+            final userInfo = await getCurrentUser();
+            if (userInfo != null) {
+              await setUserData(userInfo);
+            }
+          } catch (e) {
+            print('Warning: Could not fetch user data after login: $e');
+          }
+          
           return true;
         }
       }
@@ -273,6 +281,7 @@ class ApiService {
       return false;
     }
   }
+  // ...existing code...
 
   Future<bool> refreshToken() async {
     try {
@@ -305,7 +314,6 @@ class ApiService {
 
   Future<void> logout() async {
     try {
-      // Attempt to notify the backend about logout (optional)
       final token = await getAccessToken();
       if (token != null) {
         try {
@@ -321,12 +329,12 @@ class ApiService {
         }
       }
     } finally {
-      // Always clear local storage
+      // Always clear local storage including username
       await clearStoredData();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('username');
     }
   }
-
-  // Replace the existing getSecurityQuestion method with this improved version
 
   Future<String?> getSecurityQuestion(String username) async {
     try {
