@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:pms_frontend/pages/signup.dart';
 import 'package:pms_frontend/services/api_service.dart';
 
+import 'theme/colors.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Important for async operations in main
 
@@ -42,6 +44,7 @@ class MyApp extends StatelessWidget {
       title: 'PMS Frontend',
       theme: ThemeData(
         fontFamily: 'Urbanist',
+        scaffoldBackgroundColor: ThemeColor.white,
       ),
       home: const SignUpForm(),
       debugShowCheckedModeBanner: false,

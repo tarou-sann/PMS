@@ -493,7 +493,14 @@ class EndDrawer_Employee extends StatelessWidget {
                 _buildMenuTile(
                   icon: Symbols.help,
                   title: 'Help',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HelpModule(),
+                      ),
+                    );
+                  },
                 ),
                 _buildMenuTile(
                   icon: Symbols.info,

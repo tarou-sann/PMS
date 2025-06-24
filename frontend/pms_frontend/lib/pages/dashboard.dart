@@ -57,11 +57,6 @@ class _DashboardNavState extends State<DashboardNav> {
 
   @override
   Widget build(BuildContext context) {
-    const TextStyle listTileTextStyle = TextStyle(
-      fontSize: 20,
-      color: ThemeColor.primaryColor,
-    );
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: ThemeColor.white,

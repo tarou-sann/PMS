@@ -38,7 +38,7 @@ class _HelpContentState extends State<HelpContent> {
       {
         'question': 'How to register users?',
         'answer':
-            'To register new users, navigate to the Registration page from the main menu. Fill in the required information including username, password, and security details. Click the Register button to create the new user account.'
+            'To register new users, navigate to the Registration page from the main menu. Fill in the required information including username, password, and security details. Click the Register button to create the new user account. Note: Only admins are allowed to register users.'
       },
       {
         'question': 'What information is required for user registration?',
