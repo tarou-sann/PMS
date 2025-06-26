@@ -48,21 +48,20 @@ class RegisterBase extends StatelessWidget {
                   double screenWidth = constraints.maxWidth;
                   double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
 
-                  // Fixed card dimensions with scaling
                   double cardWidth = 450 * scaleFactor;
                   double cardHeight = 450 * scaleFactor;
                   double iconSize = 225 * scaleFactor;
                   double fontSize = 24 * scaleFactor;
                   double spacing = 40 * scaleFactor;
 
-                  // Clamp to reasonable limits
                   cardWidth = cardWidth.clamp(350.0, 450.0);
                   cardHeight = cardHeight.clamp(350.0, 450.0);
                   iconSize = iconSize.clamp(180.0, 225.0);
                   fontSize = fontSize.clamp(20.0, 24.0);
                   spacing = spacing.clamp(30.0, 40.0);
 
-                  return Center( // Center the content
+                  return Center(
+                    // Center the content
                     child: Wrap(
                       spacing: spacing,
                       runSpacing: spacing,
@@ -86,7 +85,8 @@ class RegisterBase extends StatelessWidget {
                           cardHeight,
                           iconSize,
                           fontSize,
-                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterMachinery())),
+                          () => Navigator.push(
+                              context, MaterialPageRoute(builder: (context) => const RegisterMachinery())),
                         ),
                         _buildRegistrationCard(
                           context,
@@ -110,9 +110,8 @@ class RegisterBase extends StatelessWidget {
     );
   }
 
-  // Add this helper method with fixed dimensions
-  Widget _buildRegistrationCard(BuildContext context, String title, IconData icon,
-      double cardWidth, double cardHeight, double iconSize, double fontSize, VoidCallback onTap) {
+  Widget _buildRegistrationCard(BuildContext context, String title, IconData icon, double cardWidth, double cardHeight,
+      double iconSize, double fontSize, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -164,7 +163,6 @@ class _RegisterUserState extends State<RegisterUser> {
   final ApiService _apiService = ApiService();
   final _formKey = GlobalKey<FormState>();
 
-  // Form controllers
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
@@ -186,7 +184,6 @@ class _RegisterUserState extends State<RegisterUser> {
   }
 
   Future<void> _registerUser() async {
-    // Reset messages at the beginning of each registration attempt
     setState(() {
       _errorMessage = '';
       _successMessage = '';
@@ -200,7 +197,6 @@ class _RegisterUserState extends State<RegisterUser> {
       return;
     }
 
-    // Check if passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
         _errorMessage = 'Passwords do not match';
@@ -418,6 +414,9 @@ class _RegisterUserState extends State<RegisterUser> {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter password';
                                       }
+                                      if (value.length < 8) {
+                                        return 'Password must be at least 8 characters.';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -451,6 +450,8 @@ class _RegisterUserState extends State<RegisterUser> {
                                         return 'Please confirm password';
                                       } else if (value != _passwordController.text) {
                                         return 'Passwords do not match';
+                                      } else if (value.length < 8) {
+                                        return 'Password must be at least 8 characters.';
                                       }
                                       return null;
                                     },
@@ -1165,7 +1166,7 @@ class _RegisterRiceState extends State<RegisterRice> {
           _errorMessage = 'Failed to register rice variety';
         }
       });
-        // In the catch block of _registerRiceVariety:
+      // In the catch block of _registerRiceVariety:
     } catch (e) {
       setState(() {
         _isLoading = false;
