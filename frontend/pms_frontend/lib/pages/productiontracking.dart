@@ -9,6 +9,8 @@ import '../services/user_activity_service.dart';
 import '../widget/textfield.dart';
 import '../utils/formatters.dart';
 import '../constants/municipalities.dart';
+import '../widget/table.dart';
+import '../widget/cellbuilder.dart';
 
 class ProductionTrackingNav extends StatefulWidget {
   const ProductionTrackingNav({super.key});
@@ -465,308 +467,127 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                         ),
                       ),
                     )
-                  : _errorMessage.isNotEmpty && _productionRecords.isEmpty
-                      ? Center(
-                          child: Text(
-                            _errorMessage,
-                            style: const TextStyle(color: ThemeColor.red),
+                  : ReusableTable(
+                      columns: [
+                        TableColumn(
+                          title: 'ID',
+                          dataKey: 'id',
+                          flex: 1,
+                          customBuilder: (value, row) => TableCellBuilders.idCell(value, row),
+                        ),
+                        TableColumn(
+                          title: 'Rice Variety',
+                          dataKey: 'rice_variety_name',
+                          flex: 3,
+                          customBuilder: (value, row) => TableCellBuilders.iconTextCell(
+                            value, 
+                            row, 
+                            Icons.grass, 
+                            ThemeColor.green
                           ),
-                        )
-                      : _productionRecords.isEmpty
-                          ? const Center(
-                              child: Text('No production records found'),
-                            )
-                          : Container(
-                              decoration: BoxDecoration(
-                                color: ThemeColor.white,
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: ThemeColor.grey.withOpacity(0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  // Header
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(8),
-                                        topRight: Radius.circular(8),
-                                      ),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 1,
-                                          child: Text(
-                                            'ID',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Rice Variety',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Farmer Name',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Municipality',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 1,
-                                          child: Text(
-                                            'Hectares',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Quantity (kg)',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Yield/Hectare',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Harvest Date',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Production Records List
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: _productionRecords.length,
-                                      itemBuilder: (context, index) {
-                                        final record = _productionRecords[index];
-                                        return Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: ThemeColor.grey.withOpacity(0.2),
-                                              ),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              // ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: Row(
-                                                  children: [
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      Formatters.formatId(record['id']), // Change from record['id'].toString()
-                                                      style: const TextStyle(fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              // Rice Variety
-                                              Expanded(
-                                                flex: 3,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.grass, color: ThemeColor.green, size: 20),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        record['rice_variety_name'] ?? 'Unknown',
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.w500,
-                                                          color: ThemeColor.green,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              // Farmer Name - ADD THIS SECTION
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.person, color: ThemeColor.primaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        record['farmer_name'] ?? 'Unknown',
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.w500,
-                                                          color: ThemeColor.primaryColor,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              // Municipality - ADD THIS SECTION
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.location_city, color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        record['municipality'] ?? 'Unknown',
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.w500,
-                                                          color: ThemeColor.secondaryColor,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              // Hectares
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.landscape,
-                                                        color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      '${record['hectares']} ha',
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w500,
-                                                        color: ThemeColor.secondaryColor,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              // Quantity
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.scale, color: ThemeColor.grey, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      '${record['quantity_harvested']} kg',
-                                                      style: const TextStyle(
-                                                        fontWeight: FontWeight.w500,
-                                                        color: ThemeColor.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-                                              // Yield per Hectare
-                                              Expanded(
-                                                flex: 2,
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: ThemeColor.green.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    '${record['yield_per_hectare']} kg/ha',
-                                                    style: const TextStyle(
-                                                      color: ThemeColor.green,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              // Harvest Date
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.calendar_today,
-                                                        color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      record['harvest_date'] ?? 'N/A',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: ThemeColor.secondaryColor,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
+                        ),
+                        TableColumn(
+                          title: 'Farmer Name',
+                          dataKey: 'farmer_name',
+                          flex: 2,
+                          customBuilder: (value, row) => TableCellBuilders.iconTextCell(
+                            value, 
+                            row, 
+                            Icons.person, 
+                            ThemeColor.primaryColor
+                          ),
+                        ),
+                        TableColumn(
+                          title: 'Municipality',
+                          dataKey: 'municipality',
+                          flex: 2,
+                          customBuilder: (value, row) => TableCellBuilders.iconTextCell(
+                            value, 
+                            row, 
+                            Icons.location_city, 
+                            ThemeColor.secondaryColor
+                          ),
+                        ),
+                        TableColumn(
+                          title: 'Hectares',
+                          dataKey: 'hectares',
+                          flex: 1,
+                          customBuilder: (value, row) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
                             ),
+                            child: Text(
+                              '${value ?? 0} ha',
+                              style: const TextStyle(
+                                color: ThemeColor.primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        TableColumn(
+                          title: 'Quantity (kg)',
+                          dataKey: 'quantity_harvested',
+                          flex: 2,
+                          customBuilder: (value, row) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.secondaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${value ?? 0} kg',
+                              style: const TextStyle(
+                                color: ThemeColor.secondaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        TableColumn(
+                          title: 'Yield/Hectare',
+                          dataKey: 'yield_per_hectare',
+                          flex: 2,
+                          customBuilder: (value, row) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${value ?? 0} kg/ha',
+                              style: const TextStyle(
+                                color: ThemeColor.green,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        TableColumn(
+                          title: 'Harvest Date',
+                          dataKey: 'harvest_date',
+                          flex: 2,
+                          customBuilder: (value, row) => TableCellBuilders.iconTextCell(
+                            value, 
+                            row, 
+                            Icons.calendar_today, 
+                            ThemeColor.secondaryColor
+                          ),
+                        ),
+                      ],
+                      data: _productionRecords,
+                      isLoading: _isLoading,
+                      errorMessage: _errorMessage,
+                      emptyMessage: 'No production records found',
+                    ),
             ),
           ],
         ),

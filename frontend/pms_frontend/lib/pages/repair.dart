@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pms_frontend/pages/machinerymanagement.dart';
 
 import '../services/api_service.dart';
+import '../services/user_activity_service.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
@@ -28,21 +29,21 @@ class RepairNav extends StatelessWidget {
       ),
       endDrawer: const EndDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Center(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              // Page Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const MachineryManagementNav()));
-                      },
-                      icon: const Icon(Icons.arrow_back_ios),
-                      color: ThemeColor.secondaryColor,
-                      iconSize: 30,
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MachineryManagementNav()));
+                    },
+                    icon: const Icon(Icons.arrow_back_ios),
+                    color: ThemeColor.secondaryColor,
+                    iconSize: 30,
                   ),
                   const Text(
                     "Repairs",
@@ -54,89 +55,103 @@ class RepairNav extends StatelessWidget {
                   ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const RepairstatusNav()));
-                      },
-                      child: Container(
-                        width: 450,
-                        height: 450,
-                        decoration: BoxDecoration(
-                          color: ThemeColor.white2,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
+              const SizedBox(height: 40),
+              
+              // Responsive card layout with size limits
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = constraints.maxWidth;
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
+                  
+                  // Fixed card dimensions with scaling
+                  double cardWidth = 450 * scaleFactor;
+                  double cardHeight = 450 * scaleFactor;
+                  double iconSize = 225 * scaleFactor;
+                  double fontSize = 24 * scaleFactor;
+                  double spacing = 40 * scaleFactor;
+                  
+                  // Clamp to reasonable limits
+                  cardWidth = cardWidth.clamp(350.0, 450.0);
+                  cardHeight = cardHeight.clamp(350.0, 450.0);
+                  iconSize = iconSize.clamp(180.0, 225.0);
+                  fontSize = fontSize.clamp(20.0, 24.0);
+                  spacing = spacing.clamp(30.0, 40.0);
+                  
+                  return Center( // Center the content
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _buildRepairCard(
+                          context,
+                          "Repair Status",
+                          Icons.handyman_outlined,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RepairstatusNav())),
                         ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.handyman_outlined,
-                              weight: 200,
-                              size: 225,
-                              color: ThemeColor.secondaryColor,
-                            ),
-                            Text(
-                              "Repair Status",
-                              style: TextStyle(fontSize: 24),
-                            )
-                          ],
+                        _buildRepairCard(
+                          context,
+                          "Create Repair Order",
+                          Icons.receipt_long_outlined,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateRepairOrder())),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateRepairOrder()));
-                      },
-                      child: Container(
-                        width: 450,
-                        height: 450,
-                        decoration: BoxDecoration(
-                          color: ThemeColor.white2,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              weight: 22,
-                              size: 225,
-                              color: ThemeColor.secondaryColor,
-                            ),
-                            Text(
-                              "Create Repair Order",
-                              style: TextStyle(fontSize: 24),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Add this helper method with fixed dimensions
+  Widget _buildRepairCard(BuildContext context, String title, IconData icon,
+      double cardWidth, double cardHeight, double iconSize, double fontSize, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: cardWidth,
+        height: cardHeight,
+        decoration: BoxDecoration(
+          color: ThemeColor.white2,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 3,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: iconSize,
+              color: ThemeColor.secondaryColor,
+            ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: ThemeColor.secondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -204,6 +219,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
     }
   }
 
+  // Update the _createRepair method
   Future<void> _createRepair() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -233,15 +249,36 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
 
       final result = await _apiService.createRepair(repairData);
 
+      if (result != null) {
+        // Set repairs_needed to true for the selected machinery
+        final machineryUpdateData = {
+          'repairs_needed': true,
+        };
+        
+        // Update the machinery to indicate it needs repairs
+        await _apiService.updateMachinery(_selectedMachineryId!, machineryUpdateData);
+        
+        // Log the activity for both repair creation and machinery update
+        await UserActivityService().logActivity(
+          'Create Repair Order',
+          'Created repair order for machinery ID: ${Formatters.formatId(_selectedMachineryId!)}',
+          target: 'Repair Management',
+        );
+      }
+
       setState(() {
         _isLoading = false;
         if (result != null) {
-          _successMessage = 'Repair order created successfully!';
+          _successMessage = 'Repair order created successfully! Machinery status updated to "Repairs Needed".';
           // Clear form
           _issueController.clear();
           _partsConcerned = '';
           _status = 'pending';
           _isUrgent = false;
+          // Reset machinery selection
+          if (_machinery.isNotEmpty) {
+            _selectedMachineryId = _machinery[0]['id'];
+          }
         } else {
           _errorMessage = 'Failed to create repair order';
         }
@@ -547,41 +584,35 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                       title: const Text('Mark as Urgent', style: labelStyle),
                       value: _isUrgent,
                       activeColor: ThemeColor.secondaryColor,
-                      onChanged: (bool? value) {
+                      onChanged: (value) {
                         setState(() {
                           _isUrgent = value ?? false;
                         });
                       },
-                      controlAffinity: ListTileControlAffinity.leading,
                     ),
-
                     const SizedBox(height: 30),
 
                     // Submit Button
                     Center(
-                      child: _isLoading
-                          ? const CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
-                            )
-                          : TextButton(
-                              onPressed: _createRepair,
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                                foregroundColor: WidgetStateProperty.all(ThemeColor.white),
-                                minimumSize: WidgetStateProperty.all(const Size(213, 65)),
-                                shape: WidgetStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(9),
-                                  ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _createRepair,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            backgroundColor: ThemeColor.secondaryColor,
+                            foregroundColor: ThemeColor.white,
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.white),
+                                )
+                              : const Text(
+                                  'Create Repair Order',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                                 ),
-                              ),
-                              child: const Text(
-                                "Create Repair Order",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

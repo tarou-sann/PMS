@@ -7,6 +7,7 @@ import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../widget/textfield.dart';
 import '../utils/formatters.dart';
+import '../utils/responsive_helper.dart';
 import 'backup.dart';
 
 class MaintenanceNav extends StatelessWidget {
@@ -14,11 +15,6 @@ class MaintenanceNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const TextStyle listTileTextStyle = TextStyle(
-      fontSize: 20,
-      color: Colors.black,
-    );
- 
     return Scaffold(
       key: GlobalKey<ScaffoldState>(),
       backgroundColor: ThemeColor.white,
@@ -28,140 +24,135 @@ class MaintenanceNav extends StatelessWidget {
       ),
       endDrawer: const EndDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditMachinery(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: ThemeColor.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              // Page Header
+              const Text(
+                "Maintenance",
+                style: TextStyle(
+                  color: ThemeColor.secondaryColor,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // Responsive card layout with size limits
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = constraints.maxWidth;
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
+                  
+                  // Fixed card dimensions with scaling
+                  double cardWidth = 450 * scaleFactor;
+                  double cardHeight = 450 * scaleFactor;
+                  double iconSize = 225 * scaleFactor;
+                  double fontSize = 24 * scaleFactor;
+                  double spacing = 40 * scaleFactor;
+                  
+                  // Clamp to reasonable limits
+                  cardWidth = cardWidth.clamp(350.0, 450.0);
+                  cardHeight = cardHeight.clamp(350.0, 450.0);
+                  iconSize = iconSize.clamp(180.0, 225.0);
+                  fontSize = fontSize.clamp(20.0, 24.0);
+                  spacing = spacing.clamp(30.0, 40.0);
+                  
+                  return Center( // Center the content
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      alignment: WrapAlignment.center,
                       children: [
-                        Icon(
-                          Icons.agriculture,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                        Text(
+                        _buildMaintenanceCard(
+                          context,
                           "Edit Machine Details",
-                          style: TextStyle(fontSize: 24),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const EditRice(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: ThemeColor.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.grass,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
+                          Icons.agriculture,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditMachinery())),
                         ),
-                        Text(
+                        _buildMaintenanceCard(
+                          context,
                           "Edit Rice Variety",
-                          style: TextStyle(fontSize: 24),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const BackUpNav()),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.backup,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
+                          Icons.grass,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditRice())),
                         ),
-                        Text(
+                        _buildMaintenanceCard(
+                          context,
+                          "Edit Users",
+                          Icons.people,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const EditUsers())),
+                        ),
+                        _buildMaintenanceCard(
+                          context,
                           "Back Up",
-                          style: TextStyle(fontSize: 24),
-                        )
+                          Icons.backup,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const BackUpNav())),
+                        ),
                       ],
                     ),
-                  ),
-                ),
-              )
+                  );
+                },
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMaintenanceCard(BuildContext context, String title, IconData icon, 
+      double cardWidth, double cardHeight, double iconSize, double fontSize, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: cardWidth,
+        height: cardHeight,
+        decoration: BoxDecoration(
+          color: ThemeColor.white2,
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColor.grey.withOpacity(0.2),
+              spreadRadius: 3,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: iconSize,
+              color: ThemeColor.secondaryColor,
+            ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: ThemeColor.secondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -216,8 +207,10 @@ class _EditMachineryState extends State<EditMachinery> {
   Future<void> _showEditMachineDialog(BuildContext context, Map<String, dynamic> machine) async {
     final formKey = GlobalKey<FormState>();
     final machineNameController = TextEditingController(text: machine['machine_name']);
+    final hourMeterController = TextEditingController(text: '${machine['hour_meter'] ?? 0}');
     String mobility = machine['is_mobile'] ? 'Yes' : 'No';
     String status = machine['is_active'] ? 'Yes' : 'No';
+    String repairsNeeded = (machine['repairs_needed'] ?? false) ? 'Yes' : 'No';
     bool isLoading = false;
     String errorMessage = '';
 
@@ -247,7 +240,7 @@ class _EditMachineryState extends State<EditMachinery> {
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: Text(
                             errorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: ThemeColor.red),
                           ),
                         ),
                       const Text(
@@ -270,6 +263,33 @@ class _EditMachineryState extends State<EditMachinery> {
                         },
                       ),
                       const SizedBox(height: 16),
+
+                      // Hour Meter field
+                      const Text(
+                        'Hour Meter',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ThemedTextFormField(
+                        controller: hourMeterController,
+                        hintText: 'Enter hour meter reading',
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter hour meter reading';
+                          }
+                          if (int.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
                       const Text(
                         'Mobility',
                         style: TextStyle(
@@ -343,6 +363,45 @@ class _EditMachineryState extends State<EditMachinery> {
                           const Text('No'),
                         ],
                       ),
+                      const SizedBox(height: 16),
+
+                      // Repairs Needed field
+                      const Text(
+                        'Repairs Needed',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Radio<String>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: 'Yes',
+                            groupValue: repairsNeeded,
+                            onChanged: (value) {
+                              setState(() {
+                                repairsNeeded = value!;
+                              });
+                            },
+                          ),
+                          const Text('Yes'),
+                          const SizedBox(width: 20),
+                          Radio<String>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: 'No',
+                            groupValue: repairsNeeded,
+                            onChanged: (value) {
+                              setState(() {
+                                repairsNeeded = value!;
+                              });
+                            },
+                          ),
+                          const Text('No'),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -354,7 +413,7 @@ class _EditMachineryState extends State<EditMachinery> {
                   Navigator.of(dialogContext).pop();
                 },
                 style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
                 ),
                 child: const Text('Cancel'),
               ),
@@ -373,12 +432,16 @@ class _EditMachineryState extends State<EditMachinery> {
                           try {
                             final isMobile = mobility == 'Yes';
                             final isActive = status == 'Yes';
+                            final needsRepairs = repairsNeeded == 'Yes';
+                            final hourMeter = int.parse(hourMeterController.text);
 
                             // Prepare update data
                             final machineryData = {
                               'machine_name': machineNameController.text,
                               'is_mobile': isMobile,
                               'is_active': isActive,
+                              'hour_meter': hourMeter,
+                              'repairs_needed': needsRepairs,
                             };
 
                             // Call API to update machinery
@@ -410,7 +473,7 @@ class _EditMachineryState extends State<EditMachinery> {
                       },
                       style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
                       ),
                       child: const Text('Update'),
                     ),
@@ -433,7 +496,7 @@ class _EditMachineryState extends State<EditMachinery> {
             title: const Text(
               'Confirm Deletion',
               style: TextStyle(
-                color: Colors.red,
+                color: ThemeColor.red,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -446,7 +509,7 @@ class _EditMachineryState extends State<EditMachinery> {
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Text(
                       errorMessage,
-                      style: const TextStyle(color: Colors.red),
+                      style: const TextStyle(color: ThemeColor.red),
                     ),
                   ),
                 Text(
@@ -456,7 +519,7 @@ class _EditMachineryState extends State<EditMachinery> {
                 const SizedBox(height: 16),
                 const Text(
                   'This action cannot be undone and will also delete all related repair records.',
-                  style: TextStyle(fontSize: 14, color: Colors.red),
+                  style: TextStyle(fontSize: 14, color: ThemeColor.red),
                 ),
               ],
             ),
@@ -466,13 +529,13 @@ class _EditMachineryState extends State<EditMachinery> {
                   Navigator.of(dialogContext).pop();
                 },
                 style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
                 ),
                 child: const Text('Cancel'),
               ),
               isDeleting
                   ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.red),
                     )
                   : TextButton(
                       onPressed: () async {
@@ -509,8 +572,8 @@ class _EditMachineryState extends State<EditMachinery> {
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.red),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.red),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
                       ),
                       child: const Text('Delete'),
                     ),
@@ -578,7 +641,7 @@ class _EditMachineryState extends State<EditMachinery> {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: ThemeColor.red),
                 ),
               ),
             if (_successMessage.isNotEmpty)
@@ -586,7 +649,7 @@ class _EditMachineryState extends State<EditMachinery> {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   _successMessage,
-                  style: const TextStyle(color: Colors.green),
+                  style: const TextStyle(color: ThemeColor.green),
                 ),
               ),
 
@@ -616,7 +679,7 @@ class _EditMachineryState extends State<EditMachinery> {
                           ),
                           child: Text(
                             _errorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: ThemeColor.red),
                           ),
                         )
                       : _machinery.isEmpty
@@ -693,6 +756,26 @@ class _EditMachineryState extends State<EditMachinery> {
                                         Expanded(
                                           flex: 2,
                                           child: Text(
+                                            'Hour Meter',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Repairs Needed',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
                                             'Actions',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -728,7 +811,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      Formatters.formatId(machine['id']), // Change from machine['id'].toString()
+                                                      Formatters.formatId(machine['id']),
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -802,7 +885,55 @@ class _EditMachineryState extends State<EditMachinery> {
                                                     machine['is_active'] ? 'Yes' : 'No',
                                                     style: TextStyle(
                                                       color:
-                                                          machine['is_active'] ? ThemeColor.primaryColor : Colors.red,
+                                                          machine['is_active'] ? ThemeColor.primaryColor : ThemeColor.red,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // Hour Meter
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.schedule,
+                                                        color: ThemeColor.secondaryColor, size: 16),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      '${machine['hour_meter'] ?? 0} hrs',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w500,
+                                                        color: ThemeColor.secondaryColor,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // Repairs Needed
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: (machine['repairs_needed'] ?? false)
+                                                        ? ThemeColor.red.withOpacity(0.2)
+                                                        : ThemeColor.green.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    (machine['repairs_needed'] ?? false) ? 'Yes' : 'No',
+                                                    style: TextStyle(
+                                                      color: (machine['repairs_needed'] ?? false)
+                                                          ? ThemeColor.red
+                                                          : ThemeColor.green,
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 12,
                                                     ),
@@ -829,7 +960,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                                     IconButton(
                                                       icon: const Icon(
                                                         Icons.delete,
-                                                        color: Colors.red,
+                                                        color: ThemeColor.red,
                                                       ),
                                                       onPressed: () {
                                                         _showDeleteConfirmationDialog(context, machine);
@@ -1073,7 +1204,7 @@ class _EditRiceState extends State<EditRice> {
             title: const Text(
               'Confirm Deletion',
               style: TextStyle(
-                color: Colors.red,
+                color: ThemeColor.red,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1086,7 +1217,7 @@ class _EditRiceState extends State<EditRice> {
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Text(
                       errorMessage,
-                      style: const TextStyle(color: Colors.red),
+                      style: const TextStyle(color: ThemeColor.red),
                     ),
                   ),
                 Text(
@@ -1096,7 +1227,7 @@ class _EditRiceState extends State<EditRice> {
                 const SizedBox(height: 16),
                 const Text(
                   'This action cannot be undone and will also delete all related records.',
-                  style: TextStyle(fontSize: 14, color: Colors.red),
+                  style: TextStyle(fontSize: 14, color: ThemeColor.red),
                 ),
               ],
             ),
@@ -1106,13 +1237,13 @@ class _EditRiceState extends State<EditRice> {
                   Navigator.of(dialogContext).pop();
                 },
                 style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.grey),
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
                 ),
                 child: const Text('Cancel'),
               ),
               isDeleting
                   ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.red),
                     )
                   : TextButton(
                       onPressed: () async {
@@ -1149,8 +1280,8 @@ class _EditRiceState extends State<EditRice> {
                         }
                       },
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.red),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.red),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
                       ),
                       child: const Text('Delete'),
                     ),
@@ -1218,7 +1349,7 @@ class _EditRiceState extends State<EditRice> {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: ThemeColor.red),
                 ),
               ),
             if (_successMessage.isNotEmpty)
@@ -1226,7 +1357,7 @@ class _EditRiceState extends State<EditRice> {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   _successMessage,
-                  style: const TextStyle(color: Colors.green),
+                  style: const TextStyle(color: ThemeColor.green),
                 ),
               ),
 
@@ -1334,7 +1465,7 @@ class _EditRiceState extends State<EditRice> {
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      Formatters.formatId(rice['id']), // Change from rice['id'].toString()
+                                                      Formatters.formatId(rice['id']),
                                                       style: const TextStyle(fontWeight: FontWeight.w500),
                                                     ),
                                                   ],
@@ -1413,9 +1544,686 @@ class _EditRiceState extends State<EditRice> {
       case 'Shatter':
         return Colors.purple;
       case 'Non-Shattering':
-        return Colors.green;
+        return ThemeColor.green;
       default:
-        return Colors.grey;
+        return ThemeColor.grey;
     }
+  }
+}
+
+class EditUsers extends StatefulWidget {
+  const EditUsers({super.key});
+
+  @override
+  State<EditUsers> createState() => _EditUsersState();
+}
+
+class _EditUsersState extends State<EditUsers> {
+  final ApiService _apiService = ApiService();
+  List<Map<String, dynamic>> _users = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+  String _successMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  Future<void> _loadUsers() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _successMessage = '';
+    });
+
+    try {
+      final users = await _apiService.getUsers();
+      setState(() {
+        _isLoading = false;
+        if (users != null) {
+          _users = users;
+        } else {
+          _errorMessage = 'Failed to load user data';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error: $e';
+      });
+    }
+  }
+
+  Future<void> _showEditUserDialog(BuildContext context, Map<String, dynamic> user) async {
+    final formKey = GlobalKey<FormState>();
+    final usernameController = TextEditingController(text: user['username']);
+    final securityAnswerController = TextEditingController();
+    String securityQuestion = user['security_question'] ?? 'What is your favorite color?';
+    bool isAdmin = user['is_admin'] ?? false;
+    bool isLoading = false;
+    String errorMessage = '';
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: ThemeColor.white,
+            title: const Text(
+              'Edit User Details',
+              style: TextStyle(
+                color: ThemeColor.secondaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            content: SizedBox(
+              width: 500,
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (errorMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Text(
+                            errorMessage,
+                            style: const TextStyle(color: ThemeColor.red),
+                          ),
+                        ),
+
+                      // Username (read-only)
+                      const Text(
+                        'Username',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: usernameController,
+                        enabled: false,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          filled: true,
+                          fillColor: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Security Question
+                      const Text(
+                        'Security Question',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<String>(
+                        value: securityQuestion,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: "What is your favorite color?", child: Text("What is your favorite color?")),
+                          DropdownMenuItem(value: "What is your mother's maiden name?", child: Text("What is your mother's maiden name?")),
+                          DropdownMenuItem(value: "What was your first pet's name?", child: Text("What was your first pet's name?")),
+                          DropdownMenuItem(value: "What city were you born in?", child: Text("What city were you born in?")),
+                          DropdownMenuItem(value: "What is your favorite food?", child: Text("What is your favorite food?")),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            securityQuestion = value;
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Security Answer
+                      const Text(
+                        'New Security Answer (optional)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: securityAnswerController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: "Leave empty to keep current answer",
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Admin Status
+                      const Text(
+                        'Admin Privileges',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.secondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Radio<bool>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: true,
+                            groupValue: isAdmin,
+                            onChanged: (value) {
+                              setState(() {
+                                isAdmin = value!;
+                              });
+                            },
+                          ),
+                          const Text('Yes'),
+                          const SizedBox(width: 20),
+                          Radio<bool>(
+                            activeColor: ThemeColor.secondaryColor,
+                            value: false,
+                            groupValue: isAdmin,
+                            onChanged: (value) {
+                              setState(() {
+                                isAdmin = value!;
+                              });
+                            },
+                          ),
+                          const Text('No'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
+                ),
+                child: const Text('Cancel'),
+              ),
+              isLoading
+                  ? const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
+                    )
+                  : TextButton(
+                      onPressed: () async {
+                        if (formKey.currentState!.validate()) {
+                          setState(() {
+                            isLoading = true;
+                            errorMessage = '';
+                          });
+
+                          try {
+                            // Prepare update data
+                            final userData = <String, dynamic>{
+                              'security_question': securityQuestion,
+                              'is_admin': isAdmin,
+                            };
+
+                            // Only include security answer if provided
+                            if (securityAnswerController.text.isNotEmpty) {
+                              userData['security_answer'] = securityAnswerController.text;
+                            }
+
+                            // Call API to update user
+                            final result = await _apiService.updateUser(user['id'], userData);
+
+                            if (result != null) {
+                              await UserActivityService().logActivity(
+                                'Edit User',
+                                'Updated user: ${user['username']}',
+                                target: 'User Management',
+                              );
+                              // Close the dialog and reload the users list
+                              Navigator.of(dialogContext).pop();
+                              _loadUsers();
+                              _successMessage = 'User updated successfully';
+                            } else {
+                              setState(() {
+                                isLoading = false;
+                                errorMessage = 'Failed to update user';
+                              });
+                            }
+                          } catch (e) {
+                            setState(() {
+                              isLoading = false;
+                              errorMessage = 'Error: $e';
+                            });
+                          }
+                        }
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.secondaryColor),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                      ),
+                      child: const Text('Update'),
+                    ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Future<void> _showDeleteUserDialog(BuildContext context, Map<String, dynamic> user) async {
+    bool isDeleting = false;
+    String errorMessage = '';
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text(
+              'Confirm Deletion',
+              style: TextStyle(
+                color: ThemeColor.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: ThemeColor.red),
+                    ),
+                  ),
+                Text(
+                  'Are you sure you want to delete the user "${user['username']}"?',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'This action cannot be undone and will also delete all related activity logs.',
+                  style: TextStyle(fontSize: 14, color: ThemeColor.red),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                },
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(ThemeColor.grey),
+                ),
+                child: const Text('Cancel'),
+              ),
+              isDeleting
+                  ? const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.red),
+                    )
+                  : TextButton(
+                      onPressed: () async {
+                        setState(() {
+                          isDeleting = true;
+                          errorMessage = '';
+                        });
+
+                        try {
+                          // Call API to delete user
+                          final success = await _apiService.deleteUser(user['id']);
+
+                          if (success) {
+                            await UserActivityService().logActivity(
+                              'Delete User',
+                              'Deleted user: ${user['username']}',
+                              target: 'User Management',
+                            );
+                            // Close the dialog and reload the users list
+                            Navigator.of(dialogContext).pop();
+                            _loadUsers();
+                            _successMessage = 'User deleted successfully';
+                          } else {
+                            setState(() {
+                              isDeleting = false;
+                              errorMessage = 'Failed to delete user';
+                            });
+                          }
+                        } catch (e) {
+                          setState(() {
+                            isDeleting = false;
+                            errorMessage = 'Error: $e';
+                          });
+                        }
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all(ThemeColor.red),
+                        foregroundColor: WidgetStateProperty.all(ThemeColor.white),
+                      ),
+                      child: const Text('Delete'),
+                    ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const TextStyle tableHeaderStyle = TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      color: ThemeColor.secondaryColor,
+    );
+
+    return Scaffold(
+      key: GlobalKey<ScaffoldState>(),
+      backgroundColor: ThemeColor.white,
+      appBar: const PreferredSize(
+        preferredSize: Size.fromHeight(150),
+        child: Navbar(),
+      ),
+      endDrawer: const EndDrawer(),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            // Back arrow and title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.pop(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MaintenanceNav(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: ThemeColor.secondaryColor,
+                    size: 30,
+                  ),
+                ),
+                const Text(
+                  "Edit Users",
+                  style: TextStyle(
+                    color: ThemeColor.secondaryColor,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // Success or error messages
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  _errorMessage,
+                  style: const TextStyle(color: ThemeColor.red),
+                ),
+              ),
+            if (_successMessage.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  _successMessage,
+                  style: const TextStyle(color: ThemeColor.green),
+                ),
+              ),
+
+            // Refresh button
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                onPressed: _loadUsers,
+                icon: const Icon(
+                  Icons.refresh,
+                  color: ThemeColor.secondaryColor,
+                ),
+                tooltip: 'Refresh data',
+              ),
+            ),
+
+            // Table content
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMessage.isNotEmpty && _users.isEmpty
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _errorMessage,
+                            style: const TextStyle(color: ThemeColor.red),
+                          ),
+                        )
+                      : _users.isEmpty
+                          ? const Center(
+                              child: Text('No users found'),
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                color: ThemeColor.white,
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ThemeColor.grey.withOpacity(0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  // Header
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            'ID',
+                                            style: tableHeaderStyle,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Username',
+                                            style: tableHeaderStyle,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Admin Status',
+                                            style: tableHeaderStyle,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(
+                                            'Security Question',
+                                            style: tableHeaderStyle,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Actions',
+                                            style: tableHeaderStyle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // User List
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: _users.length,
+                                      itemBuilder: (context, index) {
+                                        final user = _users[index];
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: ThemeColor.grey.withOpacity(0.2),
+                                              ),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              // ID
+                                              Expanded(
+                                                flex: 1,
+                                                child: Row(
+                                                  children: [
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      Formatters.formatId(user['id']),
+                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // Username
+                                              Expanded(
+                                                flex: 3,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.person,
+                                                        color: ThemeColor.primaryColor, size: 20),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        user['username'],
+                                                        style: const TextStyle(
+                                                          fontWeight: FontWeight.w500,
+                                                          color: ThemeColor.primaryColor,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // Admin Status
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: user['is_admin']
+                                                        ? ThemeColor.secondaryColor.withOpacity(0.2)
+                                                        : ThemeColor.primaryColor.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                  child: Text(
+                                                    user['is_admin'] ? 'Admin' : 'User',
+                                                    style: TextStyle(
+                                                      color: user['is_admin']
+                                                          ? ThemeColor.secondaryColor
+                                                          : ThemeColor.primaryColor,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // Security Question
+                                              Expanded(
+                                                flex: 3,
+                                                child: Text(
+                                                  user['security_question'] ?? 'Not set',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: 12,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+
+                                              // Actions
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.edit,
+                                                        color: ThemeColor.secondaryColor,
+                                                      ),
+                                                      onPressed: () {
+                                                        _showEditUserDialog(context, user);
+                                                      },
+                                                      tooltip: 'Edit',
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.delete,
+                                                        color: ThemeColor.red,
+                                                      ),
+                                                      onPressed: () {
+                                                        _showDeleteUserDialog(context, user);
+                                                      },
+                                                      tooltip: 'Delete',
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -20,12 +20,23 @@ def create_machinery():
     try:
         is_mobile = data.get('is_mobile', True)
         is_active = data.get('is_active', True)
+        hour_meter = data.get('hour_meter', 0)
+        repairs_needed = data.get('repairs_needed', False)
         
         # Convert string values to boolean if necessary
         if isinstance(is_mobile, str):
             is_mobile = is_mobile.lower() == 'true'
         if isinstance(is_active, str):
             is_active = is_active.lower() == 'true'
+        if isinstance(repairs_needed, str):
+            repairs_needed = repairs_needed.lower() == 'true'
+        
+        # Ensure hour_meter is an integer
+        if isinstance(hour_meter, str):
+            try:
+                hour_meter = int(hour_meter)
+            except ValueError:
+                hour_meter = 0
         
         existing_machinery = Machinery.query.filter(
             Machinery.machine_name.ilike(data['machine_name'])
@@ -37,7 +48,9 @@ def create_machinery():
         machinery = Machinery(
             machine_name=data['machine_name'], 
             is_mobile=is_mobile,
-            is_active=is_active
+            is_active=is_active,
+            hour_meter=hour_meter,
+            repairs_needed=repairs_needed
         )
         
         db_session.add(machinery)
@@ -106,6 +119,21 @@ def update_machinery(machinery_id):
             if isinstance(is_active, str):
                 is_active = is_active.lower() == 'true'
             machinery.is_active = is_active
+        
+        if 'hour_meter' in data:
+            hour_meter = data['hour_meter']
+            if isinstance(hour_meter, str):
+                try:
+                    hour_meter = int(hour_meter)
+                except ValueError:
+                    hour_meter = machinery.hour_meter  # Keep existing value if invalid
+            machinery.hour_meter = hour_meter
+        
+        if 'repairs_needed' in data:
+            repairs_needed = data['repairs_needed']
+            if isinstance(repairs_needed, str):
+                repairs_needed = repairs_needed.lower() == 'true'
+            machinery.repairs_needed = repairs_needed
         
         db_session.commit()
         

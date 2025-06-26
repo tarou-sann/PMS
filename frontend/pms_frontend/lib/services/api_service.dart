@@ -1273,4 +1273,112 @@ class ApiService {
       return null;
     }
   }
+
+  // Machine Assignment methods
+Future<List<Map<String, dynamic>>?> getAssignments() async {
+  try {
+    final result = await get('/assignments');
+    final List<dynamic> assignmentData = result['assignments'];
+    return assignmentData.map((assignment) => assignment as Map<String, dynamic>).toList();
+  } catch (e) {
+    if (kDebugMode) {
+      print('Get assignments error: $e');
+    }
+    return null;
+  }
+}
+
+Future<List<Map<String, dynamic>>?> getActiveAssignments() async {
+  try {
+    final result = await get('/assignments/active');
+    final List<dynamic> assignmentData = result['assignments'];
+    return assignmentData.map((assignment) => assignment as Map<String, dynamic>).toList();
+  } catch (e) {
+    if (kDebugMode) {
+      print('Get active assignments error: $e');
+    }
+    return null;
+  }
+}
+
+Future<List<Map<String, dynamic>>?> getAvailableMachinery() async {
+  try {
+    final result = await get('/machinery/available');
+    final List<dynamic> machineryData = result['machinery'];
+    return machineryData.map((machinery) => machinery as Map<String, dynamic>).toList();
+  } catch (e) {
+    if (kDebugMode) {
+      print('Get available machinery error: $e');
+    }
+    return null;
+  }
+}
+
+Future<Map<String, dynamic>?> createAssignment(Map<String, dynamic> assignmentData) async {
+  try {
+    final result = await post('/assignments', assignmentData);
+    return result['assignment'];
+  } catch (e) {
+    if (kDebugMode) {
+      print('Create assignment error: $e');
+    }
+    return null;
+  }
+}
+
+Future<Map<String, dynamic>?> returnAssignment(int assignmentId, Map<String, dynamic> returnData) async {
+  try {
+    final token = await getAccessToken();
+    if (token == null) {
+      return null;
+    }
+
+    final response = await _client.put(
+      Uri.parse('$baseUrl/assignments/$assignmentId/return'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(returnData),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['assignment'];
+    } else {
+      if (kDebugMode) {
+        print('Return assignment error: ${response.body}');
+      }
+      return null;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('Return assignment error: $e');
+    }
+    return null;
+  }
+}
+
+Future<bool> deleteAssignment(int assignmentId) async {
+  try {
+    final token = await getAccessToken();
+    if (token == null) {
+      return false;
+    }
+
+    final response = await _client.delete(
+      Uri.parse('$baseUrl/assignments/$assignmentId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    return response.statusCode == 200;
+  } catch (e) {
+    if (kDebugMode) {
+      print('Delete assignment error: $e');
+    }
+    return false;
+  }
+}
 }

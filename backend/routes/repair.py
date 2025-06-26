@@ -11,7 +11,7 @@ from datetime import datetime
 @jwt_required()
 def create_repair():
     """
-    Create a new repair order
+    Create a new repair order and set machinery repairs_needed to True
     """
     data = request.get_json()
     
@@ -38,6 +38,10 @@ def create_repair():
         )
         
         db_session.add(repair)
+        
+        # Automatically set repairs_needed to True for the machinery
+        machinery.repairs_needed = True
+        
         db_session.commit()
         
         return jsonify({
@@ -84,7 +88,7 @@ def get_repair(repair_id):
 @jwt_required()
 def update_repair(repair_id):
     """
-    Update a repair order
+    Update a repair order and manage machinery repairs_needed status
     """
     repair = Repair.query.get(repair_id)
     
@@ -94,20 +98,38 @@ def update_repair(repair_id):
     data = request.get_json()
     
     try:
+        machinery_id = repair.machinery_id
+        
         if data.get('machinery_id'):
             # Verify machinery exists
             machinery = Machinery.query.get(data['machinery_id'])
             if not machinery:
                 return jsonify({'message': 'Machinery not found'}), 404
+            machinery_id = data['machinery_id']
             repair.machinery_id = data['machinery_id']
         
         if data.get('issue_description'):
             repair.issue_description = data['issue_description']
         
         if data.get('status'):
+            old_status = repair.status
             repair.status = data['status']
             if data['status'] == 'completed' and not repair.completed_date:
                 repair.completed_date = datetime.utcnow()
+            
+            # If repair is marked as completed, check if other repairs exist for this machine
+            if data['status'] == 'completed' and old_status != 'completed':
+                other_pending_repairs = Repair.query.filter(
+                    Repair.machinery_id == machinery_id,
+                    Repair.id != repair_id,
+                    Repair.status.in_(['pending', 'in_progress'])
+                ).count()
+                
+                # If no other pending repairs, set repairs_needed to False
+                if other_pending_repairs == 0:
+                    machinery = Machinery.query.get(machinery_id)
+                    if machinery:
+                        machinery.repairs_needed = False
         
         if data.get('assigned_to') is not None:
             repair.assigned_to = data['assigned_to']

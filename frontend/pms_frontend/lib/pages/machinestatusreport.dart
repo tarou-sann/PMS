@@ -122,6 +122,14 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
                         padding: const pw.EdgeInsets.all(8),
                         child: pw.Text('Status', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                       ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Hour Meter', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Repairs Needed', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                      ),
                     ],
                   ),
                   // Data rows
@@ -142,6 +150,14 @@ class _MachineStatusReportState extends State<MachineStatusReport> {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(8),
                         child: pw.Text(machine['is_active'] ? 'Active' : 'Inactive'),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('${machine['hour_meter'] ?? 0} hrs'),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text((machine['repairs_needed'] ?? false) ? 'Yes' : 'No'),
                       ),
                     ],
                   )).toList(),

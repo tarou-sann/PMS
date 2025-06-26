@@ -4,6 +4,7 @@ import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../services/api_service.dart';
+import '../services/user_activity_service.dart';
 import 'repair.dart';
 import '../utils/formatters.dart';
 
@@ -602,6 +603,33 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
                             );
                             
                             if (result != null) {
+                              // If repair is marked as completed, check if there are other pending repairs for this machine
+                              if (_status == 'completed') {
+                                final allRepairs = await _apiService.getRepairs();
+                                if (allRepairs != null) {
+                                  // Check if there are any other pending/in_progress repairs for this machine
+                                  final otherPendingRepairs = allRepairs.where((r) => 
+                                    r['machinery_id'] == repair['machinery_id'] && 
+                                    r['id'] != repair['id'] && 
+                                    (r['status'] == 'pending' || r['status'] == 'in_progress')
+                                  ).toList();
+                                  
+                                  // If no other pending repairs, set repairs_needed to false
+                                  if (otherPendingRepairs.isEmpty) {
+                                    final machineryUpdateData = {
+                                      'repairs_needed': false,
+                                    };
+                                    await _apiService.updateMachinery(repair['machinery_id'], machineryUpdateData);
+                                    
+                                    await UserActivityService().logActivity(
+                                      'Complete Repair',
+                                      'Completed repair and cleared repairs needed status for machinery: ${repair['machine_name']}',
+                                      target: 'Repair Management',
+                                    );
+                                  }
+                                }
+                              }
+                              
                               // Close the dialog and reload the repairs list
                               Navigator.of(dialogContext).pop();
                               this._loadRepairs();

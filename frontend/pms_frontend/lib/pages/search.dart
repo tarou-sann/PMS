@@ -26,102 +26,116 @@ class SearchNav extends StatelessWidget {
       ),
       endDrawer: const EndDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(45),
-        child: Center(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-               Center(
-                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const PartsNeededSearch()),
-                          );
-                        },
-                        child: Container(
-                          width: 450,
-                          height: 450,
-                          decoration: BoxDecoration(
-                            color: ThemeColor.white2,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 3,
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.handyman_outlined,
-                                weight: 200,
-                                size: 225,
-                                color: ThemeColor.secondaryColor,
-                              ),
-                              Text(
-                                "Parts Needed Search",
-                                style: TextStyle(fontSize: 24),
-                              )
-                            ],
-                          ),
+              // Page Header
+              const Text(
+                "Search",
+                style: TextStyle(
+                  color: ThemeColor.secondaryColor,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // Responsive card layout with size limits
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = constraints.maxWidth;
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
+                  
+                  // Fixed card dimensions with scaling
+                  double cardWidth = 450 * scaleFactor;
+                  double cardHeight = 450 * scaleFactor;
+                  double iconSize = 225 * scaleFactor;
+                  double fontSize = 24 * scaleFactor;
+                  double spacing = 40 * scaleFactor;
+                  
+                  // Clamp to reasonable limits
+                  cardWidth = cardWidth.clamp(350.0, 450.0);
+                  cardHeight = cardHeight.clamp(350.0, 450.0);
+                  iconSize = iconSize.clamp(180.0, 225.0);
+                  fontSize = fontSize.clamp(20.0, 24.0);
+                  spacing = spacing.clamp(30.0, 40.0);
+                  
+                  return Center( // Center the content
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _buildSearchCard(
+                          context,
+                          "Search by Parts",
+                          Icons.search,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PartsNeededSearch())), // Updated navigation
                         ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RiceVarietySearch()),
-                          );
-                        },
-                        child: Container(
-                          width: 450,
-                          height: 450,
-                          decoration: BoxDecoration(
-                            color: ThemeColor.white2,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 3,
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              )
-                            ],
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.grass,
-                                weight: 22,
-                                size: 225,
-                                color: ThemeColor.secondaryColor,
-                              ),
-                              Text(
-                                "Rice Variety",
-                                style: TextStyle(fontSize: 24),
-                              )
-                            ],
-                          ),
+                        _buildSearchCard(
+                          context,
+                          "Search Rice Varieties",
+                          Icons.grass,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RiceVarietySearch())), // Updated navigation
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                               ),
-               ),
+                  );
+                },
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Add this helper method with fixed dimensions  
+  Widget _buildSearchCard(BuildContext context, String title, IconData icon,
+      double cardWidth, double cardHeight, double iconSize, double fontSize, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: cardWidth,
+        height: cardHeight,
+        decoration: BoxDecoration(
+          color: ThemeColor.white2,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 3,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: iconSize,
+              color: ThemeColor.secondaryColor,
+            ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: ThemeColor.secondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

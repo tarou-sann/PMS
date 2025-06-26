@@ -6,6 +6,8 @@ import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import 'machinerymanagement.dart';
 import '../utils/formatters.dart';
+import '../utils/responsive_helper.dart';
+import 'currently_used_machines.dart'; // Add this import with other imports
 
 class MachinesNav extends StatefulWidget {
   const MachinesNav({super.key});
@@ -71,10 +73,10 @@ class _MachinesNavState extends State<MachinesNav> {
       ),
       endDrawer: const EndDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: ResponsiveHelper.containerPadding(context),
         child: Column(
           children: [
-            // Back arrow and title
+            // Back arrow and title - responsive
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -87,58 +89,85 @@ class _MachinesNavState extends State<MachinesNav> {
                       ),
                     );
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios,
                     color: ThemeColor.secondaryColor,
-                    size: 30,
+                    size: ResponsiveHelper.iconSize(context),
                   ),
                 ),
-                const Text(
+                Text(
                   "Machines",
                   style: TextStyle(
                     color: ThemeColor.secondaryColor,
-                    fontSize: 32,
+                    fontSize: ResponsiveHelper.headerFontSize(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            
-            // Refresh button
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                onPressed: _loadMachinery,
-                icon: const Icon(
-                  Icons.refresh,
-                  color: ThemeColor.secondaryColor,
+            SizedBox(height: ResponsiveHelper.spacing(context)),
+
+            // Currently Used Machines button
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CurrentlyUsedMachines()),
+                    );
+                  },
+                  icon: const Icon(Icons.assignment, color: ThemeColor.white),
+                  label: const Text(
+                    'Currently Used Machines',
+                    style: TextStyle(color: ThemeColor.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeColor.primaryColor,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
                 ),
-                tooltip: 'Refresh data',
-              ),
+                // Refresh button
+                IconButton(
+                  onPressed: _loadMachinery,
+                  icon: Icon(
+                    Icons.refresh,
+                    color: ThemeColor.secondaryColor,
+                    size: ResponsiveHelper.iconSize(context),
+                  ),
+                  tooltip: 'Refresh data',
+                ),
+              ],
             ),
-            
-            // Table content
+
+            // Table content - responsive container
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
+                      ),
+                    )
                   : _errorMessage.isNotEmpty
                       ? Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
+                            color: ThemeColor.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             _errorMessage,
-                            style: const TextStyle(color: Colors.red),
+                            style: const TextStyle(color: ThemeColor.red),
                           ),
                         )
                       : _machinery.isEmpty
                           ? const Center(
                               child: Text(
                                 'No machinery found',
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                                style: TextStyle(fontSize: 16, color: ThemeColor.grey),
                               ),
                             )
                           : Container(
@@ -147,7 +176,7 @@ class _MachinesNavState extends State<MachinesNav> {
                                 borderRadius: BorderRadius.circular(8),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
+                                    color: ThemeColor.grey.withOpacity(0.2),
                                     spreadRadius: 1,
                                     blurRadius: 5,
                                     offset: const Offset(0, 3),
@@ -156,7 +185,7 @@ class _MachinesNavState extends State<MachinesNav> {
                               ),
                               child: Column(
                                 children: [
-                                  // Header
+                                  // Header - match Production Tracking style
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
@@ -169,12 +198,13 @@ class _MachinesNavState extends State<MachinesNav> {
                                     child: const Row(
                                       children: [
                                         Expanded(
-                                          flex: 3,
+                                          flex: 1,
                                           child: Text(
                                             'ID',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
+                                              fontSize: 16,
                                             ),
                                           ),
                                         ),
@@ -185,6 +215,7 @@ class _MachinesNavState extends State<MachinesNav> {
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
+                                              fontSize: 16,
                                             ),
                                           ),
                                         ),
@@ -195,60 +226,89 @@ class _MachinesNavState extends State<MachinesNav> {
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
+                                              fontSize: 16,
                                             ),
                                           ),
                                         ),
                                         Expanded(
                                           flex: 2,
                                           child: Text(
-                                            'Harvest Status',
+                                            'Can Harvest?',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Hour Meter',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 2,
+                                          child: Text(
+                                            'Repairs Needed',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: ThemeColor.secondaryColor,
+                                              fontSize: 16,
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  
-                                  // Machine List
+
+                                  // Machine List - match Production Tracking row height and styling
                                   Expanded(
                                     child: ListView.builder(
                                       itemCount: _machinery.length,
                                       itemBuilder: (context, index) {
                                         final machine = _machinery[index];
                                         return Container(
-                                          padding: const EdgeInsets.all(16),
+                                          padding: const EdgeInsets.all(16), // Same padding as Production Tracking
                                           decoration: BoxDecoration(
                                             border: Border(
                                               bottom: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
+                                                color: ThemeColor.grey.withOpacity(0.2),
                                               ),
                                             ),
                                           ),
                                           child: Row(
                                             children: [
-                                              // ID
+                                              // ID - match Production Tracking style
                                               Expanded(
                                                 flex: 1,
                                                 child: Row(
                                                   children: [
                                                     const SizedBox(width: 8),
                                                     Text(
-                                                      Formatters.formatId(machine['id']), // Change from machine['id'].toString()
-                                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                                      Formatters.formatId(machine['id']),
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w500,
+                                                        color: ThemeColor.primaryColor,
+                                                        fontSize: 14,
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              
-                                              // Machine Name
+
+                                              // Machine Name - match Production Tracking style with icon
                                               Expanded(
                                                 flex: 3,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.agriculture, color: ThemeColor.primaryColor, size: 20),
+                                                    const Icon(Icons.agriculture,
+                                                        color: ThemeColor.primaryColor, size: 20),
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: Text(
@@ -256,14 +316,15 @@ class _MachinesNavState extends State<MachinesNav> {
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.w500,
                                                           color: ThemeColor.primaryColor,
+                                                          fontSize: 14,
                                                         ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              
-                                              // Mobility
+
+                                              // Mobility - styled badge with Yes/No
                                               Expanded(
                                                 flex: 2,
                                                 child: Container(
@@ -272,13 +333,13 @@ class _MachinesNavState extends State<MachinesNav> {
                                                     vertical: 4,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: machine['is_mobile'] 
-                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : ThemeColor.secondaryColor.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    color: machine['is_mobile']
+                                                        ? ThemeColor.primaryColor.withOpacity(0.1)
+                                                        : ThemeColor.secondaryColor.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Text(
-                                                    machine['is_mobile'] ? 'Mobile' : 'Static',
+                                                    machine['is_mobile'] ? 'Yes' : 'No',
                                                     style: TextStyle(
                                                       color: machine['is_mobile']
                                                           ? ThemeColor.primaryColor
@@ -290,9 +351,8 @@ class _MachinesNavState extends State<MachinesNav> {
                                                   ),
                                                 ),
                                               ),
-                                              
-                                              SizedBox(width: 100),
-                                              // Status
+
+                                              // Status - styled badge with Yes/No
                                               Expanded(
                                                 flex: 2,
                                                 child: Container(
@@ -301,17 +361,65 @@ class _MachinesNavState extends State<MachinesNav> {
                                                     vertical: 4,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: machine['is_active'] 
-                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : Colors.red.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    color: machine['is_active']
+                                                        ? ThemeColor.green.withOpacity(0.1)
+                                                        : ThemeColor.red.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Text(
-                                                    machine['is_active'] ? 'Active' : 'Inactive',
+                                                    machine['is_active'] ? 'Yes' : 'No',
                                                     style: TextStyle(
-                                                      color: machine['is_active']
-                                                          ? ThemeColor.primaryColor
-                                                          : Colors.red,
+                                                      color: machine['is_active'] 
+                                                          ? ThemeColor.green 
+                                                          : ThemeColor.red,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 12,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              // Hour Meter - new column
+                                              Expanded(
+                                                flex: 2,
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(Icons.schedule,
+                                                        color: ThemeColor.secondaryColor, size: 16),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      '${machine['hour_meter'] ?? 0} hrs',
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w500,
+                                                        color: ThemeColor.secondaryColor,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+
+                                              // Repairs Needed - new column with badge
+                                              Expanded(
+                                                flex: 2,
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: (machine['repairs_needed'] ?? false)
+                                                        ? ThemeColor.red.withOpacity(0.1)
+                                                        : ThemeColor.green.withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    (machine['repairs_needed'] ?? false) ? 'Yes' : 'No',
+                                                    style: TextStyle(
+                                                      color: (machine['repairs_needed'] ?? false)
+                                                          ? ThemeColor.red
+                                                          : ThemeColor.green,
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 12,
                                                     ),

@@ -53,7 +53,7 @@ class _HelpContentState extends State<HelpContent> {
       {
         'question': 'How do I register new machinery?',
         'answer':
-            'Navigate to Registration and select "Machinery Registration". Enter the machine name, select mobility (Yes for mobile, No for static), and set harvest status (Yes if machine can harvest, No if it cannot). Click Register to add the machine to your inventory.'
+            'Navigate to Registration and select "Machinery Registration". Enter the machine name, hour meter reading (0 for new machines), select mobility (Yes for mobile, No for static), and set harvest status (Yes if machine can harvest, No if it cannot). The "Repairs Needed" status is automatically managed when repair orders are created. Click Register to add the machine to your inventory.'
       },
     ],
     'Machine Management': [
@@ -103,6 +103,21 @@ class _HelpContentState extends State<HelpContent> {
         'question': 'How is yield per hectare calculated?',
         'answer':
             'Yield per hectare is automatically calculated by the system using the formula: Quantity Harvested (kg) ÷ Hectares. This metric helps evaluate production efficiency across different fields and farmers.'
+      },
+      {
+  'question': 'How do I assign machines for daily use?',
+  'answer':
+      'In Machine Management → Machines → Currently Used Machines, click "Assign Machine". Select an available machine (must be mobile and able to harvest), enter the rentee name, current hour meter reading, and optional notes. Only unassigned machines are available for selection.'
+      },
+      {
+        'question': 'How do I return an assigned machine?',
+        'answer':
+            'In Currently Used Machines, find the active assignment and click the return icon. Enter the final hour meter reading and any return notes. The machine\'s hour meter will be updated automatically and the machine becomes available for new assignments.'
+      },
+      {
+        'question': 'Which machines can be assigned for daily use?',
+        'answer':
+            'Only machines that have both "Is Mobile?" and "Can Harvest?" set to "Yes" can be assigned for daily use. Machines that are already assigned, need repairs, or are not mobile/harvestable are not available for assignment.'
       },
     ],
     'Forecasting': [

@@ -27,142 +27,126 @@ class RegisterBase extends StatelessWidget {
       ),
       endDrawer: const EndDrawer(),
       body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterUser(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              // Page Header
+              const Text(
+                "Registration",
+                style: TextStyle(
+                  color: ThemeColor.secondaryColor,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 40),
+
+              // Responsive card layout with size limits
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = constraints.maxWidth;
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
+
+                  // Fixed card dimensions with scaling
+                  double cardWidth = 450 * scaleFactor;
+                  double cardHeight = 450 * scaleFactor;
+                  double iconSize = 225 * scaleFactor;
+                  double fontSize = 24 * scaleFactor;
+                  double spacing = 40 * scaleFactor;
+
+                  // Clamp to reasonable limits
+                  cardWidth = cardWidth.clamp(350.0, 450.0);
+                  cardHeight = cardHeight.clamp(350.0, 450.0);
+                  iconSize = iconSize.clamp(180.0, 225.0);
+                  fontSize = fontSize.clamp(20.0, 24.0);
+                  spacing = spacing.clamp(30.0, 40.0);
+
+                  return Center( // Center the content
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      alignment: WrapAlignment.center,
                       children: [
-                        Icon(
-                          Icons.person_add,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                        Text(
+                        _buildRegistrationCard(
+                          context,
                           "Add New User",
-                          style: TextStyle(fontSize: 24),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterMachinery(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.agriculture,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
+                          Icons.person_add,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterUser())),
                         ),
-                        Text(
+                        _buildRegistrationCard(
+                          context,
                           "Add Machinery",
-                          style: TextStyle(fontSize: 24),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RegisterRice(),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 450,
-                    height: 450,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.white2,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2),
-                          spreadRadius: 3,
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.grass,
-                          weight: 200,
-                          size: 225,
-                          color: ThemeColor.secondaryColor,
+                          Icons.agriculture,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterMachinery())),
                         ),
-                        Text(
+                        _buildRegistrationCard(
+                          context,
                           "Add Rice Variety",
-                          style: TextStyle(fontSize: 24),
-                        )
+                          Icons.grass,
+                          cardWidth,
+                          cardHeight,
+                          iconSize,
+                          fontSize,
+                          () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterRice())),
+                        ),
                       ],
                     ),
-                  ),
-                ),
-              )
+                  );
+                },
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // Add this helper method with fixed dimensions
+  Widget _buildRegistrationCard(BuildContext context, String title, IconData icon,
+      double cardWidth, double cardHeight, double iconSize, double fontSize, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: cardWidth,
+        height: cardHeight,
+        decoration: BoxDecoration(
+          color: ThemeColor.white2,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 3,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: iconSize,
+              color: ThemeColor.secondaryColor,
+            ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w600,
+                color: ThemeColor.secondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -703,13 +687,14 @@ class RegisterMachinery extends StatefulWidget {
 }
 
 class _RegisterMachineryState extends State<RegisterMachinery> {
-  // Maintain existing state variables
-  String _mobility = "Yes"; // Changed from "Mobile" to "Yes"
-  String _status = "Yes"; // Changed from "Active" to "Yes"
+  // Remove the repairs needed state variable
+  String _mobility = "Yes";
+  String _status = "Yes";
 
-  // Add new functionality variables
+  // Keep other existing state variables
   final _formKey = GlobalKey<FormState>();
   final _machineNameController = TextEditingController();
+  final _hourMeterController = TextEditingController(text: '0');
   bool _isLoading = false;
   String _errorMessage = '';
   String _successMessage = '';
@@ -718,10 +703,11 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
   @override
   void dispose() {
     _machineNameController.dispose();
+    _hourMeterController.dispose();
     super.dispose();
   }
 
-  // Function to register machinery
+  // Update the _registerMachinery method
   Future<void> _registerMachinery() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -735,20 +721,23 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
 
     try {
       // Convert string values to booleans
-      final isMobile = _mobility == "Yes"; // Changed from "Mobile" to "Yes"
-      final canHarvest = _status == "Yes"; // Changed from isActive to canHarvest
+      final isMobile = _mobility == "Yes";
+      final canHarvest = _status == "Yes";
+      final hourMeter = int.parse(_hourMeterController.text);
 
-      // Prepare machinery data
+      // Prepare machinery data (repairs_needed defaults to false)
       final machineryData = {
         'machine_name': _machineNameController.text,
         'is_mobile': isMobile,
-        'can_harvest': canHarvest, // Changed variable name but keep same API field
+        'is_active': canHarvest,
+        'hour_meter': hourMeter,
+        'repairs_needed': false, // Always false for new machinery
       };
 
       // Call API to register machinery
       final result = await _apiService.createMachinery(machineryData);
 
-      if (result == null) {
+      if (result != null) {
         // Log the activity
         await UserActivityService().logActivity(
           'Add Machinery',
@@ -761,33 +750,25 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
         _isLoading = false;
         if (result != null) {
           _successMessage = 'Machinery registered successfully!';
-
-          UserActivityService().logActivity(
-            'Add Rice Variety',
-            'Added new rice variety: ${_machineNameController.text}',
-            target: 'Rice Management',
-          );
-
           _errorMessage = '';
           // Clear form
           _machineNameController.clear();
-          _mobility = "Yes"; // Changed from "Mobile" to "Yes"
-          _status = "Yes"; // Changed from "Active" to "Yes"
+          _hourMeterController.text = '0';
+          _mobility = "Yes";
+          _status = "Yes";
         } else {
           _errorMessage = 'Failed to register machinery';
           _successMessage = '';
         }
       });
-        // In the catch block of _registerMachinery:
     } catch (e) {
       setState(() {
         _isLoading = false;
-        // Handle specific duplicate error messages
         String errorMsg = e.toString();
         if (errorMsg.contains('already exists')) {
-          _errorMessage = errorMsg.replaceAll('Exception: ', '');
+          _errorMessage = 'A machine with this name already exists. Please choose a different name.';
         } else {
-          _errorMessage = 'Error: $e';
+          _errorMessage = 'Failed to register machinery: $errorMsg';
         }
         _successMessage = '';
       });
@@ -907,7 +888,47 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
+
+                  // Hour Meter field
+                  RichText(
+                    text: const TextSpan(
+                      text: 'Hour Meter',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: ThemeColor.secondaryColor,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: '*',
+                          style: TextStyle(
+                            color: ThemeColor.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ThemedTextFormField(
+                    controller: _hourMeterController,
+                    hintText: 'Enter hour meter reading (0 for new machines)',
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter hour meter reading';
+                      }
+                      if (int.tryParse(value) == null) {
+                        return 'Please enter a valid number';
+                      }
+                      if (int.parse(value) < 0) {
+                        return 'Hour meter cannot be negative';
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
 
                   // Mobility
                   const Text(
@@ -948,7 +969,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
                   // Status
                   const Text(
@@ -989,7 +1010,7 @@ class _RegisterMachineryState extends State<RegisterMachinery> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
 
                   // Register Button
                   Align(
