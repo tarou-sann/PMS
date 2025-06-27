@@ -175,24 +175,22 @@ class _ForecastingPageState extends State<ForecastingPage> {
     List<FlSpot> spots = [];
     
     if (_forecastData.isEmpty) {
-      print('No forecast data available'); // Debug log
+      print('No forecast data available');
       return spots;
     }
     
-    print('Forecast data: $_forecastData'); // Debug log
+    print('Forecast data: $_forecastData');
     
-    // Start forecast from the next month after the current month
-    double startMonth = DateTime.now().month.toDouble();
-    
+    // Create spots for seasonal forecasts
     for (int i = 0; i < _forecastData.length; i++) {
-      double xValue = startMonth + i + 1;
-      if (xValue > 12) xValue -= 12; // Wrap around to next year
+      // Position forecast seasons after historical data
+      // Use positions 13, 14, 15 to clearly separate from historical monthly data (1-12)
+      double xValue = 13.0 + i;
       
       double yValue = _forecastData[i]['predicted_yield']?.toDouble() ?? 0.0;
       
-      // Only add valid forecast points
       if (yValue > 0) {
-        print('Adding forecast spot: ($xValue, $yValue)'); // Debug log
+        print('Adding forecast spot: ($xValue, $yValue)');
         spots.add(FlSpot(xValue, yValue));
       }
     }
@@ -204,14 +202,14 @@ class _ForecastingPageState extends State<ForecastingPage> {
     List<FlSpot> spots = [];
     
     if (_historicalData.isEmpty) {
-      print('No historical data available'); // Debug log
+      print('No historical data available');
       return spots;
     }
     
-    print('Historical data count: ${_historicalData.length}'); // Debug log
+    print('Historical data count: ${_historicalData.length}');
     
-    // Group data by months and calculate average yield
-    Map<int, List<double>> monthlyYields = {};
+    // Group data by harvest seasons instead of months
+    Map<String, List<double>> seasonalYields = {};
     
     for (var record in _historicalData) {
       if (_selectedRiceVariety == 'All' || 
@@ -219,31 +217,75 @@ class _ForecastingPageState extends State<ForecastingPage> {
         
         try {
           DateTime harvestDate = DateTime.parse(record['harvest_date']);
-          int monthIndex = harvestDate.month;
+          String seasonKey = _getSeasonKey(harvestDate);
           double yield = record['yield_per_hectare']?.toDouble() ?? 0.0;
           
-          if (yield > 0) {  // Only include valid yields
-            if (!monthlyYields.containsKey(monthIndex)) {
-              monthlyYields[monthIndex] = [];
+          if (yield > 0) {
+            if (!seasonalYields.containsKey(seasonKey)) {
+              seasonalYields[seasonKey] = [];
             }
-            monthlyYields[monthIndex]!.add(yield);
+            seasonalYields[seasonKey]!.add(yield);
           }
         } catch (e) {
-          print('Error parsing date for record: $record'); // Debug log
+          print('Error parsing date for record: $record');
         }
       }
     }
     
-    // Calculate averages and create spots
-    monthlyYields.forEach((month, yields) {
-      double avgYield = yields.reduce((a, b) => a + b) / yields.length;
-      print('Historical spot: ($month, $avgYield)'); // Debug log
-      spots.add(FlSpot(month.toDouble(), avgYield));
-    });
+    // Convert seasonal data to chart spots
+    List<String> sortedSeasons = seasonalYields.keys.toList()..sort();
     
-    spots.sort((a, b) => a.x.compareTo(b.x));
-    print('Total historical spots: ${spots.length}'); // Debug log
+    for (int i = 0; i < sortedSeasons.length && i < 12; i++) {
+      String seasonKey = sortedSeasons[i];
+      List<double> yields = seasonalYields[seasonKey]!;
+      double avgYield = yields.reduce((a, b) => a + b) / yields.length;
+      
+      // Use positions 1-12 for historical data
+      double xValue = (i + 1).toDouble();
+      print('Historical seasonal spot: ($xValue, $avgYield) for $seasonKey');
+      spots.add(FlSpot(xValue, avgYield));
+    }
+    
     return spots;
+  }
+
+  String _getSeasonKey(DateTime date) {
+    int month = date.month;
+    int year = date.year;
+    
+    if (month >= 3 && month <= 5) {
+      return '$year-S1'; // First harvest season
+    } else if (month >= 6 && month <= 8) {
+      return '$year-S2'; // Second harvest season
+    } else if (month >= 9 && month <= 11) {
+      return '$year-S3'; // Third harvest season
+    } else {
+      // Dec-Feb belongs to next year's first season
+      if (month == 12) {
+        return '${year + 1}-S1';
+      } else {
+        return '$year-S1';
+      }
+    }
+  }
+
+  String _getSeasonDisplayName(DateTime date) {
+    int month = date.month;
+    int year = date.year;
+    
+    if (month >= 3 && month <= 5) {
+      return '$year S1';
+    } else if (month >= 6 && month <= 8) {
+      return '$year S2';
+    } else if (month >= 9 && month <= 11) {
+      return '$year S3';
+    } else {
+      if (month == 12) {
+        return '${year + 1} S1';
+      } else {
+        return '$year S1';
+      }
+    }
   }
 
   List<Map<String, dynamic>> _getTimePeriodsData() {
@@ -547,21 +589,62 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                         bottomTitles: AxisTitles(
                                           sideTitles: SideTitles(
                                             showTitles: true,
-                                            reservedSize: 30,
+                                            reservedSize: 50,
                                             interval: 1,
                                             getTitlesWidget: (double value, TitleMeta meta) {
-                                              const months = [
-                                                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                                                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-                                              ];
-                                              if (value.toInt() >= 1 && value.toInt() <= 12) {
-                                                return Text(
-                                                  months[value.toInt() - 1],
-                                                  style: const TextStyle(
-                                                    color: ThemeColor.grey,
-                                                    fontSize: 10,
-                                                  ),
-                                                );
+                                              // Historical seasons (1-12)
+                                              if (value >= 1 && value <= 12) {
+                                                int seasonIndex = (value - 1).toInt();
+                                                List<String> historicalLabels = [];
+                                                
+                                                // Generate labels from historical data
+                                                if (_historicalData.isNotEmpty) {
+                                                  Set<String> seasons = {};
+                                                  for (var record in _historicalData) {
+                                                    try {
+                                                      DateTime date = DateTime.parse(record['harvest_date']);
+                                                      String season = _getSeasonDisplayName(date);
+                                                      seasons.add(season);
+                                                    } catch (e) {
+                                                      // Skip invalid dates
+                                                    }
+                                                  }
+                                                  historicalLabels = seasons.toList()..sort();
+                                                }
+                                                
+                                                if (seasonIndex < historicalLabels.length) {
+                                                  return Padding(
+                                                    padding: const EdgeInsets.only(top: 8.0),
+                                                    child: Text(
+                                                      historicalLabels[seasonIndex],
+                                                      style: const TextStyle(
+                                                        color: ThemeColor.grey,
+                                                        fontSize: 9,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                              // Forecast seasons (13-15)
+                                              else if (value >= 13 && value <= 15) {
+                                                int forecastIndex = (value - 13).toInt();
+                                                if (forecastIndex < _forecastData.length) {
+                                                  String season = _forecastData[forecastIndex]['season'] ?? '';
+                                                  int year = _forecastData[forecastIndex]['year'] ?? DateTime.now().year;
+                                                  return Padding(
+                                                    padding: const EdgeInsets.only(top: 8.0),
+                                                    child: Text(
+                                                      '$year\n$season',
+                                                      style: const TextStyle(
+                                                        color: ThemeColor.green,
+                                                        fontSize: 9,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
+                                                  );
+                                                }
                                               }
                                               return const Text('');
                                             },

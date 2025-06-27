@@ -452,6 +452,7 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
           setState(() {
             _isLoading = false;
             _successMessage = 'Password reset successful! Redirecting to login...';
+            _errorMessage = ''; // Clear any previous errors
           });
 
           // Wait a moment and then navigate to login
@@ -471,7 +472,8 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Failed to reset password';
+            _errorMessage = 'Failed to reset password. Please try again.';
+            _successMessage = ''; // Clear success message
           });
         }
       }
@@ -479,7 +481,8 @@ class _PasswordResetFormState extends State<PasswordResetForm> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Error: $e';
+          _errorMessage = 'Error resetting password: $e';
+          _successMessage = ''; // Clear success message
         });
       }
     }

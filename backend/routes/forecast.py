@@ -29,10 +29,10 @@ def get_sarima_forecast():
             
         records = query.all()
         
-        print(f"Found {len(records)} production records for variety: {variety}") # Debug log
+        print(f"Found {len(records)} production records for variety: {variety}")
         
         if not records:
-            print("No records found, returning empty forecast") # Debug log
+            print("No records found, returning empty forecast")
             return jsonify({'forecast': []})
         
         # Convert to DataFrame and calculate yield properly
@@ -46,125 +46,177 @@ def get_sarima_forecast():
         # Remove records with zero yield
         df = df[df['yield'] > 0]
         
-        print(f"Valid yield records: {len(df)}") # Debug log
+        print(f"Valid yield records: {len(df)}")
         
         if len(df) == 0:
-            print("No valid yield records, returning empty forecast") # Debug log
+            print("No valid yield records, returning empty forecast")
             return jsonify({'forecast': []})
         
-        # Continue with existing aggregation logic...
         df['date'] = pd.to_datetime(df['date'])
         df = df.sort_values('date')
         
-        # Aggregate by month
-        df['year_month'] = df['date'].dt.to_period('M')
-        monthly_data = df.groupby('year_month').agg({
+        # Group by harvest seasons (2-3 times per year)
+        # Define harvest seasons: Mar-May (Season 1), Jun-Aug (Season 2), Sep-Nov (Season 3)
+        def get_harvest_season(date):
+            month = date.month
+            year = date.year
+            if 3 <= month <= 5:
+                return f"{year}-S1"  # First harvest season
+            elif 6 <= month <= 8:
+                return f"{year}-S2"  # Second harvest season
+            elif 9 <= month <= 11:
+                return f"{year}-S3"  # Third harvest season
+            else:
+                # Dec-Feb belongs to next year's first season
+                if month == 12:
+                    return f"{year+1}-S1"
+                else:
+                    return f"{year}-S1"
+        
+        df['harvest_season'] = df['date'].apply(get_harvest_season)
+        
+        # Aggregate by harvest season
+        seasonal_data = df.groupby('harvest_season').agg({
             'yield': 'mean',
             'quantity': 'sum'
         }).reset_index()
         
-        print(f"Monthly data points: {len(monthly_data)}") # Debug log
+        print(f"Seasonal data points: {len(seasonal_data)}")
         
-        if len(monthly_data) < 6:
-            # Improved simple forecast
-            forecast_data = []
-            
-            if not monthly_data.empty:
-                # Calculate trend from available data
-                recent_yields = monthly_data['yield'].tail(3).tolist()
-                if len(recent_yields) >= 2:
-                    # Linear trend calculation
-                    trend = (recent_yields[-1] - recent_yields[0]) / len(recent_yields)
-                    last_yield = recent_yields[-1]
-                else:
-                    trend = 0
-                    last_yield = recent_yields[0] if recent_yields else 500
-            else:
+        # Generate forecast for next 2-3 seasons (next year)
+        forecast_data = []
+        
+        if len(seasonal_data) < 3:
+            # Simple forecast based on available data
+            if not seasonal_data.empty:
+                avg_yield = seasonal_data['yield'].mean()
                 trend = 0
-                last_yield = 500
-            
-            for i in range(6):
-                # Apply trend with seasonal adjustment
-                seasonal_factor = 1 + 0.15 * np.sin(2 * np.pi * (i + datetime.now().month) / 12)
-                noise_factor = 1 + np.random.normal(0, 0.05)  # Add small random variation
                 
-                predicted_yield = (last_yield + trend * i) * seasonal_factor * noise_factor
-                predicted_yield = max(100, predicted_yield)  # Ensure minimum realistic yield
+                # Calculate simple trend if we have multiple seasons
+                if len(seasonal_data) >= 2:
+                    recent_yields = seasonal_data['yield'].tail(2).tolist()
+                    trend = (recent_yields[-1] - recent_yields[0]) / len(recent_yields)
+            else:
+                avg_yield = 500
+                trend = 0
+            
+            # Forecast next 3 seasons with seasonal adjustments
+            current_year = datetime.now().year
+            next_year = current_year + 1
+            
+            # Season multipliers based on typical rice harvest patterns
+            season_multipliers = {
+                'S1': 1.0,   # First harvest (main season)
+                'S2': 0.85,  # Second harvest (usually lower)
+                'S3': 0.9    # Third harvest (moderate)
+            }
+            
+            for i, season in enumerate(['S1', 'S2', 'S3']):
+                season_multiplier = season_multipliers[season]
+                predicted_yield = (avg_yield + trend * i) * season_multiplier
+                predicted_yield = max(100, predicted_yield)  # Minimum realistic yield
+                
+                # Add some natural variation
+                variation = np.random.normal(1, 0.1)
+                predicted_yield *= variation
                 
                 forecast_data.append({
-                    'period': i + 1,
+                    'period': f"{next_year}-{season}",
+                    'season': season,
+                    'year': next_year,
                     'predicted_yield': round(predicted_yield, 2),
-                    'confidence_lower': round(predicted_yield * 0.8, 2),
-                    'confidence_upper': round(predicted_yield * 1.2, 2),
+                    'confidence_lower': round(predicted_yield * 0.75, 2),
+                    'confidence_upper': round(predicted_yield * 1.25, 2),
                 })
             
-            print(f"Using simple forecast with {len(forecast_data)} periods") # Debug log
+            print(f"Using simple seasonal forecast with {len(forecast_data)} periods")
             return jsonify({'forecast': forecast_data})
         
-        # SARIMA forecasting for sufficient data
+        # SARIMA forecasting for sufficient seasonal data
         try:
-            # Prepare time series data
-            monthly_data['period'] = pd.to_datetime(monthly_data['year_month'].astype(str))
-            monthly_data = monthly_data.set_index('period')
-            ts_data = monthly_data['yield']
+            # Prepare seasonal time series data
+            seasonal_data = seasonal_data.sort_values('harvest_season')
             
-            # Fit SARIMA model
-            model = SARIMAX(ts_data, order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
+            # Convert harvest_season to proper datetime for SARIMA
+            seasonal_data['period_index'] = range(len(seasonal_data))
+            ts_data = seasonal_data.set_index('period_index')['yield']
+            
+            # Fit SARIMA model with seasonal period of 3 (for 3 seasons per year)
+            model = SARIMAX(ts_data, order=(1, 1, 1), seasonal_order=(1, 1, 1, 3))
             fitted_model = model.fit(disp=False)
             
-            # Generate forecast
-            forecast_steps = 6
+            # Generate forecast for next 3 seasons
+            forecast_steps = 3
             forecast_result = fitted_model.forecast(steps=forecast_steps)
             conf_int = fitted_model.get_forecast(steps=forecast_steps).conf_int()
             
             # Format forecast data
-            forecast_data = []
+            current_year = datetime.now().year
+            next_year = current_year + 1
+            seasons = ['S1', 'S2', 'S3']
+            
             for i in range(forecast_steps):
+                season = seasons[i]
                 forecast_data.append({
-                    'period': i + 1,
+                    'period': f"{next_year}-{season}",
+                    'season': season,
+                    'year': next_year,
                     'predicted_yield': round(float(forecast_result.iloc[i]), 2),
                     'confidence_lower': round(float(conf_int.iloc[i, 0]), 2),
                     'confidence_upper': round(float(conf_int.iloc[i, 1]), 2),
                 })
             
-            print(f"Using SARIMA forecast with {len(forecast_data)} periods") # Debug log
+            print(f"Using SARIMA seasonal forecast with {len(forecast_data)} periods")
             return jsonify({'forecast': forecast_data})
             
         except Exception as sarima_error:
-            print(f"SARIMA model failed, falling back to simple forecast: {sarima_error}")
+            print(f"SARIMA model failed, falling back to simple seasonal forecast: {sarima_error}")
             
-            # Fallback to simple forecast
-            forecast_data = []
-            last_yield = monthly_data['yield'].iloc[-1] if not monthly_data.empty else 500
+            # Fallback to improved simple forecast
+            last_yield = seasonal_data['yield'].iloc[-1] if not seasonal_data.empty else 500
             
-            for i in range(6):
-                seasonal_factor = 1 + 0.1 * np.sin(2 * np.pi * i / 12)
-                predicted_yield = last_yield * (1 + 0.02 * i) * seasonal_factor
+            current_year = datetime.now().year
+            next_year = current_year + 1
+            season_multipliers = {'S1': 1.0, 'S2': 0.85, 'S3': 0.9}
+            
+            for i, season in enumerate(['S1', 'S2', 'S3']):
+                season_multiplier = season_multipliers[season]
+                growth_factor = 1 + (0.02 * i)  # Small growth trend
+                predicted_yield = last_yield * growth_factor * season_multiplier
                 
                 forecast_data.append({
-                    'period': i + 1,
+                    'period': f"{next_year}-{season}",
+                    'season': season,
+                    'year': next_year,
                     'predicted_yield': round(predicted_yield, 2),
-                    'confidence_lower': round(predicted_yield * 0.85, 2),
-                    'confidence_upper': round(predicted_yield * 1.15, 2),
+                    'confidence_lower': round(predicted_yield * 0.8, 2),
+                    'confidence_upper': round(predicted_yield * 1.2, 2),
                 })
             
-            print(f"Using fallback simple forecast with {len(forecast_data)} periods") # Debug log
+            print(f"Using fallback seasonal forecast with {len(forecast_data)} periods")
             return jsonify({'forecast': forecast_data})
         
     except Exception as e:
-        print(f"Forecast error: {e}") # Debug log
+        print(f"Forecast error: {e}")
         
-        # Return a default forecast in case of any error
+        # Return a default seasonal forecast
+        current_year = datetime.now().year
+        next_year = current_year + 1
         default_forecast = []
-        for i in range(6):
+        base_yields = [600.0, 510.0, 540.0]  # Different yields for each season
+        
+        for i, season in enumerate(['S1', 'S2', 'S3']):
+            base_yield = base_yields[i]
             default_forecast.append({
-                'period': i + 1,
-                'predicted_yield': 500.0,  # Default yield
-                'confidence_lower': 425.0,
-                'confidence_upper': 575.0,
+                'period': f"{next_year}-{season}",
+                'season': season,
+                'year': next_year,
+                'predicted_yield': base_yield,
+                'confidence_lower': base_yield * 0.8,
+                'confidence_upper': base_yield * 1.2,
             })
         
-        print(f"Using default forecast due to error: {e}")
+        print(f"Using default seasonal forecast due to error: {e}")
         return jsonify({'forecast': default_forecast, 'error': str(e)})
     
 @forecast_bp.route('/forecast/current-summary', methods=['GET'])

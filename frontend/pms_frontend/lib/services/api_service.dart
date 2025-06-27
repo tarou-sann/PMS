@@ -482,17 +482,26 @@ class ApiService {
       }
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return jsonDecode(response.body);
+        // Successfully reset password - return true
+        return true;
       } else {
-        final errorBody = jsonDecode(response.body);
-        throw Exception(errorBody['message'] ?? 'Request failed');
+        // Handle error response
+        if (kDebugMode) {
+          try {
+            final errorData = jsonDecode(response.body);
+            print('Reset password error: ${errorData['message'] ?? 'Unknown error'}');
+          } catch (e) {
+            print('Could not parse error response: ${response.body}');
+          }
+        }
+        return false;
       }
       
     } catch (e) {
       if (kDebugMode) {
         print('Reset password error: $e');
       }
-      throw e;
+      return false;
     }
   }
 
