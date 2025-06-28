@@ -5,6 +5,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'currently_used_machines.dart';
 import '../services/api_service.dart';
 import '../theme/colors.dart';
 import '../widget/enddrawer.dart';
@@ -25,7 +26,7 @@ class _DashboardNavState extends State<DashboardNav> {
 
   // Add these new state variables for production data
   List<Map<String, dynamic>> _recentProduction = [];
-  Map<String, dynamic> _productionStats = {
+    Map<String, dynamic> _productionStats = {
     'totalRecords': 0,
     'totalProduction': 0.0,
     'totalHectares': 0.0,
@@ -33,12 +34,42 @@ class _DashboardNavState extends State<DashboardNav> {
     'thisMonthRecords': 0,
   };
   bool _isLoadingProduction = true;
+  
+  // Add recently used machines data
+List<Map<String, dynamic>> _recentlyUsedMachines = [];
+  bool _isLoadingRecentMachines = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUsername(); // Load username when widget initializes
-    _loadProductionData(); // Add this line
+    _loadUsername();
+    _loadProductionData();
+    _loadRecentlyUsedMachines(); // Add this line
+  }
+
+  // Add this new method to load recently used machines
+  Future<void> _loadRecentlyUsedMachines() async {
+    setState(() {
+      _isLoadingRecentMachines = true;
+    });
+
+    try {
+      final recentMachines = await _apiService.getRecentlyUsedMachines();
+      setState(() {
+        _isLoadingRecentMachines = false;
+        if (recentMachines != null) {
+          _recentlyUsedMachines = recentMachines;
+        } else {
+          _recentlyUsedMachines = [];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingRecentMachines = false;
+        _recentlyUsedMachines = [];
+      });
+      print('Error loading recently used machines: $e');
+    }
   }
 
   // Function to load the username from shared preferences
@@ -133,6 +164,14 @@ class _DashboardNavState extends State<DashboardNav> {
     }
   }
 
+  // Update refresh method
+  Future<void> _refreshDashboard() async {
+    await Future.wait([
+      _loadProductionData(),
+      _loadRecentlyUsedMachines(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,19 +182,19 @@ class _DashboardNavState extends State<DashboardNav> {
         child: Navbar(),
       ),
       endDrawer: const EndDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: FractionallySizedBox(
-                  widthFactor: 0.95,
-                  child: _buildDashboardContent(),
-                ),
-              ),
-            ],
+      body: RefreshIndicator(
+        onRefresh: _refreshDashboard,
+        color: ThemeColor.secondaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                // Dashboard content
+                _buildDashboardContent(),
+              ],
+            ),
           ),
         ),
       ),
@@ -164,31 +203,36 @@ class _DashboardNavState extends State<DashboardNav> {
 
   Widget _buildDashboardContent() {
     return LayoutBuilder(builder: (context, constraints) {
-      return SingleChildScrollView(
-        child: StaggeredGrid.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          children: [
-            // System Time panel
-            StaggeredGridTile.fit(
-              crossAxisCellCount: 1,
-              child: _buildTimePanel(),
+      // Use a simpler layout approach
+      return Column(
+        children: [
+          // Top row with Time and Production panels
+          SizedBox(
+            height: 300,
+            child: Row(
+              children: [
+                // System Time panel
+                Expanded(
+                  flex: 1,
+                  child: _buildTimePanel(),
+                ),
+                const SizedBox(width: 16),
+                // Production Overview panel
+                Expanded(
+                  flex: 1,
+                  child: _buildOverviewPanel(),
+                ),
+              ],
             ),
-
-            // Production Overview panel
-            StaggeredGridTile.fit(
-              crossAxisCellCount: 1,
-              child: _buildOverviewPanel(),
-            ),
-
-            // Recently Used Machines panel (spans full width)
-            StaggeredGridTile.fit(
-              crossAxisCellCount: 2,
-              child: _buildMachinesPanel(),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Bottom row with Recently Used Machines panel (full width)
+          SizedBox(
+            height: 400,
+            child: _buildMachinesPanel(),
+          ),
+        ],
       );
     });
   }
@@ -471,7 +515,6 @@ class _DashboardNavState extends State<DashboardNav> {
   }
 
   Widget _buildMachinesPanel() {
-    // For machines panel
     return Container(
       decoration: BoxDecoration(
         color: ThemeColor.white2,
@@ -486,35 +529,326 @@ class _DashboardNavState extends State<DashboardNav> {
         ],
       ),
       padding: const EdgeInsets.all(16),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Recently Used Machines',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: ThemeColor.secondaryColor,
-            ),
-          ),
-          SizedBox(height: 16),
-          SizedBox(
-            height: 200,
-            width: double.infinity,
-            // This would be replaced with actual machine data
-            child: Center(
-              child: Text(
-                'No recent machine usage data',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+          // Header with icon and refresh button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(
+                    Icons.history,
+                    color: ThemeColor.secondaryColor,
+                    size: 24,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Recently Used Machines',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: ThemeColor.secondaryColor,
+                    ),
+                  ),
+                ],
               ),
-            ),
+              IconButton(
+                onPressed: _loadRecentlyUsedMachines,
+                icon: const Icon(
+                  Icons.refresh,
+                  color: ThemeColor.secondaryColor,
+                  size: 18,
+                ),
+                tooltip: 'Refresh recent machines',
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+          const SizedBox(height: 16),
+          
+          // Content area
+          Expanded(
+            child: _isLoadingRecentMachines
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
+                    ),
+                  )
+                : _recentlyUsedMachines.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'No recently used machines',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Completed rentals will appear here',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          // Table header
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.secondaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    'Machine',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: ThemeColor.secondaryColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    'Rentee',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: ThemeColor.secondaryColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    'Hours Used',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: ThemeColor.secondaryColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 2,
+                                  child: Text(
+                                    'Returned',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: ThemeColor.secondaryColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          
+                          // Recently used machines list
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: _recentlyUsedMachines.length > 5 ? 5 : _recentlyUsedMachines.length,
+                              itemBuilder: (context, index) {
+                                final machine = _recentlyUsedMachines[index];
+                                
+                                // Parse end date for display
+                                String returnedDate = 'Unknown';
+                                if (machine['end_date'] != null) {
+                                  try {
+                                    final endDate = DateTime.parse(machine['end_date']);
+                                    final now = DateTime.now();
+                                    final difference = now.difference(endDate).inDays;
+                                    
+                                    if (difference == 0) {
+                                      returnedDate = 'Today';
+                                    } else if (difference == 1) {
+                                      returnedDate = 'Yesterday';
+                                    } else if (difference < 7) {
+                                      returnedDate = '${difference}d ago';
+                                    } else {
+                                      returnedDate = '${endDate.day}/${endDate.month}';
+                                    }
+                                  } catch (e) {
+                                    returnedDate = 'Unknown';
+                                  }
+                                }
+                                
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: ThemeColor.grey.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Machine Name
+                                      Expanded(
+                                        flex: 3,
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              _getMachineIcon(machine['machinery_type']),
+                                              color: ThemeColor.primaryColor,
+                                              size: 16,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                machine['machinery_name'] ?? 'Unknown',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  color: ThemeColor.primaryColor,
+                                                  fontSize: 11,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      // Rentee Name
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          machine['rentee_name'] ?? 'Unknown',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.black87,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      
+                                      // Hours Used
+                                      Expanded(
+                                        flex: 2,
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.schedule,
+                                              color: ThemeColor.green,
+                                              size: 14,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Expanded(
+                                              child: Text(
+                                                '${machine['hours_used'] ?? 0}h',
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: ThemeColor.green,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      // Returned Date
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          returnedDate,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey[600],
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          
+                          // Show "View All" link if there are more than 5 machines
+                          if (_recentlyUsedMachines.length > 5)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: GestureDetector(
+                                onTap: () {
+                                  // Navigate to Machine History page
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const CurrentlyUsedMachines(),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'View All ${_recentlyUsedMachines.length} Recent Uses',
+                                        style: const TextStyle(
+                                          color: ThemeColor.primaryColor,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: ThemeColor.primaryColor,
+                                        size: 12,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+            ),
+          ],
+        ),
+      );
+  }
+
+  // Helper method to get appropriate icon for machine type
+  IconData _getMachineIcon(String? machineType) {
+    switch (machineType?.toLowerCase()) {
+      case 'tractor':
+        return Icons.agriculture;
+      case 'harvester':
+        return Icons.grass;
+      case 'planter':
+        return Icons.eco;
+      case 'sprayer':
+        return Icons.opacity;
+      default:
+        return Icons.build;
+    }
   }
 }
 

@@ -207,8 +207,9 @@ class _ForecastingPageState extends State<ForecastingPage> {
     }
     
     print('Historical data count: ${_historicalData.length}');
+    print('Sample historical record: ${_historicalData.first}'); // Debug: check data structure
     
-    // Group data by harvest seasons instead of months
+    // Group data by harvest seasons and calculate averages
     Map<String, List<double>> seasonalYields = {};
     
     for (var record in _historicalData) {
@@ -218,7 +219,23 @@ class _ForecastingPageState extends State<ForecastingPage> {
         try {
           DateTime harvestDate = DateTime.parse(record['harvest_date']);
           String seasonKey = _getSeasonKey(harvestDate);
-          double yield = record['yield_per_hectare']?.toDouble() ?? 0.0;
+          
+          // Try different field names for yield
+          double yield = 0.0;
+          if (record['yield_per_hectare'] != null) {
+            yield = (record['yield_per_hectare'] as num).toDouble();
+          } else if (record['actual_yield_per_hectare'] != null) {
+            yield = (record['actual_yield_per_hectare'] as num).toDouble();
+          } else if (record['hectares'] != null && record['quantity_harvested'] != null) {
+            // Calculate yield if not directly available
+            final hectares = (record['hectares'] as num).toDouble();
+            final quantity = (record['quantity_harvested'] as num).toDouble();
+            if (hectares > 0) {
+              yield = quantity / hectares;
+            }
+          }
+          
+          print('Record yield: $yield for season: $seasonKey'); // Debug
           
           if (yield > 0) {
             if (!seasonalYields.containsKey(seasonKey)) {
@@ -227,25 +244,33 @@ class _ForecastingPageState extends State<ForecastingPage> {
             seasonalYields[seasonKey]!.add(yield);
           }
         } catch (e) {
-          print('Error parsing date for record: $record');
+          print('Error parsing date for record: $record, error: $e');
         }
       }
     }
     
-    // Convert seasonal data to chart spots
-    List<String> sortedSeasons = seasonalYields.keys.toList()..sort();
+    print('Seasonal yields data: $seasonalYields'); // Debug
     
-    for (int i = 0; i < sortedSeasons.length && i < 12; i++) {
+    // Sort seasons chronologically
+    List<String> sortedSeasons = seasonalYields.keys.toList()..sort();
+    print('Sorted seasons: $sortedSeasons'); // Debug
+    
+    // Create spots from seasonal averages (limit to last 12 seasons for better display)
+    int maxSeasons = 12;
+    int startIndex = sortedSeasons.length > maxSeasons ? sortedSeasons.length - maxSeasons : 0;
+    
+    for (int i = startIndex; i < sortedSeasons.length; i++) {
       String seasonKey = sortedSeasons[i];
       List<double> yields = seasonalYields[seasonKey]!;
       double avgYield = yields.reduce((a, b) => a + b) / yields.length;
       
       // Use positions 1-12 for historical data
-      double xValue = (i + 1).toDouble();
-      print('Historical seasonal spot: ($xValue, $avgYield) for $seasonKey');
+      double xValue = (i - startIndex + 1).toDouble();
+      print('Adding historical spot: ($xValue, $avgYield) for $seasonKey');
       spots.add(FlSpot(xValue, avgYield));
     }
     
+    print('Final historical spots: ${spots.length} spots created'); // Debug
     return spots;
   }
 
@@ -595,35 +620,68 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                               // Historical seasons (1-12)
                                               if (value >= 1 && value <= 12) {
                                                 int seasonIndex = (value - 1).toInt();
-                                                List<String> historicalLabels = [];
                                                 
                                                 // Generate labels from historical data
                                                 if (_historicalData.isNotEmpty) {
-                                                  Set<String> seasons = {};
+                                                  Map<String, List<double>> seasonalYields = {};
+                                                  
+                                                  // Group data to get season keys
                                                   for (var record in _historicalData) {
-                                                    try {
-                                                      DateTime date = DateTime.parse(record['harvest_date']);
-                                                      String season = _getSeasonDisplayName(date);
-                                                      seasons.add(season);
-                                                    } catch (e) {
-                                                      // Skip invalid dates
+                                                    if (_selectedRiceVariety == 'All' || 
+                                                        record['rice_variety_name'] == _selectedRiceVariety) {
+                                                      try {
+                                                        DateTime date = DateTime.parse(record['harvest_date']);
+                                                        String seasonKey = _getSeasonKey(date);
+                                                        
+                                                        // Calculate yield
+                                                        double yield = 0.0;
+                                                        if (record['yield_per_hectare'] != null) {
+                                                          yield = (record['yield_per_hectare'] as num).toDouble();
+                                                        } else if (record['actual_yield_per_hectare'] != null) {
+                                                          yield = (record['actual_yield_per_hectare'] as num).toDouble();
+                                                        } else if (record['hectares'] != null && record['quantity_harvested'] != null) {
+                                                          final hectares = (record['hectares'] as num).toDouble();
+                                                          final quantity = (record['quantity_harvested'] as num).toDouble();
+                                                          if (hectares > 0) {
+                                                            yield = quantity / hectares;
+                                                          }
+                                                        }
+                                                        
+                                                        if (yield > 0) {
+                                                          if (!seasonalYields.containsKey(seasonKey)) {
+                                                            seasonalYields[seasonKey] = [];
+                                                          }
+                                                          seasonalYields[seasonKey]!.add(yield);
+                                                        }
+                                                      } catch (e) {
+                                                        // Skip invalid dates
+                                                      }
                                                     }
                                                   }
-                                                  historicalLabels = seasons.toList()..sort();
-                                                }
-                                                
-                                                if (seasonIndex < historicalLabels.length) {
-                                                  return Padding(
-                                                    padding: const EdgeInsets.only(top: 8.0),
-                                                    child: Text(
-                                                      historicalLabels[seasonIndex],
-                                                      style: const TextStyle(
-                                                        color: ThemeColor.grey,
-                                                        fontSize: 9,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  );
+                                                  
+                                                  List<String> sortedSeasons = seasonalYields.keys.toList()..sort();
+                                                  int maxSeasons = 12;
+                                                  int startIndex = sortedSeasons.length > maxSeasons ? sortedSeasons.length - maxSeasons : 0;
+                                                  
+                                                  int adjustedIndex = seasonIndex + startIndex;
+                                                  if (adjustedIndex < sortedSeasons.length) {
+                                                    String seasonKey = sortedSeasons[adjustedIndex];
+                                                    // Convert season key to display format
+                                                    List<String> parts = seasonKey.split('-');
+                                                    if (parts.length == 2) {
+                                                      return Padding(
+                                                        padding: const EdgeInsets.only(top: 8.0),
+                                                        child: Text(
+                                                          '${parts[0]}\n${parts[1]}',
+                                                          style: const TextStyle(
+                                                            color: ThemeColor.grey,
+                                                            fontSize: 9,
+                                                          ),
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                      );
+                                                    }
+                                                  }
                                                 }
                                               }
                                               // Forecast seasons (13-15)

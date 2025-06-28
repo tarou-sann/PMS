@@ -106,7 +106,7 @@ class ApiService {
       return null;
     }
   }
-
+  
   // Clear stored data on logout
   Future<void> clearStoredData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -1312,14 +1312,28 @@ Future<List<Map<String, dynamic>>?> getActiveAssignments() async {
 
 Future<List<Map<String, dynamic>>?> getAvailableMachinery() async {
   try {
+    if (kDebugMode) {
+      print('Fetching available machinery...');
+    }
+    
     final result = await get('/machinery/available');
-    final List<dynamic> machineryData = result['machinery'];
-    return machineryData.map((machinery) => machinery as Map<String, dynamic>).toList();
+    
+    if (kDebugMode) {
+      print('Available machinery response: $result');
+    }
+    
+    if (result != null && result['machinery'] != null) {
+      final List<dynamic> machineryData = result['machinery'];
+      return machineryData.map((machinery) => machinery as Map<String, dynamic>).toList();
+    }
+    
+    // If no machinery key or null result, return empty list instead of null
+    return [];
   } catch (e) {
     if (kDebugMode) {
       print('Get available machinery error: $e');
     }
-    return null;
+    return [];
   }
 }
 
@@ -1390,4 +1404,31 @@ Future<bool> deleteAssignment(int assignmentId) async {
     return false;
   }
 }
+
+// Get recently used machines (completed assignments from last 30 days)
+  Future<List<Map<String, dynamic>>?> getRecentlyUsedMachines() async {
+    try {
+      if (kDebugMode) {
+        print('Fetching recently used machines...');
+      }
+      
+      final result = await get('/assignments/recent');
+      
+      if (kDebugMode) {
+        print('Recently used machines response: $result');
+      }
+      
+      if (result != null && result['assignments'] != null) {
+        final List<dynamic> assignmentsData = result['assignments'];
+        return assignmentsData.map((assignment) => assignment as Map<String, dynamic>).toList();
+      }
+      
+      return [];
+    } catch (e) {
+      if (kDebugMode) {
+        print('Get recently used machines error: $e');
+      }
+      return [];
+    }
+  }
 }

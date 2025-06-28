@@ -7,7 +7,8 @@ from routes import api, init_routes
 from config import Config
 from routes.restore import restore_api
 from routes.forecast import forecast_bp
-from routes.machine_assignments import api as assignments_api
+# from routes.machine_assignments import api as assignments_api
+from routes import auth, users, rice, production, machinery, repair, forecast, machine_assignments
 import os
 import argparse
 from datetime import timedelta
@@ -63,7 +64,14 @@ init_routes(app)
 
 app.register_blueprint(restore_api, url_prefix='/api')
 app.register_blueprint(forecast_bp, url_prefix='/api')
-app.register_blueprint(assignments_api, url_prefix='/api')
+# app.register_blueprint(auth.api)
+# app.register_blueprint(users.api)
+# app.register_blueprint(rice.api)
+# app.register_blueprint(production.api)
+# app.register_blueprint(machinery.api)
+# app.register_blueprint(repair.api)
+# app.register_blueprint(forecast.api)
+# app.register_blueprint(machine_assignments.api)  # Make sure this is included
 
 # Initialize database
 @app.before_first_request

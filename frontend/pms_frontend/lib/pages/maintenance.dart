@@ -210,7 +210,7 @@ class _EditMachineryState extends State<EditMachinery> {
     final hourMeterController = TextEditingController(text: '${machine['hour_meter'] ?? 0}');
     String mobility = machine['is_mobile'] ? 'Yes' : 'No';
     String status = machine['is_active'] ? 'Yes' : 'No';
-    String repairsNeeded = (machine['repairs_needed'] ?? false) ? 'Yes' : 'No';
+    // String repairsNeeded = (machine['repairs_needed'] ?? false) ? 'Yes' : 'No';
     bool isLoading = false;
     String errorMessage = '';
 
@@ -365,43 +365,43 @@ class _EditMachineryState extends State<EditMachinery> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Repairs Needed field
-                      const Text(
-                        'Repairs Needed',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Radio<String>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: 'Yes',
-                            groupValue: repairsNeeded,
-                            onChanged: (value) {
-                              setState(() {
-                                repairsNeeded = value!;
-                              });
-                            },
-                          ),
-                          const Text('Yes'),
-                          const SizedBox(width: 20),
-                          Radio<String>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: 'No',
-                            groupValue: repairsNeeded,
-                            onChanged: (value) {
-                              setState(() {
-                                repairsNeeded = value!;
-                              });
-                            },
-                          ),
-                          const Text('No'),
-                        ],
-                      ),
+                      // // Repairs Needed field
+                      // const Text(
+                      //   'Repairs Needed',
+                      //   style: TextStyle(
+                      //     fontSize: 16,
+                      //     fontWeight: FontWeight.w500,
+                      //     color: ThemeColor.secondaryColor,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 8),
+                      // Row(
+                      //   children: [
+                      //     Radio<String>(
+                      //       activeColor: ThemeColor.secondaryColor,
+                      //       value: 'Yes',
+                      //       groupValue: repairsNeeded,
+                      //       onChanged: (value) {
+                      //         setState(() {
+                      //           repairsNeeded = value!;
+                      //         });
+                      //       },
+                      //     ),
+                      //     const Text('Yes'),
+                      //     const SizedBox(width: 20),
+                      //     Radio<String>(
+                      //       activeColor: ThemeColor.secondaryColor,
+                      //       value: 'No',
+                      //       groupValue: repairsNeeded,
+                      //       onChanged: (value) {
+                      //         setState(() {
+                      //           repairsNeeded = value!;
+                      //         });
+                      //       },
+                      //     ),
+                      //     const Text('No'),
+                      //   ],
+                      // ),
                     ],
                   ),
                 ),
@@ -432,7 +432,7 @@ class _EditMachineryState extends State<EditMachinery> {
                           try {
                             final isMobile = mobility == 'Yes';
                             final isActive = status == 'Yes';
-                            final needsRepairs = repairsNeeded == 'Yes';
+                            // final needsRepairs = repairsNeeded == 'Yes';
                             final hourMeter = int.parse(hourMeterController.text);
 
                             // Prepare update data
@@ -441,7 +441,7 @@ class _EditMachineryState extends State<EditMachinery> {
                               'is_mobile': isMobile,
                               'is_active': isActive,
                               'hour_meter': hourMeter,
-                              'repairs_needed': needsRepairs,
+                              // 'repairs_needed': needsRepairs,
                             };
 
                             // Call API to update machinery
@@ -1035,6 +1035,9 @@ class _EditRiceState extends State<EditRice> {
   Future<void> _showEditRiceDialog(BuildContext context, Map<String, dynamic> rice) async {
     final formKey = GlobalKey<FormState>();
     final varietyNameController = TextEditingController(text: rice['variety_name']);
+    final expectedYieldController = TextEditingController(
+      text: rice['expected_yield_per_hectare']?.toString() ?? ''
+    );
     String qualityGrade = rice['quality_grade'] ?? 'Shatter';
     bool isLoading = false;
     String errorMessage = '';
@@ -1083,7 +1086,7 @@ class _EditRiceState extends State<EditRice> {
                       controller: varietyNameController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: "Enter variety name",
+                        hintText: 'Enter variety name',
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -1110,14 +1113,57 @@ class _EditRiceState extends State<EditRice> {
                         border: OutlineInputBorder(),
                       ),
                       items: const [
-                        DropdownMenuItem(value: "Shatter", child: Text("Shatter")),
-                        DropdownMenuItem(value: "Non-Shattering", child: Text("Non-Shattering")),
+                        DropdownMenuItem(value: 'Shatter', child: Text('Shatter')),
+                        DropdownMenuItem(value: 'Non-Shattering', child: Text('Non-Shattering')),
                       ],
                       onChanged: (value) {
-                        if (value != null) {
-                          qualityGrade = value;
-                        }
+                        qualityGrade = value!;
                       },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Expected Yield Per Hectare
+                    const Text(
+                      'Baseline Expected Yield per Hectare (kg/ha)',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: ThemeColor.secondaryColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: expectedYieldController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter typical expected yield for this variety',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          final yield = double.tryParse(value);
+                          if (yield == null || yield <= 0) {
+                            return 'Expected yield must be a valid number greater than 0';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'This baseline yield helps predict harvest amounts when farmers plant this variety',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.blue.shade700,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -1146,14 +1192,19 @@ class _EditRiceState extends State<EditRice> {
                           });
 
                           try {
-                            // Prepare update data - removed dates
-                            final riceData = {
+                            final updateData = <String, dynamic>{
                               'variety_name': varietyNameController.text,
                               'quality_grade': qualityGrade,
                             };
 
-                            // Call API to update rice variety
-                            final result = await _apiService.updateRiceVariety(rice['id'], riceData);
+                            // Add expected yield if provided
+                            if (expectedYieldController.text.isNotEmpty) {
+                              updateData['expected_yield_per_hectare'] = double.parse(expectedYieldController.text);
+                            } else {
+                              updateData['expected_yield_per_hectare'] = null;
+                            }
+
+                            final result = await _apiService.updateRiceVariety(rice['id'], updateData);
 
                             if (result != null) {
                               await UserActivityService().logActivity(
@@ -1161,7 +1212,6 @@ class _EditRiceState extends State<EditRice> {
                                 'Updated rice variety: ${varietyNameController.text}',
                                 target: 'Rice Management',
                               );
-                              // Close the dialog and reload the rice varieties list
                               Navigator.of(dialogContext).pop();
                               _loadRiceVarieties();
                               _successMessage = 'Rice variety updated successfully';
@@ -1600,6 +1650,8 @@ class _EditUsersState extends State<EditUsers> {
     final formKey = GlobalKey<FormState>();
     final usernameController = TextEditingController(text: user['username']);
     final securityAnswerController = TextEditingController();
+    final passwordController = TextEditingController(); // Add password controller
+    final confirmPasswordController = TextEditingController(); // Add confirm password controller
     String securityQuestion = user['security_question'] ?? 'What is your favorite color?';
     bool isAdmin = user['is_admin'] ?? false;
     bool isLoading = false;
@@ -1636,13 +1688,13 @@ class _EditUsersState extends State<EditUsers> {
                           ),
                         ),
 
-                      // Username (read-only)
+                      // Username field (read-only)
                       const Text(
                         'Username',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                          color: ThemeColor.primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1651,19 +1703,76 @@ class _EditUsersState extends State<EditUsers> {
                         enabled: false,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          filled: true,
                           fillColor: Colors.grey,
+                          filled: true,
                         ),
                       ),
                       const SizedBox(height: 16),
 
-                      // Security Question
+                      // New Password field
+                      const Text(
+                        'New Password (optional)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Leave blank to keep current password',
+                        ),
+                        validator: (value) {
+                          if (value != null && value.isNotEmpty && value.length < 8) {
+                            return 'Password must be at least 8 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Confirm Password field
+                      const Text(
+                        'Confirm New Password',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: confirmPasswordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Confirm new password',
+                        ),
+                        validator: (value) {
+                          if (passwordController.text.isNotEmpty) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm the new password';
+                            }
+                            if (value != passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Security Question dropdown
                       const Text(
                         'Security Question',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                          color: ThemeColor.primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1672,28 +1781,33 @@ class _EditUsersState extends State<EditUsers> {
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: "What is your favorite color?", child: Text("What is your favorite color?")),
-                          DropdownMenuItem(value: "What is your mother's maiden name?", child: Text("What is your mother's maiden name?")),
-                          DropdownMenuItem(value: "What was your first pet's name?", child: Text("What was your first pet's name?")),
-                          DropdownMenuItem(value: "What city were you born in?", child: Text("What city were you born in?")),
-                          DropdownMenuItem(value: "What is your favorite food?", child: Text("What is your favorite food?")),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            securityQuestion = value;
-                          }
+                        items: [
+                          'What is your favorite color?',
+                          'What is your mother\'s maiden name?',
+                          'What was your first pet\'s name?',
+                          'What city were you born in?',
+                          'What is your favorite food?'
+                        ].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            securityQuestion = newValue!;
+                          });
                         },
                       ),
                       const SizedBox(height: 16),
 
-                      // Security Answer
+                      // Security Answer field
                       const Text(
-                        'New Security Answer (optional)',
+                        'Security Answer (optional)',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                          color: ThemeColor.primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1701,46 +1815,29 @@ class _EditUsersState extends State<EditUsers> {
                         controller: securityAnswerController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
-                          hintText: "Leave empty to keep current answer",
+                          hintText: 'Leave blank to keep current answer',
                         ),
                       ),
                       const SizedBox(height: 16),
 
-                      // Admin Status
-                      const Text(
-                        'Admin Privileges',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                      // Admin Status checkbox
                       Row(
                         children: [
-                          Radio<bool>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: true,
-                            groupValue: isAdmin,
-                            onChanged: (value) {
+                          Checkbox(
+                            value: isAdmin,
+                            onChanged: (bool? value) {
                               setState(() {
-                                isAdmin = value!;
+                                isAdmin = value ?? false;
                               });
                             },
                           ),
-                          const Text('Yes'),
-                          const SizedBox(width: 20),
-                          Radio<bool>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: false,
-                            groupValue: isAdmin,
-                            onChanged: (value) {
-                              setState(() {
-                                isAdmin = value!;
-                              });
-                            },
+                          const Text(
+                            'Administrator privileges',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: ThemeColor.primaryColor,
+                            ),
                           ),
-                          const Text('No'),
                         ],
                       ),
                     ],
@@ -1777,6 +1874,11 @@ class _EditUsersState extends State<EditUsers> {
                               'is_admin': isAdmin,
                             };
 
+                            // Only include password if provided
+                            if (passwordController.text.isNotEmpty) {
+                              userData['password'] = passwordController.text;
+                            }
+
                             // Only include security answer if provided
                             if (securityAnswerController.text.isNotEmpty) {
                               userData['security_answer'] = securityAnswerController.text;
@@ -1788,13 +1890,13 @@ class _EditUsersState extends State<EditUsers> {
                             if (result != null) {
                               await UserActivityService().logActivity(
                                 'Edit User',
-                                'Updated user: ${user['username']}',
+                                'Updated user: ${user['username']} ${passwordController.text.isNotEmpty ? '(password changed)' : ''}',
                                 target: 'User Management',
                               );
                               // Close the dialog and reload the users list
                               Navigator.of(dialogContext).pop();
                               _loadUsers();
-                              _successMessage = 'User updated successfully';
+                              _successMessage = 'User updated successfully${passwordController.text.isNotEmpty ? ' (password changed)' : ''}';
                             } else {
                               setState(() {
                                 isLoading = false;

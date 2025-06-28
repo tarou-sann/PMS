@@ -1066,6 +1066,7 @@ class _RegisterRiceState extends State<RegisterRice> {
   // final TextEditingController _productionDateController = TextEditingController();
   // final TextEditingController _expirationDateController = TextEditingController();
   String _qualityGrade = "Shatter";
+  final TextEditingController _expectedYieldController = TextEditingController();
 
   bool _isLoading = false;
   String _errorMessage = '';
@@ -1076,6 +1077,7 @@ class _RegisterRiceState extends State<RegisterRice> {
     _varietyNameController.dispose();
     // _productionDateController.dispose();
     // _expirationDateController.dispose();
+    _expectedYieldController.dispose();
     super.dispose();
   }
 
@@ -1132,6 +1134,7 @@ class _RegisterRiceState extends State<RegisterRice> {
         'quality_grade': _qualityGrade,
         // 'production_date': _productionDateController.text,
         // 'expiration_date': _expirationDateController.text,
+        'expected_yield': int.tryParse(_expectedYieldController.text) ?? 0,
       };
 
       // Call API to create rice variety
@@ -1162,6 +1165,7 @@ class _RegisterRiceState extends State<RegisterRice> {
           // _productionDateController.clear();
           // _expirationDateController.clear();
           _qualityGrade = "Shatter";
+          _expectedYieldController.clear();
         } else {
           _errorMessage = 'Failed to register rice variety';
         }
@@ -1348,6 +1352,47 @@ class _RegisterRiceState extends State<RegisterRice> {
                   ),
                   const SizedBox(height: 30),
 
+                  // Expected Yield Per Hectare - UPDATE THIS SECTION
+                  const Text(
+                    'Expected Yield per Hectare (kg/ha)',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: ThemeColor.secondaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ThemedTextFormField(
+                    controller: _expectedYieldController,
+                    hintText: 'Enter baseline expected yield for this variety',
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.blue, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'This is the typical expected yield for this rice variety. It will be used to predict total harvest amounts when farmers plant this variety.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
                   // // Production Date
                   // const Text(
                   //   'Production Date',
@@ -1420,3 +1465,4 @@ class _RegisterRiceState extends State<RegisterRice> {
     );
   }
 }
+

@@ -15,7 +15,7 @@ def create_rice_variety():
     """
     data = request.get_json()
     
-    # Validate required fields - removed production_date and expiration_date
+    # Validate required fields
     required_fields = ['variety_name', 'quality_grade']
     for field in required_fields:
         if not data.get(field):
@@ -25,6 +25,7 @@ def create_rice_variety():
         # Handle optional dates
         production_date = None
         expiration_date = None
+        expected_yield = None
         
         if data.get('production_date'):
             try:
@@ -37,6 +38,15 @@ def create_rice_variety():
                 expiration_date = datetime.strptime(data['expiration_date'], '%Y-%m-%d').date()
             except ValueError:
                 return jsonify({'message': 'Invalid expiration date format. Use YYYY-MM-DD'}), 400
+        
+        # Handle expected yield per hectare
+        if data.get('expected_yield_per_hectare'):
+            try:
+                expected_yield = float(data['expected_yield_per_hectare'])
+                if expected_yield <= 0:
+                    return jsonify({'message': 'Expected yield per hectare must be greater than 0'}), 400
+            except (ValueError, TypeError):
+                return jsonify({'message': 'Invalid expected yield per hectare. Must be a number'}), 400
         
         # Validate expiration date is after production date (only if both are provided)
         if production_date and expiration_date and expiration_date <= production_date:
@@ -52,6 +62,7 @@ def create_rice_variety():
         rice_variety = RiceVariety(
             variety_name=data['variety_name'],
             quality_grade=data['quality_grade'],
+            expected_yield_per_hectare=expected_yield,
             production_date=production_date,
             expiration_date=expiration_date
         )
@@ -115,6 +126,19 @@ def update_rice_variety(rice_id):
         if data.get('quality_grade'):
             rice_variety.quality_grade = data['quality_grade']
         
+        # Handle expected yield per hectare
+        if 'expected_yield_per_hectare' in data:
+            if data['expected_yield_per_hectare']:
+                try:
+                    expected_yield = float(data['expected_yield_per_hectare'])
+                    if expected_yield <= 0:
+                        return jsonify({'message': 'Expected yield per hectare must be greater than 0'}), 400
+                    rice_variety.expected_yield_per_hectare = expected_yield
+                except (ValueError, TypeError):
+                    return jsonify({'message': 'Invalid expected yield per hectare. Must be a number'}), 400
+            else:
+                rice_variety.expected_yield_per_hectare = None
+        
         # Parse and update dates if provided
         if 'production_date' in data:
             if data['production_date']:
@@ -149,7 +173,6 @@ def update_rice_variety(rice_id):
     except Exception as e:
         db_session.rollback()
         return jsonify({'message': f'Error updating rice variety: {str(e)}'}), 500
-
 @api.route('/rice/<int:rice_id>', methods=['DELETE'])
 @jwt_required()
 @admin_required

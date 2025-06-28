@@ -125,18 +125,21 @@ def update_user(user_id):
     data = request.get_json()
     
     try:
-        # Update user fields
-        # if data.get('email'):
-        #     user.email = data['email']
-        
+        # Update security question
         if data.get('security_question'):
             user.security_question = data['security_question']
         
+        # Update security answer
         if data.get('security_answer'):
             user.set_security_answer(data['security_answer'])
         
+        # Update password
         if data.get('password'):
-            user.set_password(data['password'])
+            # Validate password strength
+            password = data['password']
+            if len(password) < 8:
+                return jsonify({'message': 'Password must be at least 8 characters long'}), 400
+            user.set_password(password)
         
         # Only admins can update admin status
         if current_user.is_admin and 'is_admin' in data:
@@ -148,10 +151,6 @@ def update_user(user_id):
             'message': 'User updated successfully',
             'user': user.to_dict()
         }), 200
-    
-    except IntegrityError:
-        db_session.rollback()
-        return jsonify({'message': 'Email already exists'}), 409
     
     except Exception as e:
         db_session.rollback()

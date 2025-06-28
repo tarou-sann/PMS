@@ -68,26 +68,67 @@ class _CurrentlyUsedMachinesState extends State<CurrentlyUsedMachines> {
     });
 
     try {
+      print('Loading available machinery...');  // Debug log
       final machinery = await _apiService.getAvailableMachinery();
+      
+      print('Available machinery result: $machinery');  // Debug log
+      
       setState(() {
         _isLoadingMachinery = false;
         if (machinery != null) {
           _availableMachinery = machinery;
+          print('Loaded ${_availableMachinery.length} available machines');
+          
+          // Clear any previous error if successful
+          if (_errorMessage.contains('Failed to load available machinery')) {
+            _errorMessage = '';
+          }
+        } else {
+          _availableMachinery = [];
+          print('No available machinery returned (null response)');
+          // Don't set error message for empty list, as it might be legitimate
         }
       });
     } catch (e) {
+      print('Error loading available machinery: $e');  // Debug log
       setState(() {
         _isLoadingMachinery = false;
+        _availableMachinery = [];
+        
+        // Only show error if it's a real connection/server error
+        if (e.toString().contains('Failed host lookup') || 
+            e.toString().contains('Connection refused') ||
+            e.toString().contains('SocketException')) {
+          _errorMessage = 'Connection error: Please check your network connection.';
+        } else {
+          _errorMessage = 'Failed to load available machinery. Please try refreshing.';
+        }
       });
     }
   }
 
   Future<void> _showAssignMachineDialog() async {
+    // Refresh available machinery before showing dialog
+    await _loadAvailableMachinery();
+    
     if (_availableMachinery.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No available machines for assignment. Only mobile machines that can harvest are eligible.'),
+        SnackBar(
+          content: const Text(
+            'No machines available for assignment.\n'
+            '• Machines must be mobile and active\n'
+            '• Machines cannot need repairs\n'
+            '• Machines cannot be currently assigned',
+          ),
           backgroundColor: ThemeColor.red,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Refresh',
+            textColor: ThemeColor.white,
+            onPressed: () {
+              _loadData(); // Refresh all data
+            },
+          ),
         ),
       );
       return;
@@ -567,24 +608,48 @@ class _CurrentlyUsedMachinesState extends State<CurrentlyUsedMachines> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ElevatedButton.icon(
-                  onPressed: _showAssignMachineDialog,
-                  icon: const Icon(Icons.add, color: ThemeColor.white),
-                  label: const Text(
-                    'Assign Machine',
-                    style: TextStyle(color: ThemeColor.white),
+                  onPressed: _isLoadingMachinery ? null : _showAssignMachineDialog,
+                  icon: _isLoadingMachinery 
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.white),
+                          ),
+                        )
+                      : const Icon(Icons.add, color: ThemeColor.white),
+                  label: Text(
+                    _isLoadingMachinery ? 'Loading...' : 'Assign Machine',
+                    style: const TextStyle(color: ThemeColor.white),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ThemeColor.secondaryColor,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
-                IconButton(
-                  onPressed: _loadData,
-                  icon: const Icon(
-                    Icons.refresh,
-                    color: ThemeColor.secondaryColor,
-                  ),
-                  tooltip: 'Refresh data',
+                Row(
+                  children: [
+                    if (_isLoadingMachinery)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Text(
+                          'Loading machinery...',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: ThemeColor.grey,
+                          ),
+                        ),
+                      ),
+                    IconButton(
+                      onPressed: _loadData,
+                      icon: const Icon(
+                        Icons.refresh,
+                        color: ThemeColor.secondaryColor,
+                      ),
+                      tooltip: 'Refresh all data',
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -175,6 +175,16 @@ class _HelpContentState extends State<HelpContent> {
         'answer':
             'If you encounter errors, try refreshing the page first. For persistent issues, check your internet connection and try again. Contact your system administrator if problems continue, providing details about the error message and what you were doing when it occurred.'
       },
+      {
+        'question': 'How do I change my security settings?',
+        'answer':
+            'Administrators can update user security settings through the Maintenance > Edit Users section. You can change security questions, security answers, and passwords. When editing a user, fill in the new password fields only if you want to change the password - leave them blank to keep the current password. All password changes require confirmation and must be at least 8 characters long.'
+      },
+      {
+        'question': 'How do I change a user\'s password?',
+        'answer':
+            'To change a user\'s password: 1) Go to Maintenance > Edit Users, 2) Click the edit icon next to the user, 3) Enter a new password in the "New Password" field, 4) Confirm the password in the "Confirm New Password" field, 5) Click Update. Leave the password fields blank if you don\'t want to change the password. The new password must be at least 8 characters long.'
+      },
     ],
     'Password & Security': [
       {
