@@ -415,18 +415,18 @@ class _EndDrawerState extends State<EndDrawer> {
                     );
                   },
                 ),
-                _buildMenuTile(
-                  icon: Symbols.trending_up,
-                  title: 'Forecasting',
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ForecastingPage(),
-                      ),
-                    );
-                  },
-                ),
+                // _buildMenuTile(
+                //   icon: Symbols.trending_up,
+                //   title: 'Forecasting',
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => const ForecastingPage(),
+                //       ),
+                //     );
+                //   },
+                // ),
                 _buildMenuTile(
                   icon: Symbols.search,
                   title: 'Search',

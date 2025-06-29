@@ -1082,23 +1082,23 @@ class _RegisterRiceState extends State<RegisterRice> {
   }
 
   // Date picker method
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    final DateTime? picked = await CalendarTheme.showCustomDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-      helpText: 'Select Date',
-    );
+  // Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
+  //   final DateTime? picked = await CalendarTheme.showCustomDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2020),
+  //     lastDate: DateTime(2030),
+  //     helpText: 'Select Date',
+  //   );
 
-    if (picked != null) {
-      setState(() {
-        // Format date as YYYY-MM-DD for API compatibility
-        controller.text =
-            "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-      });
-    }
-  }
+  //   if (picked != null) {
+  //     setState(() {
+  //       // Format date as YYYY-MM-DD for API compatibility
+  //       controller.text =
+  //           "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+  //     });
+  //   }
+  // }
 
   // Method to register rice variety
   Future<void> _registerRiceVariety() async {
@@ -1132,9 +1132,9 @@ class _RegisterRiceState extends State<RegisterRice> {
       final riceData = {
         'variety_name': _varietyNameController.text,
         'quality_grade': _qualityGrade,
-        // 'production_date': _productionDateController.text,
-        // 'expiration_date': _expirationDateController.text,
-        'expected_yield': int.tryParse(_expectedYieldController.text) ?? 0,
+        'expected_yield_per_hectare': _expectedYieldController.text.isNotEmpty 
+          ? double.tryParse(_expectedYieldController.text) 
+          : null,
       };
 
       // Call API to create rice variety
@@ -1162,8 +1162,7 @@ class _RegisterRiceState extends State<RegisterRice> {
 
           // Clear form after successful submission
           _varietyNameController.clear();
-          // _productionDateController.clear();
-          // _expirationDateController.clear();
+      
           _qualityGrade = "Shatter";
           _expectedYieldController.clear();
         } else {
@@ -1191,10 +1190,6 @@ class _RegisterRiceState extends State<RegisterRice> {
       fontSize: 18,
       fontWeight: FontWeight.w400,
       color: ThemeColor.secondaryColor,
-    );
-    const TextStyle listTileTextStyle = TextStyle(
-      fontSize: 20,
-      color: ThemeColor.primaryColor,
     );
 
     return Scaffold(

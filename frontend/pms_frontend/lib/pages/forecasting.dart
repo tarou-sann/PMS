@@ -19,9 +19,11 @@ class _ForecastingPageState extends State<ForecastingPage> {
   Map<String, dynamic> _currentYield = {};
   bool _isLoading = true;
   String _errorMessage = '';
+  String _warningMessage = '';
   String _selectedRiceVariety = 'All';
   List<Map<String, dynamic>> _riceVarieties = [];
   Map<String, dynamic> _validationMetrics = {};
+  Map<String, dynamic> _dataQuality = {};
 
   @override
   void initState() {
@@ -33,15 +35,20 @@ class _ForecastingPageState extends State<ForecastingPage> {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
+      _warningMessage = '';
     });
 
     try {
       await Future.wait([
         _loadRiceVarieties(),
         _loadHistoricalData(),
-        _loadForecastData(),
         _loadCurrentYield(),
+        _loadValidationMetrics(),
+        _loadDataQuality(),
       ]);
+      
+      // Load forecast data after other data is loaded
+      await _loadForecastData();
     } catch (e) {
       setState(() {
         _errorMessage = 'Error loading data: $e';
@@ -81,32 +88,66 @@ class _ForecastingPageState extends State<ForecastingPage> {
 
   Future<void> _loadForecastData() async {
     try {
-      // Call the SARIMA forecast API
-      final forecast = await _apiService.getForecastData(_selectedRiceVariety);
-      if (forecast != null) {
+      // Call the SARIMA forecast API with variety parameter
+      final response = await _apiService.get('/forecast/sarima?variety=$_selectedRiceVariety');
+      
+      if (response != null) {
         setState(() {
-          _forecastData = forecast;
+          _forecastData = List<Map<String, dynamic>>.from(response['forecast'] ?? []);
+          
+          // Handle warnings from backend
+          if (response['warning'] != null) {
+            _warningMessage = response['warning'];
+          }
+          
+          // Update data quality from forecast response
+          if (response['data_quality'] != null) {
+            _dataQuality['level'] = response['data_quality'];
+          }
+          
+          // Handle recommendations
+          if (response['recommendation'] != null && _warningMessage.isEmpty) {
+            _warningMessage = response['recommendation'];
+          }
+        });
+        
+        print('Loaded ${_forecastData.length} forecast periods');
+      } else {
+        setState(() {
+          _forecastData = [];
+          _warningMessage = 'Unable to generate forecast data';
         });
       }
     } catch (e) {
       print('Error loading forecast data: $e');
+      setState(() {
+        _forecastData = [];
+        _warningMessage = 'Error generating forecast: $e';
+      });
     }
   }
 
   Future<void> _loadCurrentYield() async {
     try {
-      print('Loading current yield summary...'); // Debug log
-      final current = await _apiService.getCurrentYieldSummary();
-      print('Current yield response: $current'); // Debug log
+      print('Loading current yield summary...'); 
+      final current = await _apiService.get('/forecast/current-summary');
+      print('Current yield response: $current'); 
       
       if (current != null) {
         setState(() {
-          _currentYield = current;
+          _currentYield = {
+            'total_yield': (current['total_yield'] as num?)?.toDouble() ?? 0.0,
+            'total_records': current['total_records'] ?? 0,
+            'avg_production': (current['avg_production'] as num?)?.toDouble() ?? 0.0,
+            'accuracy': (current['accuracy'] as num?)?.toDouble() ?? 0.0,
+            'data_quality': current['data_quality'] ?? 'unknown',
+            'valid_records': current['valid_records'] ?? 0,
+          };
         });
-        print('Current yield state updated: $_currentYield'); // Debug log
+        print('Current yield state updated: $_currentYield'); 
       } else {
-        print('Current yield response was null, using fallback'); // Debug log
-        // Try to get production records directly as fallback
+        print('Current yield response was null, using fallback');
+        // Fallback calculation remains the same
         final records = await _apiService.getProductionRecords();
         if (records != null && records.isNotEmpty) {
           double totalYield = 0.0;
@@ -130,17 +171,9 @@ class _ForecastingPageState extends State<ForecastingPage> {
               'total_yield': validRecords > 0 ? totalYield / validRecords : 0.0,
               'total_records': records.length,
               'avg_production': validRecords > 0 ? totalProduction / validRecords : 0.0,
-              'accuracy': 95.2
-            };
-          });
-          print('Used fallback calculation: $_currentYield'); // Debug log
-        } else {
-          setState(() {
-            _currentYield = {
-              'total_yield': 0.0,
-              'total_records': 0,
-              'avg_production': 0.0,
-              'accuracy': 95.2
+              'accuracy': 30.0, // Low accuracy for fallback
+              'data_quality': 'limited',
+              'valid_records': validRecords,
             };
           });
         }
@@ -152,7 +185,9 @@ class _ForecastingPageState extends State<ForecastingPage> {
           'total_yield': 0.0,
           'total_records': 0,
           'avg_production': 0.0,
-          'accuracy': 95.2
+          'accuracy': 0.0,
+          'data_quality': 'error',
+          'valid_records': 0,
         };
       });
     }
@@ -161,14 +196,279 @@ class _ForecastingPageState extends State<ForecastingPage> {
   Future<void> _loadValidationMetrics() async {
     try {
       final metrics = await _apiService.get('/forecast/validate');
-      if (metrics != null) {
+      if (metrics != null && metrics['error'] == null) {
         setState(() {
           _validationMetrics = metrics;
+        });
+        print('Loaded validation metrics: $_validationMetrics');
+      } else {
+        print('Validation metrics not available: ${metrics?['error']}');
+        setState(() {
+          _validationMetrics = {};
         });
       }
     } catch (e) {
       print('Error loading validation metrics: $e');
+      setState(() {
+        _validationMetrics = {};
+      });
     }
+  }
+
+  Future<void> _loadDataQuality() async {
+    try {
+      final quality = await _apiService.get('/forecast/data-quality');
+      if (quality != null) {
+        setState(() {
+          _dataQuality = quality;
+        });
+        print('Loaded data quality: $_dataQuality');
+      }
+    } catch (e) {
+      print('Error loading data quality: $e');
+    }
+  }
+
+  Widget _buildDataQualityIndicator() {
+    String qualityLevel = _dataQuality['quality_level'] ?? _currentYield['data_quality'] ?? 'unknown';
+    int totalRecords = _currentYield['total_records'] ?? 0;
+    int validRecords = _currentYield['valid_records'] ?? 0;
+    double completeness = _dataQuality['data_completeness'] ?? 0.0;
+    
+    Color qualityColor;
+    IconData qualityIcon;
+    String qualityText;
+    
+    switch (qualityLevel.toLowerCase()) {
+      case 'excellent':
+        qualityColor = ThemeColor.green;
+        qualityIcon = Icons.check_circle;
+        qualityText = 'Excellent';
+        break;
+      case 'good':
+        qualityColor = ThemeColor.primaryColor;
+        qualityIcon = Icons.thumb_up;
+        qualityText = 'Good';
+        break;
+      case 'fair':
+      case 'medium':
+        qualityColor = Colors.orange;
+        qualityIcon = Icons.warning;
+        qualityText = 'Fair';
+        break;
+      case 'poor':
+      case 'low':
+        qualityColor = ThemeColor.red;
+        qualityIcon = Icons.error;
+        qualityText = 'Poor';
+        break;
+      case 'insufficient':
+      case 'no_data':
+        qualityColor = ThemeColor.red;
+        qualityIcon = Icons.error_outline;
+        qualityText = 'Insufficient';
+        break;
+      default:
+        qualityColor = ThemeColor.grey;
+        qualityIcon = Icons.help;
+        qualityText = 'Unknown';
+    }
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: qualityColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: qualityColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(qualityIcon, color: qualityColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Data Quality: $qualityText',
+                style: TextStyle(
+                  color: qualityColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$validRecords/$totalRecords records',
+                style: TextStyle(color: qualityColor, fontSize: 12),
+              ),
+            ],
+          ),
+          if (completeness > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  'Completeness: ${completeness.toStringAsFixed(1)}%',
+                  style: TextStyle(color: qualityColor, fontSize: 12),
+                ),
+                const SizedBox(width: 16),
+                if (_dataQuality['date_range_years'] != null)
+                  Text(
+                    'Span: ${(_dataQuality['date_range_years'] as num).toStringAsFixed(1)} years',
+                    style: TextStyle(color: qualityColor, fontSize: 12),
+                  ),
+              ],
+            ),
+          ],
+          if (_dataQuality['recommendations'] != null && (_dataQuality['recommendations'] as List).isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ...(_dataQuality['recommendations'] as List).take(2).map((rec) => Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.lightbulb_outline, size: 14, color: qualityColor),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      rec.toString(),
+                      style: TextStyle(color: qualityColor, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // Widget _buildValidationMetrics() {
+  //   if (_validationMetrics.isEmpty) return const SizedBox.shrink();
+    
+  //   double accuracy = (_validationMetrics['accuracy_percentage'] as num?)?.toDouble() ?? 0.0;
+  //   double mae = (_validationMetrics['mae'] as num?)?.toDouble() ?? 0.0;
+  //   double rmse = (_validationMetrics['rmse'] as num?)?.toDouble() ?? 0.0;
+  //   int folds = _validationMetrics['cross_validation_folds'] ?? 0;
+  //   int samples = _validationMetrics['total_samples'] ?? 0;
+    
+  //   Color accuracyColor = accuracy >= 80 
+  //       ? ThemeColor.green 
+  //       : accuracy >= 60 
+  //         ? Colors.orange 
+  //         : ThemeColor.red;
+    
+  //   return Container(
+  //     margin: const EdgeInsets.only(bottom: 16),
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: ThemeColor.white,
+  //       borderRadius: BorderRadius.circular(8),
+  //       border: Border.all(color: ThemeColor.grey.withOpacity(0.3)),
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Icon(Icons.analytics, color: ThemeColor.primaryColor, size: 20),
+  //             const SizedBox(width: 8),
+  //             const Text(
+  //               'Forecast Validation Metrics',
+  //               style: TextStyle(
+  //                 fontWeight: FontWeight.bold,
+  //                 color: ThemeColor.primaryColor,
+  //                 fontSize: 16,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 12),
+  //         Row(
+  //           children: [
+  //             Expanded(
+  //               child: _buildMetricItem(
+  //                 'Accuracy',
+  //                 '${accuracy.toStringAsFixed(1)}%',
+  //                 accuracyColor,
+  //                 Icons.verified,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildMetricItem(
+  //                 'MAE',
+  //                 mae.toStringAsFixed(2),
+  //                 ThemeColor.secondaryColor,
+  //                 Icons.show_chart,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildMetricItem(
+  //                 'RMSE',
+  //                 rmse.toStringAsFixed(2),
+  //                 ThemeColor.secondaryColor,
+  //                 Icons.timeline,
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: _buildMetricItem(
+  //                 'CV Folds',
+  //                 folds.toString(),
+  //                 ThemeColor.secondaryColor, // Changed from ThemeColor.grey
+  //                 Icons.layers,
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         if (_validationMetrics['confidence_interval'] != null) ...[
+  //           const SizedBox(height: 8),
+  //           Row(
+  //             children: [
+  //               Icon(Icons.trending_up, size: 14, color: ThemeColor.secondaryColor), // Changed from grey
+  //               const SizedBox(width: 4),
+  //               Text(
+  //                 'Confidence Interval: ${(_validationMetrics['confidence_interval'][0]).toStringAsFixed(1)}% - ${(_validationMetrics['confidence_interval'][1]).toStringAsFixed(1)}%',
+  //                 style: const TextStyle(fontSize: 12, color: ThemeColor.secondaryColor), // Changed from grey
+  //               ),
+  //               const SizedBox(width: 16),
+  //               Icon(Icons.dataset, size: 14, color: ThemeColor.secondaryColor), // Changed from grey
+  //               const SizedBox(width: 4),
+  //               Text(
+  //                 'Sample Size: $samples',
+  //                 style: const TextStyle(fontSize: 12, color: ThemeColor.secondaryColor), // Changed from grey
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget _buildMetricItem(String label, String value, Color color, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: color,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: ThemeColor.secondaryColor, // Changed from ThemeColor.grey
+          ),
+        ),
+      ],
+    );
   }
 
   List<FlSpot> _getForecastSpots() {
@@ -187,10 +487,30 @@ class _ForecastingPageState extends State<ForecastingPage> {
       // Use positions 13, 14, 15 to clearly separate from historical monthly data (1-12)
       double xValue = 13.0 + i;
       
-      double yValue = _forecastData[i]['predicted_yield']?.toDouble() ?? 0.0;
+      double yValue = (_forecastData[i]['predicted_yield'] as num?)?.toDouble() ?? 0.0;
       
       if (yValue > 0) {
         print('Adding forecast spot: ($xValue, $yValue)');
+        spots.add(FlSpot(xValue, yValue));
+      }
+    }
+    
+    return spots;
+  }
+
+  List<FlSpot> _getConfidenceSpots(bool isUpper) {
+    List<FlSpot> spots = [];
+    
+    if (_forecastData.isEmpty) return spots;
+    
+    for (int i = 0; i < _forecastData.length; i++) {
+      double xValue = 13.0 + i;
+      
+      double yValue = isUpper 
+          ? (_forecastData[i]['confidence_upper'] as num?)?.toDouble() ?? 0.0
+          : (_forecastData[i]['confidence_lower'] as num?)?.toDouble() ?? 0.0;
+      
+      if (yValue > 0) {
         spots.add(FlSpot(xValue, yValue));
       }
     }
@@ -207,7 +527,6 @@ class _ForecastingPageState extends State<ForecastingPage> {
     }
     
     print('Historical data count: ${_historicalData.length}');
-    print('Sample historical record: ${_historicalData.first}'); // Debug: check data structure
     
     // Group data by harvest seasons and calculate averages
     Map<String, List<double>> seasonalYields = {};
@@ -220,22 +539,19 @@ class _ForecastingPageState extends State<ForecastingPage> {
           DateTime harvestDate = DateTime.parse(record['harvest_date']);
           String seasonKey = _getSeasonKey(harvestDate);
           
-          // Try different field names for yield
+          // Calculate yield
           double yield = 0.0;
           if (record['yield_per_hectare'] != null) {
             yield = (record['yield_per_hectare'] as num).toDouble();
           } else if (record['actual_yield_per_hectare'] != null) {
             yield = (record['actual_yield_per_hectare'] as num).toDouble();
           } else if (record['hectares'] != null && record['quantity_harvested'] != null) {
-            // Calculate yield if not directly available
             final hectares = (record['hectares'] as num).toDouble();
             final quantity = (record['quantity_harvested'] as num).toDouble();
             if (hectares > 0) {
               yield = quantity / hectares;
             }
           }
-          
-          print('Record yield: $yield for season: $seasonKey'); // Debug
           
           if (yield > 0) {
             if (!seasonalYields.containsKey(seasonKey)) {
@@ -249,13 +565,10 @@ class _ForecastingPageState extends State<ForecastingPage> {
       }
     }
     
-    print('Seasonal yields data: $seasonalYields'); // Debug
-    
-    // Sort seasons chronologically
+    // Sort seasons chronologically and create spots
     List<String> sortedSeasons = seasonalYields.keys.toList()..sort();
-    print('Sorted seasons: $sortedSeasons'); // Debug
     
-    // Create spots from seasonal averages (limit to last 12 seasons for better display)
+    // Limit to last 12 seasons for better display
     int maxSeasons = 12;
     int startIndex = sortedSeasons.length > maxSeasons ? sortedSeasons.length - maxSeasons : 0;
     
@@ -266,11 +579,9 @@ class _ForecastingPageState extends State<ForecastingPage> {
       
       // Use positions 1-12 for historical data
       double xValue = (i - startIndex + 1).toDouble();
-      print('Adding historical spot: ($xValue, $avgYield) for $seasonKey');
       spots.add(FlSpot(xValue, avgYield));
     }
     
-    print('Final historical spots: ${spots.length} spots created'); // Debug
     return spots;
   }
 
@@ -279,36 +590,16 @@ class _ForecastingPageState extends State<ForecastingPage> {
     int year = date.year;
     
     if (month >= 3 && month <= 5) {
-      return '$year-S1'; // First harvest season
+      return '$year-S1';
     } else if (month >= 6 && month <= 8) {
-      return '$year-S2'; // Second harvest season
+      return '$year-S2';
     } else if (month >= 9 && month <= 11) {
-      return '$year-S3'; // Third harvest season
+      return '$year-S3';
     } else {
-      // Dec-Feb belongs to next year's first season
       if (month == 12) {
         return '${year + 1}-S1';
       } else {
         return '$year-S1';
-      }
-    }
-  }
-
-  String _getSeasonDisplayName(DateTime date) {
-    int month = date.month;
-    int year = date.year;
-    
-    if (month >= 3 && month <= 5) {
-      return '$year S1';
-    } else if (month >= 6 && month <= 8) {
-      return '$year S2';
-    } else if (month >= 9 && month <= 11) {
-      return '$year S3';
-    } else {
-      if (month == 12) {
-        return '${year + 1} S1';
-      } else {
-        return '$year S1';
       }
     }
   }
@@ -347,9 +638,18 @@ class _ForecastingPageState extends State<ForecastingPage> {
       periods.add({
         'season': data['season'],
         'year': data['year'],
-        'output': '${(data['total_output'] / 1000).toStringAsFixed(1)}k kg', // Convert to thousands
+        'output': '${(data['total_output'] / 1000).toStringAsFixed(1)}k kg',
       });
     });
+    
+    // Add forecast data to periods
+    for (var forecast in _forecastData) {
+      periods.add({
+        'season': forecast['season'] ?? '',
+        'year': (forecast['year'] ?? DateTime.now().year).toString(),
+        'output': '${((forecast['predicted_yield'] ?? 0) * 100 / 1000).toStringAsFixed(1)}k kg (forecast)',
+      });
+    }
     
     // Sort by year and season
     periods.sort((a, b) {
@@ -358,7 +658,7 @@ class _ForecastingPageState extends State<ForecastingPage> {
       return a['season'].compareTo(b['season']);
     });
     
-    return periods.take(10).toList(); // Show last 10 periods
+    return periods.take(15).toList(); // Show last 15 periods including forecasts
   }
 
   String _getSeason(int month) {
@@ -370,6 +670,9 @@ class _ForecastingPageState extends State<ForecastingPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Get dynamic accuracy for display
+    double dynamicAccuracy = (_currentYield['accuracy'] as num?)?.toDouble() ?? 0.0;
+    
     return Scaffold(
       backgroundColor: ThemeColor.white,
       appBar: const PreferredSize(
@@ -452,22 +755,55 @@ class _ForecastingPageState extends State<ForecastingPage> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Error Message
+                  // Data Quality Indicator
+                  _buildDataQualityIndicator(),
+
+                  // Error/Warning Messages
                   if (_errorMessage.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: ThemeColor.red.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _errorMessage,
-                          style: const TextStyle(color: ThemeColor.red),
-                        ),
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error, color: ThemeColor.red),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage,
+                              style: const TextStyle(color: ThemeColor.red),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+
+                  if (_warningMessage.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _warningMessage,
+                              style: const TextStyle(color: Colors.orange),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // Validation Metrics (only show if available and accurate)
 
                   // Current Yield Summary
                   Row(
@@ -492,63 +828,16 @@ class _ForecastingPageState extends State<ForecastingPage> {
                       const SizedBox(width: 15),
                       _buildSummaryCard(
                         'Forecast Accuracy', 
-                        '${(_currentYield['accuracy']?.toDouble() ?? 95.2).toStringAsFixed(1)}%', 
-                        ThemeColor.green
+                        '${dynamicAccuracy.toStringAsFixed(1)}%', 
+                        dynamicAccuracy >= 80 
+                            ? ThemeColor.green 
+                            : dynamicAccuracy >= 60 
+                              ? Colors.orange 
+                              : ThemeColor.red
                       ),
                     ],
                   ),
                   const SizedBox(height: 30),
-
-                  if (_validationMetrics.isNotEmpty)
-                    Container(
-                      margin: const EdgeInsets.only(top: 20),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: ThemeColor.white2,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: ThemeColor.grey.withOpacity(0.3)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Forecast Quality Metrics',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: ThemeColor.primaryColor,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Accuracy: ${_validationMetrics['accuracy_percentage']?.toStringAsFixed(1) ?? 'N/A'}%',
-                                  style: TextStyle(
-                                    color: (_validationMetrics['accuracy_percentage'] ?? 0) > 70 
-                                      ? ThemeColor.green 
-                                      : ThemeColor.red,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  'R²: ${_validationMetrics['r_squared']?.toStringAsFixed(3) ?? 'N/A'}',
-                                  style: const TextStyle(color: ThemeColor.grey),
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  'Sample Size: ${_validationMetrics['sample_size'] ?? 0}',
-                                  style: const TextStyle(color: ThemeColor.grey),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
 
                   // Main Content
                   Expanded(
@@ -574,105 +863,106 @@ class _ForecastingPageState extends State<ForecastingPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Crop Yield Forecast',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: ThemeColor.primaryColor,
-                                  ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Crop Yield Forecast',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: ThemeColor.primaryColor,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    if (_forecastData.isNotEmpty && _forecastData[0]['method'] != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: ThemeColor.primaryColor.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          _forecastData[0]['method'].toString().toUpperCase(),
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.primaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                                 const SizedBox(height: 20),
                                 Expanded(
-                                  child: LineChart(
-                                    LineChartData(
-                                      gridData: FlGridData(
-                                        show: true,
-                                        drawVerticalLine: true,
-                                        drawHorizontalLine: true,
-                                        getDrawingHorizontalLine: (value) {
-                                          return FlLine(
-                                            color: ThemeColor.grey.withOpacity(0.3),
-                                            strokeWidth: 1,
-                                          );
-                                        },
-                                        getDrawingVerticalLine: (value) {
-                                          return FlLine(
-                                            color: ThemeColor.grey.withOpacity(0.3),
-                                            strokeWidth: 1,
-                                          );
-                                        },
-                                      ),
-                                      titlesData: FlTitlesData(
-                                        show: true,
-                                        rightTitles: AxisTitles(
-                                          sideTitles: SideTitles(showTitles: false),
-                                        ),
-                                        topTitles: AxisTitles(
-                                          sideTitles: SideTitles(showTitles: false),
-                                        ),
-                                        bottomTitles: AxisTitles(
-                                          sideTitles: SideTitles(
-                                            showTitles: true,
-                                            reservedSize: 50,
-                                            interval: 1,
-                                            getTitlesWidget: (double value, TitleMeta meta) {
-                                              // Historical seasons (1-12)
-                                              if (value >= 1 && value <= 12) {
-                                                int seasonIndex = (value - 1).toInt();
-                                                
-                                                // Generate labels from historical data
-                                                if (_historicalData.isNotEmpty) {
-                                                  Map<String, List<double>> seasonalYields = {};
-                                                  
-                                                  // Group data to get season keys
-                                                  for (var record in _historicalData) {
-                                                    if (_selectedRiceVariety == 'All' || 
-                                                        record['rice_variety_name'] == _selectedRiceVariety) {
-                                                      try {
-                                                        DateTime date = DateTime.parse(record['harvest_date']);
-                                                        String seasonKey = _getSeasonKey(date);
-                                                        
-                                                        // Calculate yield
-                                                        double yield = 0.0;
-                                                        if (record['yield_per_hectare'] != null) {
-                                                          yield = (record['yield_per_hectare'] as num).toDouble();
-                                                        } else if (record['actual_yield_per_hectare'] != null) {
-                                                          yield = (record['actual_yield_per_hectare'] as num).toDouble();
-                                                        } else if (record['hectares'] != null && record['quantity_harvested'] != null) {
-                                                          final hectares = (record['hectares'] as num).toDouble();
-                                                          final quantity = (record['quantity_harvested'] as num).toDouble();
-                                                          if (hectares > 0) {
-                                                            yield = quantity / hectares;
-                                                          }
-                                                        }
-                                                        
-                                                        if (yield > 0) {
-                                                          if (!seasonalYields.containsKey(seasonKey)) {
-                                                            seasonalYields[seasonKey] = [];
-                                                          }
-                                                          seasonalYields[seasonKey]!.add(yield);
-                                                        }
-                                                      } catch (e) {
-                                                        // Skip invalid dates
-                                                      }
-                                                    }
-                                                  }
-                                                  
-                                                  List<String> sortedSeasons = seasonalYields.keys.toList()..sort();
-                                                  int maxSeasons = 12;
-                                                  int startIndex = sortedSeasons.length > maxSeasons ? sortedSeasons.length - maxSeasons : 0;
-                                                  
-                                                  int adjustedIndex = seasonIndex + startIndex;
-                                                  if (adjustedIndex < sortedSeasons.length) {
-                                                    String seasonKey = sortedSeasons[adjustedIndex];
-                                                    // Convert season key to display format
-                                                    List<String> parts = seasonKey.split('-');
-                                                    if (parts.length == 2) {
+                                  child: _forecastData.isEmpty && _getHistoricalSpots().isEmpty
+                                      ? const Center(
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.insert_chart_outlined,
+                                                size: 64,
+                                                color: ThemeColor.grey,
+                                              ),
+                                              SizedBox(height: 16),
+                                              Text(
+                                                'No forecast data available',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: ThemeColor.grey,
+                                                ),
+                                              ),
+                                              SizedBox(height: 8),
+                                              Text(
+                                                'Add more production records to generate forecasts',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: ThemeColor.grey,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : LineChart(
+                                          LineChartData(
+                                            gridData: FlGridData(
+                                              show: true,
+                                              drawVerticalLine: true,
+                                              drawHorizontalLine: true,
+                                              getDrawingHorizontalLine: (value) {
+                                                return FlLine(
+                                                  color: ThemeColor.grey.withOpacity(0.3),
+                                                  strokeWidth: 1,
+                                                );
+                                              },
+                                              getDrawingVerticalLine: (value) {
+                                                return FlLine(
+                                                  color: ThemeColor.grey.withOpacity(0.3),
+                                                  strokeWidth: 1,
+                                                );
+                                              },
+                                            ),
+                                            titlesData: FlTitlesData(
+                                              show: true,
+                                              rightTitles: AxisTitles(
+                                                sideTitles: SideTitles(showTitles: false),
+                                              ),
+                                              topTitles: AxisTitles(
+                                                sideTitles: SideTitles(showTitles: false),
+                                              ),
+                                              bottomTitles: AxisTitles(
+                                                sideTitles: SideTitles(
+                                                  showTitles: true,
+                                                  reservedSize: 50,
+                                                  interval: 1,
+                                                  getTitlesWidget: (double value, TitleMeta meta) {
+                                                    // Historical seasons (1-12)
+                                                    if (value >= 1 && value <= 12) {
                                                       return Padding(
                                                         padding: const EdgeInsets.only(top: 8.0),
                                                         child: Text(
-                                                          '${parts[0]}\n${parts[1]}',
+                                                          'H${value.toInt()}',
                                                           style: const TextStyle(
                                                             color: ThemeColor.grey,
                                                             fontSize: 9,
@@ -681,112 +971,154 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                                         ),
                                                       );
                                                     }
-                                                  }
-                                                }
-                                              }
-                                              // Forecast seasons (13-15)
-                                              else if (value >= 13 && value <= 15) {
-                                                int forecastIndex = (value - 13).toInt();
-                                                if (forecastIndex < _forecastData.length) {
-                                                  String season = _forecastData[forecastIndex]['season'] ?? '';
-                                                  int year = _forecastData[forecastIndex]['year'] ?? DateTime.now().year;
-                                                  return Padding(
-                                                    padding: const EdgeInsets.only(top: 8.0),
-                                                    child: Text(
-                                                      '$year\n$season',
-                                                      style: const TextStyle(
-                                                        color: ThemeColor.green,
-                                                        fontSize: 9,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      textAlign: TextAlign.center,
-                                                    ),
-                                                  );
-                                                }
-                                              }
-                                              return const Text('');
-                                            },
-                                          ),
-                                        ),
-                                        leftTitles: AxisTitles(
-                                          sideTitles: SideTitles(
-                                            showTitles: true,
-                                            reservedSize: 40,
-                                            getTitlesWidget: (double value, TitleMeta meta) {
-                                              return Text(
-                                                value.toInt().toString(),
-                                                style: const TextStyle(
-                                                  color: ThemeColor.grey,
-                                                  fontSize: 10,
+                                                    // Forecast seasons (13-15)
+                                                                                                        // Around line 1010, replace the forecast label section with:
+                                                    else if (value >= 13 && value <= 15) {
+                                                      int forecastIndex = (value - 13).toInt();
+                                                      if (forecastIndex < _forecastData.length) {
+                                                        String season = _forecastData[forecastIndex]['season'] ?? '';
+                                                        int year = _forecastData[forecastIndex]['year'] ?? DateTime.now().year;
+                                                        return Padding(
+                                                          padding: const EdgeInsets.only(top: 8.0),
+                                                          child: Container(
+                                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                                            decoration: BoxDecoration(
+                                                              color: Colors.white, // White background
+                                                              borderRadius: BorderRadius.circular(4),
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  color: Colors.black.withOpacity(0.1),
+                                                                  blurRadius: 2,
+                                                                  offset: const Offset(0, 1),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            child: Text(
+                                                              '$year\n$season',
+                                                              style: const TextStyle(
+                                                                color: ThemeColor.green,
+                                                                fontSize: 9,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                              textAlign: TextAlign.center,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                    }
+                                                    return const Text('');
+                                                  },
                                                 ),
-                                              );
-                                            },
+                                              ),
+                                              leftTitles: AxisTitles(
+                                                sideTitles: SideTitles(
+                                                  showTitles: true,
+                                                  reservedSize: 40,
+                                                  getTitlesWidget: (double value, TitleMeta meta) {
+                                                    return Text(
+                                                      value.toInt().toString(),
+                                                      style: const TextStyle(
+                                                        color: ThemeColor.grey,
+                                                        fontSize: 10,
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            borderData: FlBorderData(
+                                              show: true,
+                                              border: Border.all(
+                                                color: ThemeColor.grey.withOpacity(0.3),
+                                              ),
+                                            ),
+                                            lineBarsData: [
+                                              // Historical Data Line
+                                              if (_getHistoricalSpots().isNotEmpty)
+                                                LineChartBarData(
+                                                  spots: _getHistoricalSpots(),
+                                                  isCurved: true,
+                                                  color: ThemeColor.secondaryColor,
+                                                  barWidth: 3,
+                                                  isStrokeCapRound: true,
+                                                  dotData: FlDotData(
+                                                    show: true,
+                                                    getDotPainter: (spot, percent, barData, index) {
+                                                      return FlDotCirclePainter(
+                                                        radius: 4,
+                                                        color: ThemeColor.secondaryColor,
+                                                        strokeWidth: 2,
+                                                        strokeColor: ThemeColor.white,
+                                                      );
+                                                    },
+                                                  ),
+                                                  belowBarData: BarAreaData(
+                                                    show: true,
+                                                    color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                                  ),
+                                                ),
+                                              // Forecast Data Line
+                                              if (_getForecastSpots().isNotEmpty)
+                                                LineChartBarData(
+                                                  spots: _getForecastSpots(),
+                                                  isCurved: true,
+                                                  color: ThemeColor.green,
+                                                  barWidth: 3,
+                                                  isStrokeCapRound: true,
+                                                  dashArray: [5, 5], // Dashed line for forecast
+                                                  dotData: FlDotData(
+                                                    show: true,
+                                                    getDotPainter: (spot, percent, barData, index) {
+                                                      return FlDotCirclePainter(
+                                                        radius: 4,
+                                                        color: ThemeColor.green,
+                                                        strokeWidth: 2,
+                                                        strokeColor: ThemeColor.white,
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                              // Confidence intervals (upper bound)
+                                              if (_getConfidenceSpots(true).isNotEmpty)
+                                                LineChartBarData(
+                                                  spots: _getConfidenceSpots(true),
+                                                  isCurved: true,
+                                                  color: ThemeColor.white.withOpacity(0.3),
+                                                  barWidth: 1,
+                                                  dotData: FlDotData(show: false),
+                                                  dashArray: [2, 4],
+                                                ),
+                                              // Confidence intervals (lower bound)
+                                              if (_getConfidenceSpots(false).isNotEmpty)
+                                                LineChartBarData(
+                                                  spots: _getConfidenceSpots(false),
+                                                  isCurved: true,
+                                                  color: ThemeColor.white.withOpacity(0.3),
+                                                  barWidth: 1,
+                                                  dotData: FlDotData(show: false),
+                                                  dashArray: [2, 4],
+                                                ),
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                      borderData: FlBorderData(
-                                        show: true,
-                                        border: Border.all(
-                                          color: ThemeColor.grey.withOpacity(0.3),
-                                        ),
-                                      ),
-                                      lineBarsData: [
-                                        // Historical Data Line
-                                        LineChartBarData(
-                                          spots: _getHistoricalSpots(),
-                                          isCurved: true,
-                                          color: ThemeColor.secondaryColor,
-                                          barWidth: 3,
-                                          isStrokeCapRound: true,
-                                          dotData: FlDotData(
-                                            show: true,
-                                            getDotPainter: (spot, percent, barData, index) {
-                                              return FlDotCirclePainter(
-                                                radius: 4,
-                                                color: ThemeColor.secondaryColor,
-                                                strokeWidth: 2,
-                                                strokeColor: ThemeColor.white,
-                                              );
-                                            },
-                                          ),
-                                          belowBarData: BarAreaData(
-                                            show: true,
-                                            color: ThemeColor.secondaryColor.withOpacity(0.1),
-                                          ),
-                                        ),
-                                        // Forecast Data Line
-                                        LineChartBarData(
-                                          spots: _getForecastSpots(),
-                                          isCurved: true,
-                                          color: ThemeColor.green,
-                                          barWidth: 3,
-                                          isStrokeCapRound: true,
-                                          dashArray: [5, 5], // Dashed line for forecast
-                                          dotData: FlDotData(
-                                            show: true,
-                                            getDotPainter: (spot, percent, barData, index) {
-                                              return FlDotCirclePainter(
-                                                radius: 4,
-                                                color: ThemeColor.green,
-                                                strokeWidth: 2,
-                                                strokeColor: ThemeColor.white,
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 ),
                                 // Legend
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    _buildLegendItem('Historical Data', ThemeColor.secondaryColor, false),
-                                    const SizedBox(width: 20),
-                                    _buildLegendItem('Forecast', ThemeColor.green, true),
-                                  ],
-                                ),
+                                if (_getHistoricalSpots().isNotEmpty || _getForecastSpots().isNotEmpty)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      if (_getHistoricalSpots().isNotEmpty)
+                                        _buildLegendItem('Historical Data', ThemeColor.secondaryColor, false),
+                                      if (_getHistoricalSpots().isNotEmpty && _getForecastSpots().isNotEmpty)
+                                        const SizedBox(width: 20),
+                                      if (_getForecastSpots().isNotEmpty)
+                                        _buildLegendItem('Forecast', ThemeColor.green, true),
+                                      if (_getConfidenceSpots(true).isNotEmpty)
+                                        const SizedBox(width: 20),
+                                      if (_getConfidenceSpots(true).isNotEmpty)
+                                        _buildLegendItem('95% Confidence', ThemeColor.green.withOpacity(0.5), true),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),
@@ -888,12 +1220,15 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                       itemCount: _getTimePeriodsData().length,
                                       itemBuilder: (context, index) {
                                         final period = _getTimePeriodsData()[index];
+                                        final isForecast = period['output'].toString().contains('forecast');
                                         return Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: index % 2 == 0
-                                                ? ThemeColor.white
-                                                : ThemeColor.white2.withOpacity(0.5),
+                                            color: isForecast 
+                                                ? ThemeColor.green.withOpacity(0.05)
+                                                : index % 2 == 0
+                                                    ? ThemeColor.white
+                                                    : ThemeColor.white2.withOpacity(0.5),
                                             border: index < _getTimePeriodsData().length - 1
                                                 ? Border(
                                                     bottom: BorderSide(
@@ -907,21 +1242,44 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                             children: [
                                               Expanded(
                                                 flex: 2,
-                                                child: Text(
-                                                  period['season'],
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    color: ThemeColor.primaryColor,
-                                                  ),
+                                                child: Row(
+                                                  children: [
+                                                    if (isForecast)
+                                                      Icon(
+                                                        Icons.trending_up,
+                                                        size: 12,
+                                                        color: ThemeColor.green,
+                                                      ),
+                                                    if (isForecast) const SizedBox(width: 4),
+                                                    Expanded(
+                                                      child: Text(
+                                                        period['season'],
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: isForecast 
+                                                              ? ThemeColor.green 
+                                                              : ThemeColor.primaryColor,
+                                                          fontWeight: isForecast 
+                                                              ? FontWeight.bold 
+                                                              : FontWeight.normal,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                               Expanded(
                                                 flex: 1,
                                                 child: Text(
                                                   period['year'],
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 12,
-                                                    color: ThemeColor.primaryColor,
+                                                    color: isForecast 
+                                                        ? ThemeColor.green 
+                                                        : ThemeColor.primaryColor,
+                                                    fontWeight: isForecast 
+                                                        ? FontWeight.bold 
+                                                        : FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
@@ -929,10 +1287,12 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                                 flex: 2,
                                                 child: Text(
                                                   period['output'],
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w500,
-                                                    color: ThemeColor.green,
+                                                    color: isForecast 
+                                                        ? ThemeColor.green 
+                                                        : ThemeColor.green,
                                                   ),
                                                 ),
                                               ),
@@ -1054,4 +1414,4 @@ class DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+} 

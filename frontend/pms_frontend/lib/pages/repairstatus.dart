@@ -63,6 +63,45 @@ class _RepairstatusNavState extends State<RepairstatusNav> {
     }
   }
 
+  Color _getStatusBackgroundColor(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'completed':
+      return ThemeColor.green.withOpacity(0.2);
+    case 'in_progress':
+      return Colors.orange.withOpacity(0.2);
+    case 'pending':
+      return ThemeColor.red.withOpacity(0.2);
+    default:
+      return ThemeColor.grey.withOpacity(0.2);
+  }
+}
+
+Color _getStatusTextColor(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'completed':
+      return ThemeColor.green;
+    case 'in_progress':
+      return Colors.orange;
+    case 'pending':
+      return ThemeColor.red;
+    default:
+      return ThemeColor.grey;
+  }
+}
+
+String _formatDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty || dateStr == 'N/A') {
+    return 'N/A';
+  }
+  
+  try {
+    final date = DateTime.parse(dateStr);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  } catch (e) {
+    return dateStr.substring(0, dateStr.length > 10 ? 10 : dateStr.length);
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     const TextStyle tableHeaderStyle = TextStyle(
@@ -161,231 +200,268 @@ class _RepairstatusNavState extends State<RepairstatusNav> {
                               child: Text('No repair records found'),
                             )
                           : Container(
-                              decoration: BoxDecoration(
-                                color: ThemeColor.white,
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
+                decoration: BoxDecoration(
+                  color: ThemeColor.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ThemeColor.secondaryColor.withOpacity(0.1),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
+                      ),
+                      child: const Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              'ID',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.secondaryColor,
+                                fontSize: 14,
                               ),
-                              child: Column(
-                                children: [
-                                  // Header
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(8),
-                                        topRight: Radius.circular(8),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              'Machine',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.secondaryColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 4,
+                            child: Text(
+                              'Issue',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.secondaryColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              'Parts',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.secondaryColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              'Status',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.secondaryColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              'Date',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: ThemeColor.secondaryColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Repair Records List
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _repairs.length,
+                        itemBuilder: (context, index) {
+                          final repair = _repairs[index];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: index % 2 == 0 ? ThemeColor.white : ThemeColor.white2.withOpacity(0.3),
+                              border: index < _repairs.length - 1
+                                  ? Border(
+                                      bottom: BorderSide(
+                                        color: ThemeColor.grey.withOpacity(0.2),
+                                        width: 0.5,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // ID
+                                Expanded(
+                                  flex: 1,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Text(
+                                      Formatters.formatId(repair['id']),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: ThemeColor.primaryColor,
+                                        fontSize: 13,
                                       ),
                                     ),
-                                    child: const Row(
+                                  ),
+                                ),
+                                
+                                // Machine
+                                Expanded(
+                                  flex: 3,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
                                       children: [
+                                        Icon(
+                                          Icons.precision_manufacturing,
+                                          color: ThemeColor.secondaryColor,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 6),
                                         Expanded(
-                                          flex: 1,
                                           child: Text(
-                                            'ID',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
+                                            repair['machine_name'] ?? 'Unknown',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              color: ThemeColor.primaryColor,
+                                              fontSize: 13,
                                             ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Machine',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                
+                                // Issue
+                                Expanded(
+                                  flex: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Text(
+                                      repair['issue_description'] ?? 'No description',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        color: ThemeColor.primaryColor,
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                
+                                // Parts
+                                Expanded(
+                                  flex: 2,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Text(
+                                      (repair['notes'] ?? 'N/A').toString().toUpperCase(),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 11,
+                                        color: ThemeColor.secondaryColor,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                
+                                // Status
+                                Expanded(
+                                  flex: 2,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _getStatusBackgroundColor(repair['status']),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        (repair['status'] ?? 'pending').toString().toUpperCase(),
+                                        style: TextStyle(
+                                          color: _getStatusTextColor(repair['status']),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 10,
                                         ),
-                                        Expanded(
-                                          flex: 3,
-                                          child: Text(
-                                            'Issue',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                
+                                // Date
+                                Expanded(
+                                  flex: 2,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 4),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.calendar_today,
+                                          color: ThemeColor.grey,
+                                          size: 12,
                                         ),
+                                        const SizedBox(width: 4),
                                         Expanded(
-                                          flex: 2,
                                           child: Text(
-                                            'Parts',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Status',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Date',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
+                                            _formatDate(repair['repair_date']),
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: ThemeColor.grey,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  
-                                  // Repair Records List
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: _repairs.length,
-                                      itemBuilder: (context, index) {
-                                        final repair = _repairs[index];
-                                        return Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
-                                              ),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              // ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: Row(
-                                                  children: [
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      Formatters.formatId(repair['id']),
-                                                      style: const TextStyle(fontWeight: FontWeight.w500),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              
-                                              // Machine
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.build, color: ThemeColor.primaryColor, size: 20),
-                                                    const SizedBox(width: 8),
-                                                    Expanded(
-                                                      child: Text(
-                                                        repair['machine_name'] ?? 'Unknown',
-                                                        style: const TextStyle(
-                                                          fontWeight: FontWeight.w500,
-                                                          color: ThemeColor.primaryColor,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              
-                                              // Issue
-                                              Expanded(
-                                                flex: 3,
-                                                child: Text(
-                                                  repair['issue_description'] ?? 'No description',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                              
-                                              // Parts
-                                              Expanded(
-                                                flex: 2,
-                                                child: Text(
-                                                  repair['notes'].toString().toUpperCase() ?? 'N/A',
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 12,
-                                                    color: ThemeColor.grey,
-                                                  ),
-                                                ),
-                                              ),
-                                              
-                                              // Status
-                                              Expanded(
-                                                flex: 2,
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: repair['status'].toString().toUpperCase() == 'completed'
-                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : repair['status'].toString().toUpperCase() == 'in_progress'
-                                                            ? Colors.orange.withOpacity(0.2)
-                                                            : ThemeColor.red.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    repair['status'].toString().toUpperCase() ?? 'pending',
-                                                    style: TextStyle(
-                                                      color: repair['status'].toString().toUpperCase() == 'completed'
-                                                          ? ThemeColor.primaryColor
-                                                          : repair['status'].toString().toUpperCase() == 'in_progress'
-                                                              ? Colors.orange
-                                                              : ThemeColor.red,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
-                                                    ),
-                                                    textAlign: TextAlign.center,
-                                                  ),
-                                                ),
-                                              ),
-                                              
-                                              // Date
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    const Icon(Icons.calendar_today, color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 8),
-                                                    Text(
-                                                      repair['repair_date'] ?? 'N/A',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        color: ThemeColor.secondaryColor,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -413,6 +489,45 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
     super.initState();
     _loadRepairs();
   }
+
+  Color _getStatusBackgroundColor(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'completed':
+      return ThemeColor.green.withOpacity(0.2);
+    case 'in_progress':
+      return Colors.orange.withOpacity(0.2);
+    case 'pending':
+      return ThemeColor.red.withOpacity(0.2);
+    default:
+      return ThemeColor.grey.withOpacity(0.2);
+  }
+}
+
+Color _getStatusTextColor(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'completed':
+      return ThemeColor.green;
+    case 'in_progress':
+      return Colors.orange;
+    case 'pending':
+      return ThemeColor.red;
+    default:
+      return ThemeColor.grey;
+  }
+}
+
+String _formatDate(String? dateStr) {
+  if (dateStr == null || dateStr.isEmpty || dateStr == 'N/A') {
+    return 'N/A';
+  }
+  
+  try {
+    final date = DateTime.parse(dateStr);
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  } catch (e) {
+    return dateStr.substring(0, dateStr.length > 10 ? 10 : dateStr.length);
+  }
+}
 
   Future<void> _loadRepairs() async {
     setState(() {
@@ -851,125 +966,143 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
                               child: Text('No repair records found'),
                             )
                           : Container(
-                              decoration: BoxDecoration(
-                                color: ThemeColor.white,
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
+                            decoration: BoxDecoration(
+                              color: ThemeColor.white,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 1,
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                // Header
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: ThemeColor.secondaryColor.withOpacity(0.1),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(8),
+                                      topRight: Radius.circular(8),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  // Header
-                                  Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: ThemeColor.secondaryColor.withOpacity(0.1),
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(8),
-                                        topRight: Radius.circular(8),
+                                  child: const Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 1,
+                                        child: Text(
+                                          'ID',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 1,
-                                          child: Text(
-                                            'ID',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          'Machine',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Machine',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
+                                      ),
+                                      Expanded(
+                                        flex: 4,
+                                        child: Text(
+                                          'Issue',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        Expanded(
-                                          flex: 3,
-                                          child: Text(
-                                            'Issue',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Status',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                            fontSize: 14,
                                           ),
                                         ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Status',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
+                                      ),
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Actions',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: ThemeColor.secondaryColor,
+                                            fontSize: 14,
                                           ),
+                                          textAlign: TextAlign.center,
                                         ),
-                                        Expanded(
-                                          flex: 2,
-                                          child: Text(
-                                            'Actions',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: ThemeColor.secondaryColor,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
-                                  
-                                  // Repair Records List
-                                  Expanded(
-                                    child: ListView.builder(
-                                      itemCount: _repairs.length,
-                                      itemBuilder: (context, index) {
-                                        final repair = _repairs[index];
-                                        return Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.grey.withOpacity(0.2),
-                                              ),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              // ID
-                                              Expanded(
-                                                flex: 1,
-                                                child: CircleAvatar(
-                                                  radius: 16,
-                                                  backgroundColor: ThemeColor.secondaryColor,
-                                                  child: Text(
-                                                    Formatters.formatId(repair['id']), // Change from order['id'].toString()
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w500,
-                                                      color: ThemeColor.primaryColor,
-                                                    ),
+                                ),
+                                
+                                // Repair Records List
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: _repairs.length,
+                                    itemBuilder: (context, index) {
+                                      final repair = _repairs[index];
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: index % 2 == 0 ? ThemeColor.white : ThemeColor.white2.withOpacity(0.3),
+                                          border: index < _repairs.length - 1
+                                              ? Border(
+                                                  bottom: BorderSide(
+                                                    color: ThemeColor.grey.withOpacity(0.2),
+                                                    width: 0.5,
+                                                  ),
+                                                )
+                                              : null,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            // ID
+                                            Expanded(
+                                              flex: 1,
+                                              child: CircleAvatar(
+                                                radius: 18,
+                                                backgroundColor: ThemeColor.secondaryColor,
+                                                child: Text(
+                                                  Formatters.formatId(repair['id']),
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: ThemeColor.white,
+                                                    fontSize: 11,
                                                   ),
                                                 ),
                                               ),
-                                              
-                                              // Machine
-                                              Expanded(
-                                                flex: 2,
+                                            ),
+                                            
+                                            // Machine
+                                            Expanded(
+                                              flex: 3,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.build, color: ThemeColor.primaryColor, size: 20),
+                                                    Icon(
+                                                      Icons.precision_manufacturing,
+                                                      color: ThemeColor.primaryColor,
+                                                      size: 18,
+                                                    ),
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: Text(
@@ -977,94 +1110,112 @@ class _EditRepairStatusState extends State<EditRepairStatus> {
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.w500,
                                                           color: ThemeColor.primaryColor,
+                                                          fontSize: 13,
                                                         ),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              
-                                              // Issue
-                                              Expanded(
-                                                flex: 3,
+                                            ),
+                                            
+                                            // Issue
+                                            Expanded(
+                                              flex: 4,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
                                                 child: Text(
                                                   repair['issue_description'] ?? 'No description',
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.w400,
+                                                    color: ThemeColor.primaryColor,
                                                     fontSize: 12,
                                                   ),
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
                                               ),
-                                              
-                                              // Status
-                                              Expanded(
-                                                flex: 2,
+                                            ),
+                                            
+                                            // Status
+                                            Expanded(
+                                              flex: 2,
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
                                                 child: Container(
                                                   padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
+                                                    horizontal: 10,
+                                                    vertical: 6,
                                                   ),
                                                   decoration: BoxDecoration(
-                                                    color: repair['status'] == 'completed'
-                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : repair['status'] == 'in_progress'
-                                                            ? Colors.orange.withOpacity(0.2)
-                                                            : Colors.red.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                    color: _getStatusBackgroundColor(repair['status']),
+                                                    borderRadius: BorderRadius.circular(16),
                                                   ),
                                                   child: Text(
-                                                    repair['status'] ?? 'pending',
+                                                    (repair['status'] ?? 'pending').toString().toUpperCase(),
                                                     style: TextStyle(
-                                                      color: repair['status'] == 'completed'
-                                                          ? ThemeColor.primaryColor
-                                                          : repair['status'] == 'in_progress'
-                                                              ? Colors.orange
-                                                              : Colors.red,
+                                                      color: _getStatusTextColor(repair['status']),
                                                       fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
+                                                      fontSize: 10,
                                                     ),
                                                     textAlign: TextAlign.center,
                                                   ),
                                                 ),
                                               ),
-                                              
-                                              // Actions
-                                              Expanded(
-                                                flex: 2,
-                                                child: Row(
-                                                  children: [
-                                                    IconButton(
-                                                      icon: const Icon(
-                                                        Icons.edit,
-                                                        color: ThemeColor.secondaryColor,
-                                                      ),
-                                                      onPressed: () {
-                                                        _showEditRepairDialog(context, repair);
-                                                      },
-                                                      tooltip: 'Edit',
+                                            ),
+                                            
+                                            // Actions
+                                            Expanded(
+                                              flex: 2,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      color: ThemeColor.secondaryColor,
+                                                      size: 20,
                                                     ),
-                                                    IconButton(
-                                                      icon: const Icon(
-                                                        Icons.delete,
-                                                        color: Colors.red,
-                                                      ),
-                                                      onPressed: () {
-                                                        _showDeleteConfirmationDialog(context, repair);
-                                                      },
-                                                      tooltip: 'Delete',
+                                                    onPressed: () {
+                                                      _showEditRepairDialog(context, repair);
+                                                    },
+                                                    tooltip: 'Edit',
+                                                    padding: const EdgeInsets.all(4),
+                                                    constraints: const BoxConstraints(
+                                                      minWidth: 32,
+                                                      minHeight: 32,
                                                     ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  IconButton(
+                                                    icon: const Icon(
+                                                      Icons.delete,
+                                                      color: ThemeColor.red,
+                                                      size: 20,
+                                                    ),
+                                                    onPressed: () {
+                                                      _showDeleteConfirmationDialog(context, repair);
+                                                    },
+                                                    tooltip: 'Delete',
+                                                    padding: const EdgeInsets.all(4),
+                                                    constraints: const BoxConstraints(
+                                                      minWidth: 32,
+                                                      minHeight: 32,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
+                          ),
             ),
           ],
         ),

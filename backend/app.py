@@ -7,14 +7,12 @@ from routes import api, init_routes
 from config import Config
 from routes.restore import restore_api
 from routes.forecast import forecast_bp
-# from routes.machine_assignments import api as assignments_api
 from routes import auth, users, rice, production, machinery, repair, forecast, machine_assignments
 import os
 import argparse
 from datetime import timedelta
 import secrets
 
-# Create a function to get or generate a stable JWT secret key
 def get_persistent_jwt_secret():
     secret_file = os.path.join(os.path.dirname(__file__), 'jwt_secret.key')
     
@@ -56,7 +54,13 @@ CORS(app, resources={
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True
-    }
+    },
+    r"/*": {
+        "origins": ["http://localhost:*", "http://127.0.0.1:*", "http://10.0.2.2:*"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    },
 })
 
 # Register blueprints
@@ -64,14 +68,6 @@ init_routes(app)
 
 app.register_blueprint(restore_api, url_prefix='/api')
 app.register_blueprint(forecast_bp, url_prefix='/api')
-# app.register_blueprint(auth.api)
-# app.register_blueprint(users.api)
-# app.register_blueprint(rice.api)
-# app.register_blueprint(production.api)
-# app.register_blueprint(machinery.api)
-# app.register_blueprint(repair.api)
-# app.register_blueprint(forecast.api)
-# app.register_blueprint(machine_assignments.api)  # Make sure this is included
 
 # Initialize database
 @app.before_first_request
@@ -103,6 +99,32 @@ def setup_database():
     except IntegrityError:
         db_session.rollback()
         print(f"Error creating admin user.")
+
+
+@app.route('/api')
+def api_info():
+    return jsonify({
+        'message': 'PMS Backend API',
+        'status': 'ok',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/api/health',
+            'auth': {
+                'login': '/api/auth/login',
+                'signup': '/api/auth/signup',
+                'register': '/api/auth/register'
+            },
+            'users': '/api/users',
+            'machinery': '/api/machinery',
+            'repairs': '/api/repairs',
+            'production': '/api/production',
+            'rice': '/api/rice',
+            'assignments': '/api/assignments',
+            'restore': '/api/restore',
+            'forecast': '/api/forecast'
+        }
+    }), 200
+
 
 @app.teardown_appcontext
 def cleanup(exception=None):
@@ -143,7 +165,7 @@ def index():
 def health_check():
     return jsonify({
         'status': 'ok',
-        'database_connected': True  # Add code to actually test DB connection
+        'database_connected': True 
     })
 
 if __name__ == '__main__':

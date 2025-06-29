@@ -3,14 +3,18 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'network_config.dart';
 
 class ApiService {
   // Base URL for the backend API with a getter to allow for runtime configuration
   // Update your _baseUrl depending on where you're running the app
 
   // For Android emulator, use 10.0.2.2 instead of localhost
-  static String _baseUrl = 'http://10.0.2.2:5000/api';
+  // static String _baseUrl = 'http://10.0.2.2:5000/api';
 
+  // For web, use localhost directly
+  static String _baseUrl = 'http://localhost:5000/api';
+  
   // Or use your machine's actual IP address
   // static String _baseUrl = 'http://192.168.1.xxx:5000/api';
   
@@ -28,12 +32,14 @@ class ApiService {
   static const String userDataKey = 'user_data';
 
   // HTTP client
-  final http.Client _client = http.Client();
+  late http.Client _client;
 
   // Singleton pattern
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  ApiService._internal();
+  ApiService._internal() {
+    _client = http.Client();
+  }
 
   final _prefs = SharedPreferences.getInstance();
 
@@ -281,7 +287,6 @@ class ApiService {
       return false;
     }
   }
-  // ...existing code...
 
   Future<bool> refreshToken() async {
     try {
@@ -859,91 +864,71 @@ class ApiService {
   Future<Map<String, dynamic>> checkBackendConnection() async {
     try {
       if (kDebugMode) {
-        print('Testing backend connectivity to: $baseUrl');
+        print('Testing backend connection to: $_baseUrl');
       }
 
-      // First, try a simple GET request to the root endpoint
-      final rootResponse = await _client.get(
-        Uri.parse(baseUrl),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 5));
+      final healthUrl = _baseUrl.replaceAll('/api', '') + '/api/health';
       
-      // Then try a health check endpoint if available
-      final healthResponse = await _client.get(
-        Uri.parse('$baseUrl/health'),
-        headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _client.get(
+        Uri.parse(healthUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+      
+      if (kDebugMode) {
+        print('Health check response: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
       
       return {
-        'connected': true,
-        'root_status': rootResponse.statusCode,
-        'health_status': healthResponse.statusCode,
-        'root_body': rootResponse.body,
-        'health_body': healthResponse.body,
+        'connected': response.statusCode == 200,
+        'status': response.statusCode,
+        'url': healthUrl,
+        'response': response.body,
       };
     } catch (e) {
       if (kDebugMode) {
-        print('Backend connectivity test failed: $e');
-      }
-      
-      // Try to determine if it's a connection refused error
-      String errorType = 'unknown';
-      if (e.toString().contains('Connection refused')) {
-        errorType = 'connection_refused';
-      } else if (e.toString().contains('SocketException')) {
-        errorType = 'socket_exception';
-      } else if (e.toString().contains('timeout')) {
-        errorType = 'timeout';
+        print('Backend connection test failed: $e');
       }
       
       return {
         'connected': false,
         'error': e.toString(),
-        'error_type': errorType
+        'url': _baseUrl,
       };
     }
   }
 
-  // Add this method to auto-detect the working base URL
-
-  Future<bool> autoConfigureBaseUrl() async {
-    List<String> possibleUrls = [
-      'http://localhost:5000/api',
-      'http://10.0.2.2:5000/api',  // For Android emulator
-      'http://127.0.0.1:5000/api',
-      // Add any other potential URLs including your actual IP address
-    ];
-    
-    for (String url in possibleUrls) {
+  // Add method to test specific endpoint
+  Future<void> testDirectConnection() async {
+    try {
       if (kDebugMode) {
-        print('Trying base URL: $url');
+        print('=== DIRECT CONNECTION TEST ===');
+        print('Testing: http://localhost:5000/api/health');
       }
       
-      _baseUrl = url;
+      final response = await http.get(
+        Uri.parse('http://localhost:5000/api/health'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
       
-      try {
-        final response = await _client.get(
-          Uri.parse('$url/health'),
-          headers: {'Content-Type': 'application/json'},
-        ).timeout(const Duration(seconds: 2));
-        
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          if (kDebugMode) {
-            print('Successfully connected to: $url');
-          }
-          return true;
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print('Failed to connect to $url: $e');
-        }
-        // Continue to next URL
+      if (kDebugMode) {
+        print('Direct test status: ${response.statusCode}');
+        print('Direct test body: ${response.body}');
+        print('Direct test headers: ${response.headers}');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Direct test failed: $e');
       }
     }
-    
-    return false;
   }
-
+  
   // Add this method to your ApiService class
 
   Future<Map<String, dynamic>?> getCurrentUser() async {
@@ -1430,5 +1415,66 @@ Future<bool> deleteAssignment(int assignmentId) async {
       }
       return [];
     }
+  }
+
+  // Auto-configure method with IP detection
+  Future<bool> autoConfigureBaseUrl() async {
+    if (kDebugMode) {
+      print('🔍 Auto-detecting backend IP address...');
+    }
+    
+    // Try to detect the backend IP automatically
+    String? detectedIP = await NetworkConfig.detectBackendIP();
+    
+    if (detectedIP != null) {
+      _baseUrl = 'http://$detectedIP:5000/api';
+      if (kDebugMode) {
+        print('✅ Auto-detected backend at: $_baseUrl');
+      }
+      return true;
+    }
+    
+    // Fallback to manual IP list
+    List<String> possibleUrls = [
+      'http://localhost:5000/api',
+      'http://127.0.0.1:5000/api',
+      // Add your known IP addresses here as fallbacks
+      'http://192.168.1.100:5000/api',  // Replace with your actual IP
+      'http://192.168.0.100:5000/api',  // Common router range
+    ];
+    
+    for (String url in possibleUrls) {
+      if (kDebugMode) {
+        print('Testing backend connectivity to: $url');
+      }
+      
+      _baseUrl = url;
+      
+      try {
+        final response = await _client.get(
+          Uri.parse('${url.replaceAll('/api', '')}/api/health'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ).timeout(const Duration(seconds: 5));
+        
+        if (response.statusCode == 200) {
+          if (kDebugMode) {
+            print('✅ Successfully connected to: $url');
+          }
+          return true;
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Failed to connect to $url: $e');
+        }
+      }
+    }
+    
+    if (kDebugMode) {
+      print('❌ All backend connectivity tests failed');
+    }
+    return false;
   }
 }
