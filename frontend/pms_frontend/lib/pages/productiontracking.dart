@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import '../theme/colors.dart';
+import '../theme/inputtheme.dart';
 import '../widget/navbar.dart';
 import '../widget/calendar.dart';
 import '../widget/enddrawer.dart';
@@ -551,10 +552,8 @@ class _ProductionTrackingState extends State<ProductionTrackingNav> {
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: selectedMunicipality,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: "Select municipality",
-                        ),
+                        style: InputTheme.inputTextStyle,
+                        decoration: InputTheme.getInputDecoration('Select municipality'),
                         items: Municipalities.getDropdownItems(),
                         onChanged: (value) {
                           if (value != null) {

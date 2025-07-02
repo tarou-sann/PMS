@@ -4,6 +4,7 @@ import 'package:pms_frontend/pages/machinerymanagement.dart';
 import '../services/api_service.dart';
 import '../services/user_activity_service.dart';
 import '../theme/colors.dart';
+import '../theme/inputtheme.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../widget/textfield.dart';
@@ -57,25 +58,24 @@ class RepairNav extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               
-              // Responsive card layout with size limits
               LayoutBuilder(
                 builder: (context, constraints) {
                   double screenWidth = constraints.maxWidth;
-                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
-                  
-                  // Fixed card dimensions with scaling
-                  double cardWidth = 450 * scaleFactor;
-                  double cardHeight = 450 * scaleFactor;
-                  double iconSize = 225 * scaleFactor;
-                  double fontSize = 24 * scaleFactor;
-                  double spacing = 40 * scaleFactor;
-                  
-                  // Clamp to reasonable limits
-                  cardWidth = cardWidth.clamp(350.0, 450.0);
-                  cardHeight = cardHeight.clamp(350.0, 450.0);
-                  iconSize = iconSize.clamp(180.0, 225.0);
-                  fontSize = fontSize.clamp(20.0, 24.0);
-                  spacing = spacing.clamp(30.0, 40.0);
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 0.9); // Increased scaling factor
+
+                  // Increased card dimensions
+                  double cardWidth = 380 * scaleFactor; // Increased from 320
+                  double cardHeight = 380 * scaleFactor; // Increased from 320
+                  double iconSize = 180 * scaleFactor; // Increased from 190
+                  double fontSize = 22 * scaleFactor; // Increased from 20
+                  double spacing = 35 * scaleFactor; // Increased from 30
+
+                  // Ensure cards don't get too big or too small with updated limits
+                  cardWidth = cardWidth.clamp(300.0, 380.0); // Increased from 250-320
+                  cardHeight = cardHeight.clamp(300.0, 380.0); // Increased from 250-320
+                  iconSize = iconSize.clamp(140.0, 180.0); // Increased from 120-160
+                  fontSize = fontSize.clamp(18.0, 22.0); // Increased from 16-20
+                  spacing = spacing.clamp(25.0, 35.0); // Increased from 20-30
                   
                   return Center( // Center the content
                     child: Wrap(
@@ -169,9 +169,10 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
   // Form controllers
   final _formKey = GlobalKey<FormState>();
   final _issueController = TextEditingController();
+  final _commentsController = TextEditingController();
 
   // State variables
-  int? _selectedMachineryId;
+  String? _selectedMachineryId;
   String _status = 'pending';
   bool _isUrgent = false;
   bool _isLoading = false;
@@ -193,6 +194,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
   @override
   void dispose() {
     _issueController.dispose();
+    _commentsController.dispose();
     super.dispose();
   }
 
@@ -205,7 +207,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
           _machinery = machinery;
           // Preselect the first machinery if available
           if (_machinery.isNotEmpty) {
-            _selectedMachineryId = _machinery[0]['id'];
+            _selectedMachineryId = _machinery[0]['id'].toString();
           }
         } else {
           _errorMessage = 'Failed to load machinery data';
@@ -240,7 +242,7 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
 
     try {
       final repairData = {
-        'machinery_id': _selectedMachineryId,
+        'machinery_id': int.parse(_selectedMachineryId!),
         'issue_description': _issueController.text,
         'status': _status,
         'notes': _partsConcerned,
@@ -256,12 +258,12 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
         };
         
         // Update the machinery to indicate it needs repairs
-        await _apiService.updateMachinery(_selectedMachineryId!, machineryUpdateData);
+        await _apiService.updateMachinery(int.parse(_selectedMachineryId!), machineryUpdateData);
         
         // Log the activity for both repair creation and machinery update
         await UserActivityService().logActivity(
           'Create Repair Order',
-          'Created repair order for machinery ID: ${Formatters.formatId(_selectedMachineryId!)}',
+          'Created repair order for machinery ID: ${Formatters.formatId(int.parse(_selectedMachineryId!))}',
           target: 'Repair Management',
         );
       }
@@ -272,12 +274,13 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
           _successMessage = 'Repair order created successfully! Machinery status updated to "Repairs Needed".';
           // Clear form
           _issueController.clear();
+          _commentsController.clear();
           _partsConcerned = '';
           _status = 'pending';
           _isUrgent = false;
           // Reset machinery selection
           if (_machinery.isNotEmpty) {
-            _selectedMachineryId = _machinery[0]['id'];
+            _selectedMachineryId = _machinery[0]['id'].toString();
           }
         } else {
           _errorMessage = 'Failed to create repair order';
@@ -375,51 +378,35 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                         ),
                       ),
 
-                    // Machinery Selection
-                    RichText(
-                      text: const TextSpan(
-                        text: 'Select Machinery',
-                        style: labelStyle,
-                        children: [
-                          TextSpan(
-                            text: '*',
-                            style: TextStyle(
-                              color: ThemeColor.red,
-                            ),
-                          ),
-                        ],
-                      ),
+                    // Machinery ID dropdown
+                    const Text(
+                      'Machinery ID',
+                      style: labelStyle,
                     ),
                     const SizedBox(height: 10),
-                    _isLoadingMachinery
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(ThemeColor.secondaryColor),
-                            ),
-                          )
-                        : _machinery.isEmpty
-                            ? const Text('No machinery available. Please add machinery first.')
-                            : DropdownButtonFormField<int>(
-                                value: _selectedMachineryId,
-                                dropdownColor: ThemeColor.white2,
-                                focusColor: ThemeColor.white2,
-                                items: _machinery.map((machinery) {
-                                  return DropdownMenuItem<int>(
-                                    value: machinery['id'],
-                                    child: Text('${Formatters.formatId(machinery['id'])} - ${machinery['machine_name']}'),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedMachineryId = value;
-                                  });
-                                },
-                                decoration: const InputDecoration(
-                                  border: OutlineInputBorder(),
-                                  focusedBorder:
-                                      OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor)),
-                                ),
-                              ),
+                    DropdownButtonFormField<String>(
+                      value: _selectedMachineryId,
+                      style: InputTheme.inputTextStyle,
+                      decoration: InputTheme.getInputDecoration('Select Machinery'),
+                      dropdownColor: ThemeColor.white2,
+                      items: _machinery.map((machinery) {
+                        return DropdownMenuItem<String>(
+                          value: machinery['id'].toString(),
+                          child: Text('${machinery['machine_name']} (ID: ${machinery['id']})'),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMachineryId = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select machinery';
+                        }
+                        return null;
+                      },
+                    ),
                     const SizedBox(height: 20),
 
                     // Issue Description
@@ -459,8 +446,9 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _partsConcerned,
+                      style: InputTheme.inputTextStyle,
+                      decoration: InputTheme.getInputDecoration('Select Part'),
                       dropdownColor: ThemeColor.white2,
-                      focusColor: ThemeColor.white2,
                       items: const [
                         DropdownMenuItem(
                           value: '',
@@ -491,36 +479,8 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           child: Text("Straw Dispensing System"),
                         ),
                         DropdownMenuItem(
-                          value: 'Engine',
-                          child: Text("Engine"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Transmission',
-                          child: Text("Transmission"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Lubrication Systems',
-                          child: Text("Lubrication Systems"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Chassis',
-                          child: Text("Chassis"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Control System',
-                          child: Text("Control System"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Tracks',
-                          child: Text("Tracks"),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Electrical ',
-                          child: Text("Electrical "),
-                        ),
-                        DropdownMenuItem(
-                          value: 'General',
-                          child: Text("General"),
+                          value: 'Drive System',
+                          child: Text("Drive System"),
                         ),
                         DropdownMenuItem(
                           value: 'Others',
@@ -534,14 +494,10 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           });
                         }
                       },
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor)),
-                      ),
                     ),
                     const SizedBox(height: 20),
 
-                    // Status
+                    // Status dropdown
                     const Text(
                       'Status',
                       style: labelStyle,
@@ -549,8 +505,9 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _status,
+                      style: InputTheme.inputTextStyle,
+                      decoration: InputTheme.getInputDecoration('Select Status'),
                       dropdownColor: ThemeColor.white2,
-                      focusColor: ThemeColor.white2,
                       items: const [
                         DropdownMenuItem(
                           value: 'pending',
@@ -572,10 +529,19 @@ class _CreateRepairOrderState extends State<CreateRepairOrder> {
                           });
                         }
                       },
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: ThemeColor.primaryColor)),
-                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Comments field
+                    const Text(
+                      'Comments (Optional)',
+                      style: labelStyle,
+                    ),
+                    const SizedBox(height: 10),
+                    ThemedTextFormField(
+                      controller: _commentsController,
+                      hintText: 'Additional comments about the repair',
+                      maxLines: 3,
                     ),
                     const SizedBox(height: 20),
 

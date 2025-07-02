@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/user_activity_service.dart';
 import '../theme/colors.dart';
+import '../theme/inputtheme.dart';
 import '../widget/enddrawer.dart';
 import '../widget/navbar.dart';
 import '../widget/textfield.dart';
@@ -39,25 +40,24 @@ class MaintenanceNav extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               
-              // Responsive card layout with size limits
               LayoutBuilder(
                 builder: (context, constraints) {
                   double screenWidth = constraints.maxWidth;
-                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // Conservative scaling
-                  
-                  // Fixed card dimensions with scaling
-                  double cardWidth = 450 * scaleFactor;
-                  double cardHeight = 450 * scaleFactor;
-                  double iconSize = 225 * scaleFactor;
-                  double fontSize = 24 * scaleFactor;
-                  double spacing = 40 * scaleFactor;
-                  
-                  // Clamp to reasonable limits
-                  cardWidth = cardWidth.clamp(350.0, 450.0);
-                  cardHeight = cardHeight.clamp(350.0, 450.0);
-                  iconSize = iconSize.clamp(180.0, 225.0);
-                  fontSize = fontSize.clamp(20.0, 24.0);
-                  spacing = spacing.clamp(30.0, 40.0);
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 0.9); // Increased scaling factor
+
+                  // Increased card dimensions
+                  double cardWidth = 380 * scaleFactor; // Increased from 320
+                  double cardHeight = 380 * scaleFactor; // Increased from 320
+                  double iconSize = 180 * scaleFactor; // Increased from 190
+                  double fontSize = 22 * scaleFactor; // Increased from 20
+                  double spacing = 35 * scaleFactor; // Increased from 30
+
+                  // Ensure cards don't get too big or too small with updated limits
+                  cardWidth = cardWidth.clamp(300.0, 380.0); // Increased from 250-320
+                  cardHeight = cardHeight.clamp(300.0, 380.0); // Increased from 250-320
+                  iconSize = iconSize.clamp(140.0, 180.0); // Increased from 120-160
+                  fontSize = fontSize.clamp(18.0, 22.0); // Increased from 16-20
+                  spacing = spacing.clamp(25.0, 35.0); // Increased from 20-30
                   
                   return Center( // Center the content
                     child: Wrap(
@@ -208,9 +208,8 @@ class _EditMachineryState extends State<EditMachinery> {
     final formKey = GlobalKey<FormState>();
     final machineNameController = TextEditingController(text: machine['machine_name']);
     final hourMeterController = TextEditingController(text: '${machine['hour_meter'] ?? 0}');
-    String mobility = machine['is_mobile'] ? 'Yes' : 'No';
-    String status = machine['is_active'] ? 'Yes' : 'No';
-    // String repairsNeeded = (machine['repairs_needed'] ?? false) ? 'Yes' : 'No';
+    bool mobility = machine['is_mobile'] ?? false;
+    bool status = machine['is_active'] ?? false;
     bool isLoading = false;
     String errorMessage = '';
 
@@ -219,6 +218,7 @@ class _EditMachineryState extends State<EditMachinery> {
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
+            backgroundColor: ThemeColor.white,
             title: const Text(
               'Edit Machine Details',
               style: TextStyle(
@@ -243,12 +243,14 @@ class _EditMachineryState extends State<EditMachinery> {
                             style: const TextStyle(color: ThemeColor.red),
                           ),
                         ),
+
+                      // Machine Name field
                       const Text(
                         'Machine Name',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                          color: ThemeColor.primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -270,7 +272,7 @@ class _EditMachineryState extends State<EditMachinery> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                          color: ThemeColor.primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -290,22 +292,23 @@ class _EditMachineryState extends State<EditMachinery> {
                       ),
                       const SizedBox(height: 16),
 
+                      // Mobility field with radio buttons
                       const Text(
                         'Mobility',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
+                          color: ThemeColor.primaryColor,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Radio<String>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: 'Yes',
+                          Radio<bool>(
+                            fillColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                            value: true,
                             groupValue: mobility,
-                            onChanged: (value) {
+                            onChanged: (bool? value) {
                               setState(() {
                                 mobility = value!;
                               });
@@ -313,50 +316,13 @@ class _EditMachineryState extends State<EditMachinery> {
                           ),
                           const Text('Yes'),
                           const SizedBox(width: 20),
-                          Radio<String>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: 'No',
+                          Radio<bool>(
+                            fillColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                            value: false,
                             groupValue: mobility,
-                            onChanged: (value) {
+                            onChanged: (bool? value) {
                               setState(() {
                                 mobility = value!;
-                              });
-                            },
-                          ),
-                          const Text('No'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Harvest Status',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ThemeColor.secondaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Radio<String>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: 'Yes',
-                            groupValue: status,
-                            onChanged: (value) {
-                              setState(() {
-                                status = value!;
-                              });
-                            },
-                          ),
-                          const Text('Yes'),
-                          const SizedBox(width: 20),
-                          Radio<String>(
-                            activeColor: ThemeColor.secondaryColor,
-                            value: 'No',
-                            groupValue: status,
-                            onChanged: (value) {
-                              setState(() {
-                                status = value!;
                               });
                             },
                           ),
@@ -365,43 +331,44 @@ class _EditMachineryState extends State<EditMachinery> {
                       ),
                       const SizedBox(height: 16),
 
-                      // // Repairs Needed field
-                      // const Text(
-                      //   'Repairs Needed',
-                      //   style: TextStyle(
-                      //     fontSize: 16,
-                      //     fontWeight: FontWeight.w500,
-                      //     color: ThemeColor.secondaryColor,
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 8),
-                      // Row(
-                      //   children: [
-                      //     Radio<String>(
-                      //       activeColor: ThemeColor.secondaryColor,
-                      //       value: 'Yes',
-                      //       groupValue: repairsNeeded,
-                      //       onChanged: (value) {
-                      //         setState(() {
-                      //           repairsNeeded = value!;
-                      //         });
-                      //       },
-                      //     ),
-                      //     const Text('Yes'),
-                      //     const SizedBox(width: 20),
-                      //     Radio<String>(
-                      //       activeColor: ThemeColor.secondaryColor,
-                      //       value: 'No',
-                      //       groupValue: repairsNeeded,
-                      //       onChanged: (value) {
-                      //         setState(() {
-                      //           repairsNeeded = value!;
-                      //         });
-                      //       },
-                      //     ),
-                      //     const Text('No'),
-                      //   ],
-                      // ),
+                      // Harvest Status field with radio buttons
+                      const Text(
+                        'Harvest Status',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeColor.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Radio<bool>(
+                            fillColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                            value: true,
+                            groupValue: status,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                status = value!;
+                              });
+                            },
+                          ),
+                          const Text('Yes'),
+                          const SizedBox(width: 20),
+                          Radio<bool>(
+                            fillColor: MaterialStateProperty.all(ThemeColor.secondaryColor),
+                            value: false,
+                            groupValue: status,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                status = value!;
+                              });
+                            },
+                          ),
+                          const Text('No'),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -430,18 +397,14 @@ class _EditMachineryState extends State<EditMachinery> {
                           });
 
                           try {
-                            final isMobile = mobility == 'Yes';
-                            final isActive = status == 'Yes';
-                            // final needsRepairs = repairsNeeded == 'Yes';
                             final hourMeter = int.parse(hourMeterController.text);
 
                             // Prepare update data
                             final machineryData = {
                               'machine_name': machineNameController.text,
-                              'is_mobile': isMobile,
-                              'is_active': isActive,
+                              'is_mobile': mobility,
+                              'is_active': status,
                               'hour_meter': hourMeter,
-                              // 'repairs_needed': needsRepairs,
                             };
 
                             // Call API to update machinery
@@ -741,6 +704,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
                                             ),
+                                            textAlign: TextAlign.center,
                                           ),
                                         ),
                                         Expanded(
@@ -751,6 +715,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
                                             ),
+                                            textAlign: TextAlign.center,
                                           ),
                                         ),
                                         Expanded(
@@ -771,6 +736,7 @@ class _EditMachineryState extends State<EditMachinery> {
                                               fontWeight: FontWeight.bold,
                                               color: ThemeColor.secondaryColor,
                                             ),
+                                            textAlign: TextAlign.center,
                                           ),
                                         ),
                                         Expanded(
@@ -817,155 +783,173 @@ class _EditMachineryState extends State<EditMachinery> {
                                                   ],
                                                 ),
                                               ),
+                                              const SizedBox(width: 8),
 
                                               // Machine Name
                                               Expanded(
                                                 flex: 3,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.agriculture,
-                                                        color: ThemeColor.primaryColor, size: 20),
+                                                    const Icon(Icons.agriculture, color: ThemeColor.primaryColor, size: 16),
                                                     const SizedBox(width: 8),
                                                     Expanded(
                                                       child: Text(
-                                                        machine['machine_name'],
+                                                        machine['machine_name'] ?? 'Unknown',
                                                         style: const TextStyle(
                                                           fontWeight: FontWeight.w500,
                                                           color: ThemeColor.primaryColor,
                                                         ),
+                                                        overflow: TextOverflow.ellipsis,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
+                                              const SizedBox(width: 8),
 
                                               // Mobility
                                               Expanded(
                                                 flex: 2,
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: machine['is_mobile']
-                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : ThemeColor.secondaryColor.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    machine['is_mobile'] ? 'Yes' : 'No',
-                                                    style: TextStyle(
-                                                      color: machine['is_mobile']
-                                                          ? ThemeColor.primaryColor
-                                                          : ThemeColor.secondaryColor,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
+                                                child: Center(
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    constraints: const BoxConstraints(
+                                                      minWidth: 40,
+                                                      maxWidth: 60,
                                                     ),
-                                                    textAlign: TextAlign.center,
+                                                    decoration: BoxDecoration(
+                                                      color: (machine['is_mobile'] == true)
+                                                          ? ThemeColor.green.withOpacity(0.1)
+                                                          : ThemeColor.secondaryColor.withOpacity(0.1),
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                    child: Text(
+                                                      (machine['is_mobile'] == true) ? 'Yes' : 'No',
+                                                      style: TextStyle(
+                                                        color: (machine['is_mobile'] == true) ? ThemeColor.green : ThemeColor.secondaryColor,
+                                                        fontWeight: FontWeight.w500,
+                                                        fontSize: 11,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+                                              const SizedBox(width: 8),
 
-                                              // Status
+                                              // Harvest Status
                                               Expanded(
                                                 flex: 2,
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: machine['is_active']
-                                                        ? ThemeColor.primaryColor.withOpacity(0.2)
-                                                        : ThemeColor.red.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    machine['is_active'] ? 'Yes' : 'No',
-                                                    style: TextStyle(
-                                                      color:
-                                                          machine['is_active'] ? ThemeColor.primaryColor : ThemeColor.red,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
+                                                child: Center(
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    constraints: const BoxConstraints(
+                                                      minWidth: 40,
+                                                      maxWidth: 60,
                                                     ),
-                                                    textAlign: TextAlign.center,
+                                                    decoration: BoxDecoration(
+                                                      color: (machine['is_active'] == true)
+                                                          ? ThemeColor.green.withOpacity(0.1)
+                                                          : ThemeColor.red.withOpacity(0.1),
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                    child: Text(
+                                                      (machine['is_active'] == true) ? 'Yes' : 'No',
+                                                      style: TextStyle(
+                                                        color: (machine['is_active'] == true) ? ThemeColor.green : ThemeColor.red,
+                                                        fontWeight: FontWeight.w500,
+                                                        fontSize: 11,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+                                              const SizedBox(width: 8),
 
                                               // Hour Meter
                                               Expanded(
                                                 flex: 2,
                                                 child: Row(
                                                   children: [
-                                                    const Icon(Icons.schedule,
-                                                        color: ThemeColor.secondaryColor, size: 16),
-                                                    const SizedBox(width: 4),
+                                                    const Icon(Icons.schedule, color: ThemeColor.secondaryColor, size: 16),
+                                                    const SizedBox(width: 8),
                                                     Text(
                                                       '${machine['hour_meter'] ?? 0} hrs',
                                                       style: const TextStyle(
                                                         fontWeight: FontWeight.w500,
                                                         color: ThemeColor.secondaryColor,
-                                                        fontSize: 12,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
+                                              const SizedBox(width: 8),
 
                                               // Repairs Needed
                                               Expanded(
                                                 flex: 2,
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 4,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: (machine['repairs_needed'] ?? false)
-                                                        ? ThemeColor.red.withOpacity(0.2)
-                                                        : ThemeColor.green.withOpacity(0.2),
-                                                    borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  child: Text(
-                                                    (machine['repairs_needed'] ?? false) ? 'Yes' : 'No',
-                                                    style: TextStyle(
-                                                      color: (machine['repairs_needed'] ?? false)
-                                                          ? ThemeColor.red
-                                                          : ThemeColor.green,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 12,
+                                                child: Center(
+                                                  child: Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    constraints: const BoxConstraints(
+                                                      minWidth: 40,
+                                                      maxWidth: 60,
                                                     ),
-                                                    textAlign: TextAlign.center,
+                                                    decoration: BoxDecoration(
+                                                      color: (machine['needs_repair'] == true)
+                                                          ? ThemeColor.red.withOpacity(0.1)
+                                                          : ThemeColor.green.withOpacity(0.1),
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                    child: Text(
+                                                      (machine['needs_repair'] == true) ? 'Yes' : 'No',
+                                                      style: TextStyle(
+                                                        color: (machine['needs_repair'] == true) ? ThemeColor.red : ThemeColor.green,
+                                                        fontWeight: FontWeight.w500,
+                                                        fontSize: 11,
+                                                      ),
+                                                      textAlign: TextAlign.center,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+                                              const SizedBox(width: 8),
 
                                               // Actions
                                               Expanded(
                                                 flex: 2,
                                                 child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.start,
                                                   children: [
+                                                    // Edit button
                                                     IconButton(
+                                                      onPressed: () => _showEditMachineDialog(context, machine),
                                                       icon: const Icon(
                                                         Icons.edit,
                                                         color: ThemeColor.secondaryColor,
+                                                        size: 20,
                                                       ),
-                                                      onPressed: () {
-                                                        _showEditMachineDialog(context, machine);
-                                                      },
-                                                      tooltip: 'Edit',
+                                                      constraints: const BoxConstraints(
+                                                        minWidth: 32,
+                                                        minHeight: 32,
+                                                      ),
+                                                      tooltip: 'Edit machine',
                                                     ),
+                                                    const SizedBox(width: 8),
+                                                    // Delete button
                                                     IconButton(
+                                                      onPressed: () => _showDeleteConfirmationDialog(context, machine),
                                                       icon: const Icon(
                                                         Icons.delete,
                                                         color: ThemeColor.red,
+                                                        size: 20,
                                                       ),
-                                                      onPressed: () {
-                                                        _showDeleteConfirmationDialog(context, machine);
-                                                      },
-                                                      tooltip: 'Delete',
+                                                      constraints: const BoxConstraints(
+                                                        minWidth: 32,
+                                                        minHeight: 32,
+                                                      ),
+                                                      tooltip: 'Delete machine',
                                                     ),
                                                   ],
                                                 ),
@@ -1082,12 +1066,9 @@ class _EditRiceState extends State<EditRice> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextFormField(
+                    ThemedTextFormField(
                       controller: varietyNameController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter variety name',
-                      ),
+                      hintText: 'Enter variety name',
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter variety name';
@@ -1097,7 +1078,7 @@ class _EditRiceState extends State<EditRice> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Quality Grade
+                    // Quality Grade dropdown
                     const Text(
                       'Quality Grade',
                       style: TextStyle(
@@ -1109,22 +1090,25 @@ class _EditRiceState extends State<EditRice> {
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: qualityGrade,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'Shatter', child: Text('Shatter')),
-                        DropdownMenuItem(value: 'Non-Shattering', child: Text('Non-Shattering')),
-                      ],
-                      onChanged: (value) {
-                        qualityGrade = value!;
+                      style: InputTheme.inputTextStyle,
+                      decoration: InputTheme.getInputDecoration('Select quality grade'),
+                      items: ['Shatter', 'Non-Shattering'].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          qualityGrade = newValue!;
+                        });
                       },
                     ),
                     const SizedBox(height: 16),
 
-                    // Expected Yield Per Hectare
+                    // Expected Yield field
                     const Text(
-                      'Baseline Expected Yield per Hectare (kg/ha)',
+                      'Expected Yield (kg/ha)',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -1132,18 +1116,14 @@ class _EditRiceState extends State<EditRice> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    TextFormField(
+                    ThemedTextFormField(
                       controller: expectedYieldController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Enter typical expected yield for this variety',
-                      ),
+                      hintText: 'Expected yield per hectare (optional)',
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value != null && value.isNotEmpty) {
-                          final yield = double.tryParse(value);
-                          if (yield == null || yield <= 0) {
-                            return 'Expected yield must be a valid number greater than 0';
+                          if (double.tryParse(value) == null) {
+                            return 'Please enter a valid number';
                           }
                         }
                         return null;
@@ -1650,9 +1630,24 @@ class _EditUsersState extends State<EditUsers> {
     final formKey = GlobalKey<FormState>();
     final usernameController = TextEditingController(text: user['username']);
     final securityAnswerController = TextEditingController();
-    final passwordController = TextEditingController(); // Add password controller
-    final confirmPasswordController = TextEditingController(); // Add confirm password controller
+    final passwordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    
+    // Predefined security questions
+    final List<String> securityQuestions = [
+      'What is your favorite color?',
+      'What is your mother\'s maiden name?',
+      'What was your first pet\'s name?',
+      'What city were you born in?',
+      'What is your favorite food?'
+    ];
+    
+    // Ensure the security question from the database matches one of our options
     String securityQuestion = user['security_question'] ?? 'What is your favorite color?';
+    if (!securityQuestions.contains(securityQuestion)) {
+      securityQuestion = 'What is your favorite color?'; // Default fallback
+    }
+    
     bool isAdmin = user['is_admin'] ?? false;
     bool isLoading = false;
     String errorMessage = '';
@@ -1698,14 +1693,10 @@ class _EditUsersState extends State<EditUsers> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      ThemedTextFormField(
                         controller: usernameController,
-                        enabled: false,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          fillColor: Colors.grey,
-                          filled: true,
-                        ),
+                        readOnly: true,
+                        hintText: 'Username',
                       ),
                       const SizedBox(height: 16),
 
@@ -1719,13 +1710,10 @@ class _EditUsersState extends State<EditUsers> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      ThemedTextFormField(
                         controller: passwordController,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Leave blank to keep current password',
-                        ),
+                        hintText: 'Leave blank to keep current password',
                         validator: (value) {
                           if (value != null && value.isNotEmpty && value.length < 8) {
                             return 'Password must be at least 8 characters';
@@ -1737,7 +1725,7 @@ class _EditUsersState extends State<EditUsers> {
 
                       // Confirm Password field
                       const Text(
-                        'Confirm New Password',
+                        'Confirm Password (if changing password)',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -1745,17 +1733,14 @@ class _EditUsersState extends State<EditUsers> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      ThemedTextFormField(
                         controller: confirmPasswordController,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Confirm new password',
-                        ),
+                        hintText: 'Confirm new password',
                         validator: (value) {
                           if (passwordController.text.isNotEmpty) {
                             if (value == null || value.isEmpty) {
-                              return 'Please confirm the new password';
+                              return 'Please confirm new password';
                             }
                             if (value != passwordController.text) {
                               return 'Passwords do not match';
@@ -1766,7 +1751,7 @@ class _EditUsersState extends State<EditUsers> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Security Question dropdown
+                      // Security Question field
                       const Text(
                         'Security Question',
                         style: TextStyle(
@@ -1778,16 +1763,9 @@ class _EditUsersState extends State<EditUsers> {
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: securityQuestion,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          'What is your favorite color?',
-                          'What is your mother\'s maiden name?',
-                          'What was your first pet\'s name?',
-                          'What city were you born in?',
-                          'What is your favorite food?'
-                        ].map((String value) {
+                        style: InputTheme.inputTextStyle,
+                        decoration: InputTheme.getInputDecoration('Select security question'),
+                        items: securityQuestions.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -1811,12 +1789,9 @@ class _EditUsersState extends State<EditUsers> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
+                      ThemedTextFormField(
                         controller: securityAnswerController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: 'Leave blank to keep current answer',
-                        ),
+                        hintText: 'Enter security answer',
                       ),
                       const SizedBox(height: 16),
 

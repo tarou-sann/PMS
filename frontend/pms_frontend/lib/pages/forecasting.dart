@@ -926,6 +926,28 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                         )
                                       : LineChart(
                                           LineChartData(
+                                            lineTouchData: LineTouchData(
+                                              enabled: true,
+                                              touchTooltipData: LineTouchTooltipData(
+                                                tooltipBgColor: ThemeColor.green, // Orange background for tooltips
+                                                tooltipRoundedRadius: 8,
+                                                tooltipPadding: const EdgeInsets.all(8),
+                                                tooltipMargin: 8,
+                                                getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                                                  return touchedBarSpots.map((barSpot) {
+                                                    final isForecast = barSpot.x >= 13; // Forecast data starts at x=13
+                                                    return LineTooltipItem(
+                                                      '${barSpot.y.toStringAsFixed(1)} kg/ha',
+                                                      TextStyle(
+                                                        color: isForecast ? Colors.white : Colors.white,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 14,
+                                                      ),
+                                                    );
+                                                  }).toList();
+                                                },
+                                              ),
+                                            ),
                                             gridData: FlGridData(
                                               show: true,
                                               drawVerticalLine: true,
@@ -1083,8 +1105,8 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                                 LineChartBarData(
                                                   spots: _getConfidenceSpots(true),
                                                   isCurved: true,
-                                                  color: ThemeColor.white.withOpacity(0.3),
-                                                  barWidth: 1,
+                                                  color: ThemeColor.green.withOpacity(0.4), // Changed from white to green with opacity
+                                                  barWidth: 2, // Increased from 1 to 2 for better visibility
                                                   dotData: FlDotData(show: false),
                                                   dashArray: [2, 4],
                                                 ),
@@ -1093,8 +1115,8 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                                 LineChartBarData(
                                                   spots: _getConfidenceSpots(false),
                                                   isCurved: true,
-                                                  color: ThemeColor.white.withOpacity(0.3),
-                                                  barWidth: 1,
+                                                  color: ThemeColor.green.withOpacity(0.4), // Changed from white to green with opacity
+                                                  barWidth: 2, // Increased from 1 to 2 for better visibility
                                                   dotData: FlDotData(show: false),
                                                   dashArray: [2, 4],
                                                 ),
@@ -1116,7 +1138,7 @@ class _ForecastingPageState extends State<ForecastingPage> {
                                       if (_getConfidenceSpots(true).isNotEmpty)
                                         const SizedBox(width: 20),
                                       if (_getConfidenceSpots(true).isNotEmpty)
-                                        _buildLegendItem('95% Confidence', ThemeColor.green.withOpacity(0.5), true),
+                                        _buildLegendItem('95% Confidence', ThemeColor.green.withOpacity(0.4), true), // Updated to match the line color
                                     ],
                                   ),
                               ],
@@ -1414,4 +1436,4 @@ class DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-} 
+}

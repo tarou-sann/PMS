@@ -446,8 +446,8 @@ class _BackUpNavState extends State<BackUpNav> {
                           ? ThemeColor.red.withOpacity(0.1)
                           : _statusMessage.contains('successfully')
                             ? ThemeColor.green.withOpacity(0.1)
-                            : _statusMessage.contains('No file selected')  // Add this condition
-                              ? ThemeColor.red.withOpacity(0.1)           // Red background for "No file selected"
+                            : _statusMessage.contains('No file selected')
+                              ? ThemeColor.red.withOpacity(0.1)
                               : ThemeColor.green.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -458,8 +458,8 @@ class _BackUpNavState extends State<BackUpNav> {
                             ? ThemeColor.red 
                             : _statusMessage.contains('successfully')
                               ? ThemeColor.green
-                              : _statusMessage.contains('No file selected')  // Add this condition
-                                ? ThemeColor.red                             // Red text for "No file selected"
+                              : _statusMessage.contains('No file selected')
+                                ? ThemeColor.red
                                 : ThemeColor.green,
                         fontWeight: FontWeight.w500,
                       ),
@@ -468,184 +468,200 @@ class _BackUpNavState extends State<BackUpNav> {
                   ),
                 ),
 
-              // Backup buttons - Update to include 3 buttons in a row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Backup Data Button
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GestureDetector(
-                      onTap: (_isBackingUp || _isRestoring) ? null : _backupData,
-                      child: Container(
-                        width: 450, // Changed from 300 to 450 to match system standard
-                        height: 450, // Changed from 350 to 450 to match system standard
-                        decoration: BoxDecoration(
-                          color: (_isBackingUp || _isRestoring)
-                              ? Colors.grey.withOpacity(0.3)
-                              : ThemeColor.white2,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (_isBackingUp)
-                              const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  ThemeColor.secondaryColor,
-                                ),
-                              )
-                            else
-                              const Icon(
-                                Icons.settings_backup_restore,
-                                size: 225, // Changed from 150 to 225 to match system standard
-                                color: ThemeColor.secondaryColor,
-                              ),
-                            const SizedBox(height: 20),
-                            Text(
-                              _isBackingUp ? "Backing Up..." : "Back Up Data",
-                              style: const TextStyle(fontSize: 24), // Changed from 20 to 24
+              // Responsive card layout with size limits
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  double screenWidth = constraints.maxWidth;
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 0.9); // Updated scaling factor
+
+                  // Updated card dimensions
+                  double cardWidth = 380 * scaleFactor; // Updated to match system standard
+                  double cardHeight = 380 * scaleFactor; // Updated to match system standard
+                  double iconSize = 180 * scaleFactor; // Updated to match system standard
+                  double fontSize = 22 * scaleFactor; // Updated to match system standard
+                  double spacing = 35 * scaleFactor; // Updated to match system standard
+
+                  // Ensure cards don't get too big or too small with updated limits
+                  cardWidth = cardWidth.clamp(300.0, 380.0); // Updated constraints
+                  cardHeight = cardHeight.clamp(300.0, 380.0); // Updated constraints
+                  iconSize = iconSize.clamp(140.0, 180.0); // Updated constraints
+                  fontSize = fontSize.clamp(18.0, 22.0); // Updated constraints
+                  spacing = spacing.clamp(25.0, 35.0); // Updated constraints
+
+                  return Center(
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        // Backup Data Button
+                        GestureDetector(
+                          onTap: (_isBackingUp || _isRestoring) ? null : _backupData,
+                          child: Container(
+                            width: cardWidth,
+                            height: cardHeight,
+                            decoration: BoxDecoration(
+                              color: (_isBackingUp || _isRestoring)
+                                  ? Colors.grey.withOpacity(0.3)
+                                  : ThemeColor.white2,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 3,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
                             ),
-                            if (!_isBackingUp)
-                              const Padding(
-                                padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-                                child: Text(
-                                  "Create backup and save to archives",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_isBackingUp)
+                                  const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      ThemeColor.secondaryColor,
+                                    ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.settings_backup_restore,
+                                    size: iconSize,
+                                    color: ThemeColor.secondaryColor,
                                   ),
-                                  textAlign: TextAlign.center,
+                                const SizedBox(height: 20),
+                                Text(
+                                  _isBackingUp ? "Backing Up..." : "Back Up Data",
+                                  style: TextStyle(fontSize: fontSize),
                                 ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // Restore Data Button
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GestureDetector(
-                      onTap: (_isBackingUp || _isRestoring) ? null : _uploadAndRestoreBackup,
-                      child: Container(
-                        width: 450, // Changed from 300 to 450
-                        height: 450, // Changed from 350 to 450
-                        decoration: BoxDecoration(
-                          color: (_isBackingUp || _isRestoring)
-                              ? Colors.grey.withOpacity(0.3)
-                              : ThemeColor.white2,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (_isRestoring)
-                              const CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  ThemeColor.primaryColor,
-                                ),
-                              )
-                            else
-                              const Icon(
-                                Icons.restore,
-                                size: 225, // Changed from 150 to 225
-                                color: ThemeColor.secondaryColor,
-                              ),
-                            const SizedBox(height: 20),
-                            Text(
-                              _isRestoring ? "Restoring..." : "Restore Data",
-                              style: const TextStyle(fontSize: 24), // Changed from 20 to 24
+                                if (!_isBackingUp)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+                                    child: Text(
+                                      "Create backup and save to archives",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                              ],
                             ),
-                            if (!_isRestoring)
-                              const Padding(
-                                padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-                                child: Text(
-                                  "Upload and restore from backup file",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // Archives Button
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ArchivesPage(),
                           ),
-                        );
-                      },
-                      child: Container(
-                        width: 450, // Changed from 300 to 450
-                        height: 450, // Changed from 350 to 450
-                        decoration: BoxDecoration(
-                          color: ThemeColor.white2,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 3,
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
                         ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.archive_outlined,
-                              size: 225, // Changed from 150 to 225
-                              color: ThemeColor.secondaryColor,
+                        
+                        // Restore Data Button
+                        GestureDetector(
+                          onTap: (_isBackingUp || _isRestoring) ? null : _uploadAndRestoreBackup,
+                          child: Container(
+                            width: cardWidth,
+                            height: cardHeight,
+                            decoration: BoxDecoration(
+                              color: (_isBackingUp || _isRestoring)
+                                  ? Colors.grey.withOpacity(0.3)
+                                  : ThemeColor.white2,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 3,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
                             ),
-                            SizedBox(height: 20),
-                            Text(
-                              "Archives",
-                              style: TextStyle(fontSize: 24), // Changed from 20 to 24
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-                              child: Text(
-                                "View and manage backup archives",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (_isRestoring)
+                                  const CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      ThemeColor.primaryColor,
+                                    ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.restore,
+                                    size: iconSize,
+                                    color: ThemeColor.secondaryColor,
+                                  ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  _isRestoring ? "Restoring..." : "Restore Data",
+                                  style: TextStyle(fontSize: fontSize),
                                 ),
-                                textAlign: TextAlign.center,
-                              ),
+                                if (!_isRestoring)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+                                    child: Text(
+                                      "Upload and restore from backup file",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        
+                        // Archives Button
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ArchivesPage(),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: cardWidth,
+                            height: cardHeight,
+                            decoration: BoxDecoration(
+                              color: ThemeColor.white2,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.2),
+                                  spreadRadius: 3,
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.archive_outlined,
+                                  size: iconSize,
+                                  color: ThemeColor.secondaryColor,
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  "Archives",
+                                  style: TextStyle(fontSize: fontSize),
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+                                  child: Text(
+                                    "View and manage backup archives",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             ],
           ),

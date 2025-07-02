@@ -39,26 +39,24 @@ class MachineryManagementNav extends StatelessWidget {
               ),
               const SizedBox(height: 40),
               
-              // Responsive scaling for the cards while maintaining original proportions
               LayoutBuilder(
                 builder: (context, constraints) {
-                  // Calculate scale factor but with better limits (like registration page)
                   double screenWidth = constraints.maxWidth;
-                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 1.0); // More conservative scaling
-                  
-                  // Fixed card dimensions with scaling (matching registration page style)
-                  double cardWidth = 450 * scaleFactor;
-                  double cardHeight = 450 * scaleFactor;
-                  double iconSize = 225 * scaleFactor;
-                  double fontSize = 24 * scaleFactor;
-                  double spacing = 40 * scaleFactor;
-                  
-                  // Ensure cards don't get too big or too small
-                  cardWidth = cardWidth.clamp(350.0, 450.0);
-                  cardHeight = cardHeight.clamp(350.0, 450.0);
-                  iconSize = iconSize.clamp(180.0, 225.0);
-                  fontSize = fontSize.clamp(20.0, 24.0);
-                  spacing = spacing.clamp(30.0, 40.0);
+                  double scaleFactor = (screenWidth / 1200).clamp(0.7, 0.9); // Increased scaling factor
+
+                  // Increased card dimensions
+                  double cardWidth = 380 * scaleFactor; // Increased from 320
+                  double cardHeight = 380 * scaleFactor; // Increased from 320
+                  double iconSize = 180 * scaleFactor; // Increased from 190
+                  double fontSize = 22 * scaleFactor; // Increased from 20
+                  double spacing = 35 * scaleFactor; // Increased from 30
+
+                  // Ensure cards don't get too big or too small with updated limits
+                  cardWidth = cardWidth.clamp(300.0, 380.0); // Increased from 250-320
+                  cardHeight = cardHeight.clamp(300.0, 380.0); // Increased from 250-320
+                  iconSize = iconSize.clamp(140.0, 180.0); // Increased from 120-160
+                  fontSize = fontSize.clamp(18.0, 22.0); // Increased from 16-20
+                  spacing = spacing.clamp(25.0, 35.0); // Increased from 20-30
                   
                   return Center( // Center the entire content
                     child: Wrap(
